@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Libre Baskerville", Georgia, serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  font-family: var(--font-serif);
+  background: linear-gradient(135deg, #FFF9D4 0%, #FFCD00 50%, #E69D00 100%) !important;
+  background-attachment: fixed;
+  color: #1a1a1a;
+}
+
+.album-container {
+  background: linear-gradient(135deg, #FFF9D4 0%, #FFCD00 50%, #E69D00 100%) !important;
+  background-attachment: fixed !important;
+  position: relative;
+}
+
+.album-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 47, 108, 0.08) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.card-slot {
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease-in-out;
+}
+
+.card-slot:hover {
+  border-color: #002F6C;
+  background: rgba(255, 250, 240, 0.8);
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 15s linear infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 4s ease-in-out infinite;
+}
+
+.solana-badge {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #14F195, #9945FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+

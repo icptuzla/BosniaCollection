@@ -1,0 +1,6 @@
+{
+  "name": "Bosnian Sticker Album WC2026",
+  "description": "An old-fashioned physical-style Panini sticker album for the Bosnian National Football Team. Complete with 22 players, 4 special collectibles, video game-style statistics, Solflare wallet connection, and a peer-to-peer trading marketplace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
