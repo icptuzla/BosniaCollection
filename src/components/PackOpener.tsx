@@ -1,7 +1,14 @@
-import React, { useState } from "react";
-import { Sparkles, ShoppingBag, Coins, CreditCard, ArrowRight } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Sparkles, ShoppingBag, Coins, ArrowRight, Loader2 } from "lucide-react";
 import { Sticker, WalletState } from "../types";
 import { STICKERS } from "../data/players";
+
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { create } from "@metaplex-foundation/mpl-core";
+import { generateSigner, transactionBuilder, publicKey, sol } from "@metaplex-foundation/umi";
+import { transferSol } from "@metaplex-foundation/mpl-toolbox";
 
 interface PackOpenerProps {
   wallet: WalletState;
@@ -11,16 +18,27 @@ interface PackOpenerProps {
 }
 
 export default function PackOpener({ wallet, onWalletChange, onAddStickers, onViewSticker }: PackOpenerProps) {
+  const solanaWallet = useWallet();
+  const { connection } = useConnection();
+
+  const umi = useMemo(() => {
+    const u = createUmi(connection.rpcEndpoint);
+    if (solanaWallet.wallet) {
+      u.use(walletAdapterIdentity(solanaWallet));
+    }
+    return u;
+  }, [connection, solanaWallet]);
+
   const [isBought, setIsBought] = useState(false);
-  const [packStatus, setPackStatus] = useState<"ready" | "tearing" | "opened">("ready");
+  const [packStatus, setPackStatus] = useState<"ready" | "tearing" | "opened" | "minting">("ready");
   const [revealedStickers, setRevealedStickers] = useState<Sticker[]>([]);
   const [hasClaimed, setHasClaimed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const packCost = 0.5; // cost in SOL
+  const packCost = 0.2; // cost in SOL
 
-  const handlePurchasePack = () => {
-    if (!wallet.connected) {
+  const handlePurchasePack = async () => {
+    if (!wallet.connected || !solanaWallet.publicKey) {
       alert("Please connect your Solflare or Sandbox Wallet first to buy a packet!");
       return;
     }
@@ -29,33 +47,83 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
       return;
     }
 
-    // Deduct SOL
-    onWalletChange({
-      ...wallet,
-      balance: Number((wallet.balance - packCost).toFixed(2)),
-    });
+    setPackStatus("minting");
 
-    // Synthesize laser-gong buy audio
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(320, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.3);
-      gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.31);
-      osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.35);
-    } catch (_) {}
+      // 1. Generate the pulled stickers
+      const pulled: Sticker[] = [];
+      const totalCount = STICKERS.length;
+      
+      for (let i = 0; i < 5; i++) {
+        let rolled: Sticker;
+        if (i === 4) {
+          const excitingList = STICKERS.filter(s => s.id >= 23 || (s.stats && s.stats.overall >= 80));
+          rolled = excitingList[Math.floor(Math.random() * excitingList.length)];
+        } else {
+          rolled = STICKERS[Math.floor(Math.random() * totalCount)];
+        }
+        pulled.push(rolled);
+      }
 
-    setIsBought(true);
-    setPackStatus("ready");
-    setHasClaimed(false);
-    setRevealedStickers([]);
-    setCurrentIndex(0);
+      // 2. Build the transaction
+      let tx = transactionBuilder();
+
+      // Transfer packCost to a dummy treasury to simulate purchase (Burn/Treasury)
+      tx = tx.add(transferSol(umi, {
+        source: umi.identity,
+        destination: publicKey("11111111111111111111111111111111"), // System Program basically serves as a burn or dummy here
+        amount: sol(packCost)
+      }));
+
+      // Create 5 assets (Mint on Demand)
+      pulled.forEach((sticker) => {
+        const assetSigner = generateSigner(umi);
+        tx = tx.add(
+          create(umi, {
+            asset: assetSigner,
+            name: sticker.name,
+            uri: "https://arweave.net/y0bO5r3zUv9LhF4D0o3Y1C7bZ2N4G6F9tP5H1X4kY0b", // Mock generic URI for demonstration
+          })
+        );
+      });
+
+      // 3. Send and confirm transaction
+      const result = await tx.sendAndConfirm(umi);
+      console.log("Minted 5 NFTs successfully. Signature:", result.signature);
+
+      // Deduct SOL visually
+      onWalletChange({
+        ...wallet,
+        balance: Number((wallet.balance - packCost).toFixed(2)),
+      });
+
+      // Synthesize laser-gong buy audio
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.31);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (_) {}
+
+      setIsBought(true);
+      setPackStatus("ready");
+      setHasClaimed(false);
+      setRevealedStickers(pulled);
+      setCurrentIndex(0);
+
+    } catch (err) {
+      console.error("Purchase failed:", err);
+      alert("Failed to purchase pack. Check console for details.");
+      setPackStatus("ready");
+    }
   };
 
   const handleRipPack = () => {
@@ -66,7 +134,6 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Noise buffer for realistic paper tear friction
       const bufferSize = audioCtx.sampleRate * 0.25;
       const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -93,27 +160,8 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
       noise.stop(audioCtx.currentTime + 0.25);
     } catch (_) {}
 
-    // Pull 5 stickers (approx. 1 high rating/special, 4 standard)
+    // Reveal pulled stickers
     setTimeout(() => {
-      const pulled: Sticker[] = [];
-      const totalCount = STICKERS.length;
-      
-      for (let i = 0; i < 5; i++) {
-        let rolled: Sticker;
-        
-        // Ensure some cool distribution
-        if (i === 4) {
-          // Guaranteed special or top player (>80 rating) roll
-          const excitingList = STICKERS.filter(s => s.id >= 23 || (s.stats && s.stats.overall >= 80));
-          rolled = excitingList[Math.floor(Math.random() * excitingList.length)];
-        } else {
-          // Standard random roll
-          rolled = STICKERS[Math.floor(Math.random() * totalCount)];
-        }
-        pulled.push(rolled);
-      }
-
-      setRevealedStickers(pulled);
       setPackStatus("opened");
     }, 850);
   };
@@ -140,7 +188,6 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
       osc.stop(audioCtx.currentTime + 0.25);
     } catch (_) {}
 
-    // Reset loop
     setIsBought(false);
     setPackStatus("ready");
   };
@@ -158,9 +205,7 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
 
       {!isBought ? (
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 py-4 w-full">
-          {/* Visual Foil Packet placeholder */}
           <div className="relative w-56 h-72 rounded-2xl bg-gradient-to-br from-[#002F6C] via-[#092244] to-[#124285] border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col justify-between p-4 flex-shrink-0 animate-bounce-slow text-white">
-            {/* Crinkled Foil texture borders */}
             <div className="absolute top-0 inset-x-0 h-4 bg-[#FFCD00] flex items-center justify-center space-x-1 font-sans text-[7px] text-[#002F6C] font-black overflow-hidden tracking-widest">
               <span>★ BOSNA ★ ZMAJEVI ★ BIH ★</span>
             </div>
@@ -209,10 +254,20 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
             <button
               id="btn-buy-booster-packet"
               onClick={handlePurchasePack}
-              className="w-full flex items-center justify-center space-x-1.5 py-3 px-6 rounded-xl bg-[#002F6C] hover:bg-[#0c3e80] text-white font-sans font-bold text-xs uppercase tracking-wider transition shadow-sm cursor-pointer"
+              disabled={packStatus === "minting"}
+              className="w-full flex items-center justify-center space-x-1.5 py-3 px-6 rounded-xl bg-[#002F6C] hover:bg-[#0c3e80] text-white font-sans font-bold text-xs uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ShoppingBag className="h-4 w-4" />
-              <span>Purchase Pack for {packCost} SOL</span>
+              {packStatus === "minting" ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Minting to Solana...</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>Purchase Pack for {packCost} SOL</span>
+                </>
+              )}
             </button>
             
             {!wallet.connected && (
@@ -223,7 +278,6 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
           </div>
         </div>
       ) : (
-        /* Ripping envelope / Revealing stickers */
         <div className="w-full py-4 flex flex-col items-center">
           {packStatus === "ready" && (
             <div className="flex flex-col items-center space-y-6">
@@ -231,7 +285,6 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                 ✓ Pack secured on Solana devnet! Ready to open.
               </p>
               
-              {/* Interaction - Tear top of foil pack */}
               <div
                 id="interactive-tear-envelope"
                 onClick={handleRipPack}
@@ -255,23 +308,21 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
           )}
 
           {packStatus === "tearing" && (
-            <div className="flex flex-col items-center py-20 space-y-4">
-              <div className="w-10 h-10 rounded-full border-4 border-[#002F6C] border-t-transparent animate-spin" />
-              <p className="text-[#002F6C] font-serif italic text-sm animate-pulse">Ripping foil envelope & loading blockchain entropy...</p>
-            </div>
-          )}
+             <div className="flex flex-col items-center py-20 space-y-4">
+               <div className="w-10 h-10 rounded-full border-4 border-[#002F6C] border-t-transparent animate-spin" />
+               <p className="text-[#002F6C] font-serif italic text-sm animate-pulse">Ripping foil envelope & loading blockchain entropy...</p>
+             </div>
+           )}
 
           {packStatus === "opened" && (
             <div className="space-y-6 w-full flex flex-col items-center">
               
-              {/* Stack / Viewer Carousel of Pulled Stickers */}
               <div className="flex flex-col items-center space-y-4 w-full text-gray-800">
                 <div className="text-[10px] font-sans font-bold tracking-widest text-[#002F6C] uppercase bg-[#002F6C]/10 py-1.5 px-3 rounded">
                   Pulled sticker CARD {currentIndex + 1} of {revealedStickers.length}
                 </div>
 
                 <div className="flex items-center space-x-6">
-                  {/* Left arrow */}
                   <button
                     disabled={currentIndex === 0}
                     onClick={() => setCurrentIndex(currentIndex - 1)}
@@ -280,7 +331,6 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                     ←
                   </button>
 
-                  {/* Pack Sticker Display - Clickable to launch 600px x 700px Card modal */}
                   <div
                     onClick={() => onViewSticker(revealedStickers[currentIndex])}
                     className="relative w-64 h-80 rounded-2xl p-4.5 bg-white border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col justify-between cursor-pointer hover:scale-105 hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all text-left"
@@ -313,7 +363,6 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                     </div>
                   </div>
 
-                  {/* Right arrow */}
                   <button
                     disabled={currentIndex === revealedStickers.length - 1}
                     onClick={() => setCurrentIndex(currentIndex + 1)}
@@ -324,7 +373,6 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                 </div>
               </div>
 
-              {/* Progress dots indicating pulled set */}
               <div className="flex space-x-1.5">
                 {revealedStickers.map((_, idx) => (
                   <span

@@ -1,0 +1,19 @@
+<h2>How should the Pack Opening work on Devnet?</h2>
+<p class="subtitle">When a user pays 0.2 SOL for a pack, how are the NFTs delivered?</p>
+
+<div class="options">
+  <div class="option" data-choice="mint-on-demand" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Mint on Demand</h3>
+      <p>The user's transaction mints 5 brand new NFTs directly using Metaplex Core. This is simpler to implement but the user pays the SOL rent for the new NFTs.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="treasury-transfer" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Treasury Transfer</h3>
+      <p>We pre-mint the entire collection to a Treasury Wallet. When a user buys a pack, the backend/program transfers 5 random NFTs from the Treasury to the user.</p>
+    </div>
+  </div>
+</div>

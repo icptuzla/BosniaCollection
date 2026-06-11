@@ -553,8 +553,6 @@ export default function App() {
               id="btn-confirm-welcome-onboard"
               onClick={() => {
                 setShowWelcome(false);
-                // Connect simulated sandbox wallet immediately to minimize friction
-                setWallet({ connected: true, publicKey: "SolfZmaj99InitialTestAddressFmC26", balance: 5.0, isSimulated: true });
               }}
               className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 font-black tracking-wide text-sm transition shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer font-sans"
             >

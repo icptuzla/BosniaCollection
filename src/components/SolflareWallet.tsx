@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Wallet, Check, AlertCircle, Coins, ExternalLink } from "lucide-react";
+import { Wallet, Check, AlertCircle, Coins, ExternalLink, Loader2 } from "lucide-react";
 import { WalletState } from "../types";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 interface SolflareWalletProps {
   wallet: WalletState;
@@ -8,101 +11,74 @@ interface SolflareWalletProps {
 }
 
 export default function SolflareWallet({ wallet, onWalletChange }: SolflareWalletProps) {
-  const [extensionStatus, setExtensionStatus] = useState<"not-found" | "detected" | "checking">("checking");
+  const { publicKey, connected, disconnect } = useWallet();
+  const { connection } = useConnection();
   const [error, setError] = useState<string | null>(null);
+  const [isAirdropping, setIsAirdropping] = useState(false);
 
   useEffect(() => {
-    // Check if Solflare or Solana provider is present
-    const checkAvailability = () => {
-      // @ts-ignore
-      if (window.solana && (window.solana.isSolflare || window.solana.isPhantom || window.solana)) {
-        setExtensionStatus("detected");
-      } else {
-        setExtensionStatus("not-found");
+    const updateBalance = async () => {
+      if (connected && publicKey) {
+        try {
+          const balance = await connection.getBalance(publicKey);
+          onWalletChange({
+            connected: true,
+            publicKey: publicKey.toBase58(),
+            balance: balance / LAMPORTS_PER_SOL,
+            isSimulated: false,
+          });
+        } catch (err: any) {
+          console.error("Failed to fetch balance", err);
+        }
+      } else if (!connected && wallet.connected) {
+        onWalletChange({
+          connected: false,
+          publicKey: null,
+          balance: 0,
+          isSimulated: false,
+        });
       }
     };
 
-    checkAvailability();
-    const interval = setInterval(checkAvailability, 2000);
+    updateBalance();
+    
+    let interval: NodeJS.Timeout;
+    if (connected && publicKey) {
+      interval = setInterval(updateBalance, 10000);
+    }
+    
     return () => clearInterval(interval);
-  }, []);
+  }, [connected, publicKey, connection]);
 
-  const connectRealWallet = async () => {
+  const handleFaucetClaim = async () => {
+    if (!publicKey || !connected) return;
+    
+    setIsAirdropping(true);
     setError(null);
     try {
-      // @ts-ignore
-      if (!window.solana) {
-        throw new Error("No Solana provider found");
-      }
-      // @ts-ignore
-      const provider = window.solana;
-      const resp = await provider.connect();
-      const pubKey = resp.publicKey ? resp.publicKey.toString() : provider.publicKey?.toString();
-      
-      if (!pubKey) {
-        throw new Error("Failed to retrieve public key");
-      }
-
-      onWalletChange({
-        connected: true,
-        publicKey: pubKey,
-        balance: 5.72, // Retrieve a dummy devnet balance or query RPC
-        isSimulated: false,
+      const signature = await connection.requestAirdrop(publicKey, 5 * LAMPORTS_PER_SOL);
+      const latestBlockHash = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: signature
       });
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.message || "User rejected connection or iframe security blocks wallet.");
-    }
-  };
-
-  const connectSimulatedWallet = () => {
-    setError(null);
-    // Generate a beautiful valid-looking Solana address
-    const randomChars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-    let fakeAddress = "Solf";
-    for (let i = 0; i < 36; i++) {
-      fakeAddress += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
-    }
-    fakeAddress += "Zmaj";
-
-    onWalletChange({
-      connected: true,
-      publicKey: fakeAddress,
-      balance: 10.0, // Friendly start balance
-      isSimulated: true,
-    });
-  };
-
-  const disconnectWallet = () => {
-    // @ts-ignore
-    if (!wallet.isSimulated && window.solana) {
-      try {
-        // @ts-ignore
-        window.solana.disconnect();
-      } catch (e) {
-        console.warn("Wallet disconnect err:", e);
-      }
-    }
-    onWalletChange({
-      connected: false,
-      publicKey: null,
-      balance: 0,
-      isSimulated: false,
-    });
-  };
-
-  const handleFaucetClaim = () => {
-    if (wallet.connected) {
+      
+      const newBalance = await connection.getBalance(publicKey);
       onWalletChange({
         ...wallet,
-        balance: Number((wallet.balance + 5.0).toFixed(2)),
+        balance: newBalance / LAMPORTS_PER_SOL,
       });
+    } catch (err: any) {
+      console.error("Airdrop failed:", err);
+      setError(err?.message || "Failed to airdrop SOL. Devnet faucet might be rate-limiting.");
+    } finally {
+      setIsAirdropping(false);
     }
   };
 
-  // Helper for short addresses
-  const formatAddress = (address: string) => {
-    return `${address.substring(0, 6)}...${address.substring(address.length - 6)}`;
+  const handleDisconnect = () => {
+    disconnect();
   };
 
   return (
@@ -126,7 +102,7 @@ export default function SolflareWallet({ wallet, onWalletChange }: SolflareWalle
         </div>
         {wallet.connected && (
           <span className="text-[9px] font-sans font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-            {wallet.isSimulated ? "SANDBOX" : "SOLFLARE"}
+            {wallet.isSimulated ? "SANDBOX" : "DEVNET"}
           </span>
         )}
       </div>
@@ -134,42 +110,15 @@ export default function SolflareWallet({ wallet, onWalletChange }: SolflareWalle
       {!wallet.connected ? (
         <div className="space-y-3">
           <p className="text-xs font-serif text-gray-600 leading-relaxed text-left">
-            Connect your Solflare Wallet safely or utilize the simulated workspace ledger to sign physical card trade transactions.
+            Connect your Solflare Wallet to sign physical card trade transactions and buy packs on Solana Devnet.
           </p>
 
-          {extensionStatus === "detected" ? (
-            <button
-              id="btn-connect-solflare"
-              onClick={connectRealWallet}
-              className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg bg-[#002F6C] hover:opacity-95 text-white font-sans font-bold text-xs uppercase tracking-wider transition shadow-sm cursor-pointer"
-            >
-              <Wallet className="h-4 w-4" />
-              <span>Connect Solflare Extension</span>
-            </button>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-start space-x-2.5 p-3 rounded-lg bg-[#002F6C]/5 border border-blue-200 text-gray-700 text-xs text-left font-sans">
-                <AlertCircle className="h-4 w-4 text-[#002F6C] shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-[#002F6C] font-semibold block mb-0.5">Iframe Compatibility Note:</span> Solflare restricts browser-extension logins in framed sandboxes. Open in a new tab for direct wallet access!
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-2">
-                <button
-                  id="btn-connect-web3-simulator"
-                  onClick={connectSimulatedWallet}
-                  className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg bg-gradient-to-r from-[#FFCD00] to-[#E3C515] hover:opacity-95 text-[#002F6C] font-sans font-bold text-xs uppercase tracking-wider transition shadow-sm cursor-pointer"
-                >
-                  <Coins className="h-4 w-4 animate-pulse" />
-                  <span>Use Solana Sandbox Wallet</span>
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="flex justify-center py-2 [&_.wallet-adapter-button]:!bg-[#002F6C] [&_.wallet-adapter-button]:hover:!opacity-95 [&_.wallet-adapter-button]:!h-auto [&_.wallet-adapter-button]:!py-2.5 [&_.wallet-adapter-button]:!px-4 [&_.wallet-adapter-button]:!rounded-lg [&_.wallet-adapter-button]:!font-sans [&_.wallet-adapter-button]:!font-bold [&_.wallet-adapter-button]:!text-xs [&_.wallet-adapter-button]:!uppercase [&_.wallet-adapter-button]:!tracking-wider [&_.wallet-adapter-button]:!transition [&_.wallet-adapter-button]:!shadow-sm [&_.wallet-adapter-button]:!w-full [&_.wallet-adapter-button]:!flex [&_.wallet-adapter-button]:!justify-center">
+            <WalletMultiButton />
+          </div>
 
           {error && (
-            <div className="p-2.5 rounded bg-rose-50 border border-rose-200 text-xs text-rose-600 font-mono text-left">
+            <div className="p-2.5 rounded bg-rose-50 border border-rose-200 text-xs text-rose-600 font-mono text-left mt-2">
               {error}
             </div>
           )}
@@ -196,25 +145,36 @@ export default function SolflareWallet({ wallet, onWalletChange }: SolflareWalle
           </div>
 
           <div className="flex space-x-2">
-            {wallet.isSimulated && (
+            {!wallet.isSimulated && (
               <button
                 id="btn-solana-faucet-airdrop"
                 onClick={handleFaucetClaim}
-                className="flex-1 py-2 px-3 rounded bg-[#FFCD00]/25 hover:bg-[#FFCD00]/40 text-[#002F6C] font-bold text-xs font-sans transition border border-[#FFCD00]/50 flex items-center justify-center space-x-1 cursor-pointer"
+                disabled={isAirdropping}
+                className="flex-1 py-2 px-3 rounded bg-[#FFCD00]/25 hover:bg-[#FFCD00]/40 text-[#002F6C] font-bold text-xs font-sans transition border border-[#FFCD00]/50 flex items-center justify-center space-x-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Coins className="h-3.5 w-3.5 text-[#002F6C]" />
-                <span>AIRDROP +5 SOL</span>
+                {isAirdropping ? (
+                  <Loader2 className="h-3.5 w-3.5 text-[#002F6C] animate-spin" />
+                ) : (
+                  <Coins className="h-3.5 w-3.5 text-[#002F6C]" />
+                )}
+                <span>{isAirdropping ? "AIRDROPPING..." : "AIRDROP +5 SOL"}</span>
               </button>
             )}
 
             <button
               id="btn-disconnect-solana"
-              onClick={disconnectWallet}
+              onClick={handleDisconnect}
               className="py-2 px-3 rounded hover:bg-rose-50 hover:text-rose-700 text-rose-600 font-sans font-bold text-xs transition border border-rose-200 flex items-center justify-center space-x-1 cursor-pointer"
             >
               <span>DISCONNECT</span>
             </button>
           </div>
+          
+          {error && (
+            <div className="p-2.5 rounded bg-rose-50 border border-rose-200 text-[10px] text-rose-600 font-mono text-left">
+              {error}
+            </div>
+          )}
         </div>
       )}
     </div>

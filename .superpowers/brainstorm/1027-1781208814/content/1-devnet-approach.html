@@ -1,0 +1,19 @@
+<h2>How should we handle Devnet SOL for packs & trades?</h2>
+<p class="subtitle">Since real Devnet requires transactions to be paid for with Devnet SOL</p>
+
+<div class="options">
+  <div class="option" data-choice="user-faucet" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>User requests from Solana Faucet</h3>
+      <p>Users must manually go to faucet.solana.com to get devnet SOL to open packs or trade.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="in-app-airdrop" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>In-App Airdrop Button</h3>
+      <p>Keep the "Airdrop +5 SOL" button, but connect it to the actual Solana Devnet connection.requestAirdrop() API so users get real devnet SOL.</p>
+    </div>
+  </div>
+</div>

@@ -3,10 +3,10 @@ import { Sticker, StickerType } from "../types";
 export const STICKERS: Sticker[] = [
   {
     id: 1,
-    number: "01",
+    number: "11",
     name: "Edin Džeko",
     role: "ST / Captain",
-    club: "Fenerbahçe",
+    club: "Schalke 04",
     birthDate: "17.03.1986",
     height: "193 cm",
     biography: "The greatest Bosnian striker of all time, knicknamed 'The Bosnian Diamond'. Reknown for winning titles with Wolfsburg, Manchester City, and AS Roma. Bosnia's all-time record goalscorer, carrying the hopes of the Zmajevi with unmatched mental toughness.",
@@ -22,11 +22,11 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "FC26 Rating: 83",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "Pi_dzeko.png"
+    imageFile: "Pi_dzeko.webp"
   },
   {
     id: 2,
-    number: "02",
+    number: "10",
     name: "Ermedin Demirović",
     role: "ST",
     club: "VfB Stuttgart",
@@ -45,11 +45,11 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "FC26 Rating: 81",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "Pi_Demirovic.png"
+    imageFile: "Pi_Demirovic.webp"
   },
   {
     id: 4,
-    number: "04",
+    number: "05",
     name: "Sead Kolašinac",
     role: "CB / LB",
     club: "Atalanta",
@@ -71,7 +71,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 5,
-    number: "05",
+    number: "07",
     name: "Amar Dedić",
     role: "RB / RWB",
     club: "Red Bull Salzburg",
@@ -90,12 +90,12 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "FC26 Rating: 79",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-500 via-cyan-800 to-indigo-950",
-    imageFile: "Pi_dedic.png"
+    imageFile: "Pi_dedic.webp"
   },
-  
+
   {
     id: 7,
-    number: "07",
+    number: "03",
     name: "Dennis Hadžikadunić",
     role: "CB",
     club: "Hamburger SV",
@@ -117,7 +117,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 8,
-    number: "08",
+    number: "06",
     name: "Benjamin Tahirović",
     role: "CDM",
     club: "Ajax",
@@ -136,11 +136,11 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "FC26 Rating: 73",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "benjamin-tahirovic.png"
+    imageFile: "benjamin-tahirovic.webp"
   },
   {
     id: 11,
-    number: "03",
+    number: "04",
     name: "Tarik Muharemović",
     role: "CB",
     club: "Sassuolo",
@@ -162,7 +162,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 12,
-    number: "12",
+    number: "01",
     name: "Nikola Vasilj",
     role: "GK",
     club: "FC St. Pauli",
@@ -184,7 +184,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 13,
-    number: "13",
+    number: "22",
     name: "Martin Zlomislić",
     role: "GK",
     club: "NK. Rijeka",
@@ -206,7 +206,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 14,
-    number: "14",
+    number: "02",
     name: "Nermin Mujakić",
     role: "CLB",
     club: "Antalyspor",
@@ -228,7 +228,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 10,
-    number: "10",
+    number: "19",
     name: "Kerim Alajbegović",
     role: "LW / AM",
     club: "RB Salzburg",
@@ -272,7 +272,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 16,
-    number: "16",
+    number: "08",
     name: "Armin Gigović",
     role: "CM",
     club: "Holstein Kiel",
@@ -313,11 +313,11 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "FC26 Rating: 71",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "denis-burnic.png"
+    imageFile: "denis-burnic.webp"
   },
   {
     id: 18,
-    number: "18",
+    number: "13",
     name: "Ivan Bašić",
     role: "CAM / CM",
     club: "Orenburg",
@@ -353,7 +353,7 @@ export const STICKERS: Sticker[] = [
       passing: 90,
       dribbling: 90,
       defending: 41,
-      physicality: 80
+      physicality: 70
     },
     gameRatingRef: "FC26 Rating: 82",
     type: StickerType.STANDARD,
@@ -361,7 +361,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 20,
-    number: "20",
+    number: "14",
     name: "Denis Huseinbašić",
     role: "CM",
     club: "1. FC Köln",
@@ -425,6 +425,75 @@ export const STICKERS: Sticker[] = [
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950"
   },
+  {
+    id: 19,
+    number: '19',
+    name: 'Samed Baždar',
+    role: 'Forward',
+    club: 'Real Zaragoza',
+    birthDate: '18.08.2004',
+    height: '186 cm',
+    biography: 'A gifted attacker whose technical intelligence and quick goal instincts have positioned him as one of the most promising young talents in his generation.',
+    stats:
+    {
+      overall: 70,
+      pace: 70,
+      shooting: 83,
+      passing: 79,
+      dribbling: 82,
+      defending: 42,
+      physicality: 80
+    },
+    gameRatingRef: "FC26 Rating: 70",
+    type: StickerType.STANDARD,
+    imageTheme: "from-blue-600 via-zinc-800 to-indigo-950"
+  },
+  {
+    id: 20,
+    number: "23",
+    name: 'Ermin Mahmić',
+    role: 'Midfielder',
+    club: 'Slovan Liberec',
+    birthDate: '2003-07-20',
+    height: '1.82m',
+    biography: "A talented left-footed deep engine who graduated from Borussia Dortmund's prestigious academy. Gifted with intense spatial agility and clever pass distribution qualities.",
+    stats:
+    {
+      overall: 71,
+      pace: 66,
+      shooting: 69,
+      passing: 74,
+      dribbling: 68,
+      defending: 52,
+      physicality: 72
+    },
+    gameRatingRef: "FC26 Rating: 71",
+    type: StickerType.STANDARD,
+    imageTheme: "from-blue-600 via-zinc-800 to-indigo-950"
+  },
+  {
+    id: 18,
+    number: "17",
+    name: 'Ivan Šunjić',
+    role: 'Midfielder',
+    club: 'Pafos FC',
+    birthDate: '22.08.1997',
+    height: '184 cm',
+    biography: "A versatile, hard-working defender. He possesses highly impressive tactical discipline, young and brave playing regulary in Ligue 1.",
+    stats:
+    {
+      overall: 74,
+      pace: 61,
+      shooting: 53,
+      passing: 72,
+      dribbling: 78,
+      defending: 77,
+      physicality: 82
+    },
+    gameRatingRef: "FC26 Rating: 74",
+    type: StickerType.STANDARD,
+    imageTheme: "from-blue-600 via-zinc-800 to-indigo-950"
+  },
 
   // Special Collection (4 unique stickers)
   {
@@ -438,7 +507,8 @@ export const STICKERS: Sticker[] = [
     biography: "Holographic Emblem of the Football Association of Bosnia and Herzegovina. Adorned with the national colors of gold and blue, and stars depicting the night sky. The symbol of hope, unity, and deep-seated football patriotism for millions under the banner of the Zmajevi.",
     gameRatingRef: "Holographic Rarity ★★★★★",
     type: StickerType.SPECIAL,
-    imageTheme: "from-amber-400 via-yellow-600 to-blue-900 animate-pulse bg-[length:200%_200%]"
+    imageTheme: "from-amber-400 via-yellow-600 to-blue-900 animate-pulse bg-[length:200%_200%]",
+    imageFile: "grb.png"
   },
   {
     id: 24,
@@ -451,7 +521,8 @@ export const STICKERS: Sticker[] = [
     biography: "The historical fortress and spiritual home of the Bosnian National Team in Zenica. Renowned for its incredibly intense atmosphere, where fans sit extremely close to the pitch, creating an intimidating wall of sound that has humbled many major world powerhouses.",
     gameRatingRef: "Legendary Venue Card ★★★★",
     type: StickerType.SPECIAL,
-    imageTheme: "from-green-500 via-emerald-800 to-blue-950"
+    imageTheme: "from-green-500 via-emerald-800 to-blue-950",
+    imageFile: "stadionzenica.jpg"
   },
   {
     id: 25,
@@ -464,7 +535,8 @@ export const STICKERS: Sticker[] = [
     biography: "The historic generation of 2014 that qualified for Bosnia's first-ever FIFA World Cup in Brazil. Led by manager Safet Sušić, and stars like Spahić, Misimović, Ibišević, Lulić, and Džeko, they captured the world's attention with beautiful, courageous attacking football.",
     gameRatingRef: "Golden Squad Card ★★★★★",
     type: StickerType.SPECIAL,
-    imageTheme: "from-yellow-400 via-blue-600 to-indigo-950"
+    imageTheme: "from-yellow-400 via-blue-600 to-indigo-950",
+    imageFile: "2014.jpg"
   },
   {
     id: 26,
@@ -477,6 +549,7 @@ export const STICKERS: Sticker[] = [
     biography: "The ultra fan group of Bosnia and Herzegovina national teams. Traveling across the globe from Europe to South America, they paint stadiums in blue and yellow. Armed with flares, drums, and chants, they are the loyal pulse pushing the team forward at all costs.",
     gameRatingRef: "Acoustic Firepower Card ★★★★",
     type: StickerType.SPECIAL,
-    imageTheme: "from-red-600 via-blue-800 to-zinc-900"
+    imageTheme: "from-red-600 via-blue-800 to-zinc-900",
+    imageFile: "bhfanaticos.png"
   }
 ];

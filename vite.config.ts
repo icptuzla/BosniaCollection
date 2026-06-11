@@ -11,6 +11,32 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('@solana/') || id.includes('@metaplex-foundation/')) {
+              return 'web3-vendor';
+            }
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
+          }
+        }
+      }
+    },
+    optimizeDeps: {
+      exclude: [
+        'vite-plugin-node-polyfills',
+        'workbox-cacheable-response',
+        'workbox-routing',
+        'workbox-range-requests',
+        'workbox-expiration',
+        'workbox-strategies',
+        'workbox-precaching'
+      ]
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.

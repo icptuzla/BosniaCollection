@@ -1,0 +1,19 @@
+<h2>How should the Trading Market work on Devnet?</h2>
+<p class="subtitle">For trustless swaps and selling for SOL, how do we handle the transaction?</p>
+
+<div class="options">
+  <div class="option" data-choice="escrow-marketplace" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Smart Contract Escrow / Marketplace</h3>
+      <p>Users list their NFT for trade/sale, transferring it to a program escrow. When a buyer accepts, the program automatically swaps the NFTs or sends the SOL.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p2p-partial-sign" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Partial Signatures (P2P)</h3>
+      <p>The first user creates and partially signs a transaction. The offer remains valid until the second user countersigns it to execute the swap directly (no escrow needed).</p>
+    </div>
+  </div>
+</div>

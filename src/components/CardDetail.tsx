@@ -4,46 +4,55 @@ import { Sticker, StickerType, UserSticker } from "../types";
 import logoImage from "./zmajevi logo.png";
 
 // Import all uploaded player photos
-import dzekoImg from "./players/Pi_dzeko.png";
-import demirovicImg from "./players/Pi_Demirovic.png";
-import dedicImg from "./players/Pi_dedic.png";
-import tahirovicImg from "./players/benjamin-tahirovic.png";
-import burnicImg from "./players/denis-burnic.png";
-import memicImg from "./players/amer-memic.png";
-import hadziahmetovicImg from "./players/amir-hadziahmetovic.png";
-import alajbegovicImg from "./players/kenan-alajbegovic.png";
-import bazdarImg from "./players/samed-bazdar.png";
-import radeljicImg from "./players/stjepan-radeljic.png";
+import dzekoImg from "./players/Pi_dzeko.webp";
+import demirovicImg from "./players/Pi_Demirovic.webp";
+import dedicImg from "./players/Pi_dedic.webp";
+import tahirovicImg from "./players/benjamin-tahirovic.webp";
+import burnicImg from "./players/denis-burnic.webp";
+import memicImg from "./players/amer-memic.webp";
+import hadziahmetovicImg from "./players/amir-hadziahmetovic.webp";
+import alajbegovicImg from "./players/kenan-alajbegovic.webp";
+import bazdarImg from "./players/samed-bazdar.webp";
+import radeljicImg from "./players/stjepan-radeljic.webp";
+
+import grbImg from "./special_collection/grb.png";
+import stadionImg from "./special_collection/stadionzenica.jpg";
+import gen2014Img from "./special_collection/2014.jpg";
+import bhfanaticosImg from "./special_collection/bhfanaticos.png";
 
 const playerImageMap: Record<string, string> = {
-  "Pi_dzeko.png": dzekoImg,
-  "Pi_Demirovic.png": demirovicImg,
-  "Pi_dedic.png": dedicImg,
-  "benjamin-tahirovic.png": tahirovicImg,
-  "denis-burnic.png": burnicImg,
-  "amer-memic.png": memicImg,
-  "amir-hadziahmetovic.png": hadziahmetovicImg,
-  "kenan-alajbegovic.png": alajbegovicImg,
-  "samed-bazdar.png": bazdarImg,
-  "stjepan-radeljic.png": radeljicImg,
+  "Pi_dzeko.webp": dzekoImg,
+  "Pi_Demirovic.webp": demirovicImg,
+  "Pi_dedic.webp": dedicImg,
+  "benjamin-tahirovic.webp": tahirovicImg,
+  "denis-burnic.webp": burnicImg,
+  "amer-memic.webp": memicImg,
+  "amir-hadziahmetovic.webp": hadziahmetovicImg,
+  "kenan-alajbegovic.webp": alajbegovicImg,
+  "samed-bazdar.webp": bazdarImg,
+  "stjepan-radeljic.webp": radeljicImg,
+  "grb.png": grbImg,
+  "stadionzenica.jpg": stadionImg,
+  "2014.jpg": gen2014Img,
+  "bhfanaticos.png": bhfanaticosImg,
 };
 
 const getPlayerImage = (sticker: Sticker) => {
   if (sticker.imageFile && playerImageMap[sticker.imageFile]) {
     return playerImageMap[sticker.imageFile];
   }
-  if (sticker.id === 1) return playerImageMap["Pi_dzeko.png"];
-  if (sticker.id === 2) return playerImageMap["Pi_Demirovic.png"];
-  if (sticker.id === 5) return playerImageMap["Pi_dedic.png"];
-  if (sticker.id === 8) return playerImageMap["benjamin-tahirovic.png"];
-  if (sticker.id === 17) return playerImageMap["denis-burnic.png"];
+  if (sticker.id === 1) return playerImageMap["Pi_dzeko.webp"];
+  if (sticker.id === 2) return playerImageMap["Pi_Demirovic.webp"];
+  if (sticker.id === 5) return playerImageMap["Pi_dedic.webp"];
+  if (sticker.id === 8) return playerImageMap["benjamin-tahirovic.webp"];
+  if (sticker.id === 17) return playerImageMap["denis-burnic.webp"];
   
   const lowerName = sticker.name.toLowerCase();
-  if (lowerName.includes("memic") || lowerName.includes("memić")) return playerImageMap["amer-memic.png"];
-  if (lowerName.includes("hadžiahmetović") || lowerName.includes("hadziahmetovic")) return playerImageMap["amir-hadziahmetovic.png"];
-  if (lowerName.includes("alajbegović") || lowerName.includes("alajbegovic")) return playerImageMap["kenan-alajbegovic.png"];
-  if (lowerName.includes("baždar") || lowerName.includes("bazdar")) return playerImageMap["samed-bazdar.png"];
-  if (lowerName.includes("radeljić") || lowerName.includes("radeljic")) return playerImageMap["stjepan-radeljic.png"];
+  if (lowerName.includes("memic") || lowerName.includes("memić")) return playerImageMap["amer-memic.webp"];
+  if (lowerName.includes("hadžiahmetović") || lowerName.includes("hadziahmetovic")) return playerImageMap["amir-hadziahmetovic.webp"];
+  if (lowerName.includes("alajbegović") || lowerName.includes("alajbegovic")) return playerImageMap["kenan-alajbegovic.webp"];
+  if (lowerName.includes("baždar") || lowerName.includes("bazdar")) return playerImageMap["samed-bazdar.webp"];
+  if (lowerName.includes("radeljić") || lowerName.includes("radeljic")) return playerImageMap["stjepan-radeljic.webp"];
   
   return null;
 };

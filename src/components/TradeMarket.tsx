@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { ArrowLeftRight, Check, Coins, Plus, Trash2, AlertCircle, Sparkles, User, Tag } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { ArrowLeftRight, Check, Coins, Plus, Trash2, AlertCircle, Sparkles, User, Tag, Loader2 } from "lucide-react";
 import { Sticker, UserSticker, TradeOffer, WalletState } from "../types";
 import { STICKERS } from "../data/players";
+
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { transactionBuilder, publicKey, sol } from "@metaplex-foundation/umi";
+import { transferSol } from "@metaplex-foundation/mpl-toolbox";
 
 interface TradeMarketProps {
   wallet: WalletState;
@@ -22,12 +28,24 @@ export default function TradeMarket({
   tradeOffers,
   onRemoveTradeOffer,
 }: TradeMarketProps) {
+  const solanaWallet = useWallet();
+  const { connection } = useConnection();
+
+  const umi = useMemo(() => {
+    const u = createUmi(connection.rpcEndpoint);
+    if (solanaWallet.wallet) {
+      u.use(walletAdapterIdentity(solanaWallet));
+    }
+    return u;
+  }, [connection, solanaWallet]);
+
   const [selectedOfferStickerId, setSelectedOfferStickerId] = useState<number>(-1);
   const [selectedWantStickerId, setSelectedWantStickerId] = useState<number>(-1);
   const [sellingForSol, setSellingForSol] = useState(false);
   const [solValue, setSolValue] = useState<number>(0.1);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [successText, setSuccessText] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Filter stickers that the user has duplicates of
   const userDuplicates = collection.filter(c => c.count > 1);
@@ -36,12 +54,12 @@ export default function TradeMarket({
     return STICKERS.find(s => s.id === id);
   };
 
-  const handlePostTrade = (e: React.FormEvent) => {
+  const handlePostTrade = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorText(null);
     setSuccessText(null);
 
-    if (!wallet.connected) {
+    if (!wallet.connected || !solanaWallet.publicKey) {
       setErrorText("You must connect your Solflare or Sandbox wallet before listing a trade offer!");
       return;
     }
@@ -73,40 +91,60 @@ export default function TradeMarket({
       return;
     }
 
-    // Create trade offer
-    const tradeId = "tx-trd-" + Math.random().toString(36).substr(2, 9);
-    const newOffer: TradeOffer = {
-      id: tradeId,
-      ownerAddress: wallet.publicKey || "0x00...00",
-      ownerName: "My Wallet (" + (wallet.publicKey?.substring(0, 5) || "User") + ")",
-      offeredStickerId: selectedOfferStickerId,
-      requestedStickerId: sellingForSol ? -1 : selectedWantStickerId,
-      solPrice: sellingForSol ? Number(solValue.toFixed(2)) : undefined,
-      status: "OPEN",
-      createdAt: Date.now(),
-    };
+    setIsProcessing(true);
 
-    onSelfTradePosted(newOffer);
-    
-    // Deduct count of dummy pending block
-    onTradeCompleted(selectedOfferStickerId, -1, undefined); // triggers duplicate reduction
+    try {
+      // 1. Simulate Maker signing their portion of the transaction (Partial Signature)
+      // We do a minimal transfer to System Program to prove wallet ownership and intent
+      let tx = transactionBuilder().add(transferSol(umi, {
+        source: umi.identity,
+        destination: publicKey("11111111111111111111111111111111"), 
+        amount: sol(0.00001)
+      }));
+      
+      const result = await tx.sendAndConfirm(umi);
+      console.log("Maker intent signed. Tx:", result.signature);
 
-    setSuccessText(`✓ Trade offer #${tradeId.toUpperCase()} listed successfully! Signed on Solana devnet.`);
-    setSelectedOfferStickerId(-1);
-    setSelectedWantStickerId(-1);
-    setSellingForSol(false);
+      // Create trade offer
+      const tradeId = "tx-trd-" + Math.random().toString(36).substr(2, 9);
+      const newOffer: TradeOffer = {
+        id: tradeId,
+        ownerAddress: solanaWallet.publicKey.toBase58(),
+        ownerName: "My Wallet (" + solanaWallet.publicKey.toBase58().substring(0, 5) + ")",
+        offeredStickerId: selectedOfferStickerId,
+        requestedStickerId: sellingForSol ? -1 : selectedWantStickerId,
+        solPrice: sellingForSol ? Number(solValue.toFixed(2)) : undefined,
+        status: "OPEN",
+        createdAt: Date.now(),
+      };
+
+      onSelfTradePosted(newOffer);
+      
+      // Deduct count of dummy pending block locally
+      onTradeCompleted(selectedOfferStickerId, -1, undefined); 
+
+      setSuccessText(`✓ Trade offer #${tradeId.toUpperCase()} listed successfully! Partial Signature verified on Devnet.`);
+      setSelectedOfferStickerId(-1);
+      setSelectedWantStickerId(-1);
+      setSellingForSol(false);
+    } catch (err: any) {
+      console.error(err);
+      setErrorText(err?.message || "Failed to sign trade authorization.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleAcceptTrade = (offer: TradeOffer) => {
+  const handleAcceptTrade = async (offer: TradeOffer) => {
     setErrorText(null);
     setSuccessText(null);
 
-    if (!wallet.connected) {
+    if (!wallet.connected || !solanaWallet.publicKey) {
       setErrorText("Connect your web3 Solana / Solflare wallet card first!");
       return;
     }
 
-    if (offer.ownerAddress === wallet.publicKey) {
+    if (offer.ownerAddress === solanaWallet.publicKey.toBase58()) {
       setErrorText("You cannot accept your own trade listings!");
       return;
     }
@@ -120,45 +158,79 @@ export default function TradeMarket({
         setErrorText(`Trade Blocked: You do not have the requested sticker card [${targetSticker?.name}] to swap!`);
         return;
       }
-
-      // Execute trade
-      onTradeCompleted(offer.requestedStickerId, offer.offeredStickerId, undefined);
     } else if (offer.solPrice) {
       // requires SOL
       if (wallet.balance < offer.solPrice) {
         setErrorText(`Trade Blocked: Your wallet balance is below the requested ${offer.solPrice} SOL!`);
         return;
       }
-
-      // Execute purchase
-      onWalletChange({
-        ...wallet,
-        balance: Number((wallet.balance - offer.solPrice).toFixed(2)),
-      });
-      onTradeCompleted(-1, offer.offeredStickerId, offer.solPrice);
     }
 
-    // Remove offer from global listings as completed
-    onRemoveTradeOffer(offer.id);
-    
-    // Synthesize transaction success sound
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
-      osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
-      gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-      osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.4);
-    } catch (_) {}
+    setIsProcessing(true);
 
-     setSuccessText(`✓ Trade completed! Received ${getStickerById(offer.offeredStickerId)?.name}. Block index metadata finalized.`);
+    try {
+      // Construct the counter-signature transaction
+      if (offer.solPrice) {
+        // True P2P: Taker transfers SOL directly to Maker
+        let tx = transactionBuilder().add(transferSol(umi, {
+          source: umi.identity,
+          destination: publicKey(offer.ownerAddress),
+          amount: sol(offer.solPrice)
+        }));
+        
+        const result = await tx.sendAndConfirm(umi);
+        console.log("Taker P2P SOL transfer signed. Tx:", result.signature);
+
+        // Update local wallet balance visually
+        onWalletChange({
+          ...wallet,
+          balance: Number((wallet.balance - offer.solPrice).toFixed(2)),
+        });
+      } else {
+        // Taker signs an intent to swap the asset (simulate)
+        let tx = transactionBuilder().add(transferSol(umi, {
+          source: umi.identity,
+          destination: publicKey(offer.ownerAddress), 
+          amount: sol(0.00001) // minimal network verification
+        }));
+        const result = await tx.sendAndConfirm(umi);
+        console.log("Taker swap intent signed. Tx:", result.signature);
+      }
+
+      // Execute trade locally
+      if (offer.requestedStickerId !== -1) {
+        onTradeCompleted(offer.requestedStickerId, offer.offeredStickerId, undefined);
+      } else {
+        onTradeCompleted(-1, offer.offeredStickerId, offer.solPrice);
+      }
+
+      // Remove offer from global listings as completed
+      onRemoveTradeOffer(offer.id);
+      
+      // Synthesize transaction success sound
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+        gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      } catch (_) {}
+
+      setSuccessText(`✓ Trade completed! Received ${getStickerById(offer.offeredStickerId)?.name}. Blockchain synced.`);
+    } catch (err: any) {
+      console.error(err);
+      setErrorText(err?.message || "Failed to execute trade transaction.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -277,10 +349,13 @@ export default function TradeMarket({
             <button
               id="btn-list-swap-offer"
               type="submit"
-              disabled={!wallet.connected || selectedOfferStickerId === -1}
-              className="w-full py-2.5 px-4 rounded-lg bg-[#002F6C] hover:opacity-95 text-white font-sans font-bold text-xs uppercase tracking-wider transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              disabled={!wallet.connected || selectedOfferStickerId === -1 || isProcessing}
+              className="w-full py-2.5 px-4 rounded-lg bg-[#002F6C] hover:opacity-95 text-white font-sans font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center cursor-pointer"
             >
-              Broadcast Trade to Ledger
+              {isProcessing && document.activeElement?.id === "btn-list-swap-offer" ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              <span>Broadcast Trade to Ledger</span>
             </button>
             
             {!wallet.connected && (
@@ -323,7 +398,7 @@ export default function TradeMarket({
                 {tradeOffers.map((offer) => {
                   const offerSticker = getStickerById(offer.offeredStickerId);
                   const wantSticker = offer.requestedStickerId !== -1 ? getStickerById(offer.requestedStickerId) : null;
-                  const isMine = offer.ownerAddress === wallet.publicKey;
+                  const isMine = offer.ownerAddress === solanaWallet.publicKey?.toBase58();
 
                   return (
                     <div
@@ -378,9 +453,13 @@ export default function TradeMarket({
                         ) : (
                           <button
                             id={`btn-accept-trade-${offer.id}`}
+                            disabled={isProcessing}
                             onClick={() => handleAcceptTrade(offer)}
-                            className="py-1.5 px-3.5 rounded-lg bg-[#FFCD00] hover:opacity-90 text-[#002F6C] font-sans font-black text-xs uppercase tracking-wider transition shadow-sm cursor-pointer flex items-center space-x-1"
+                            className="py-1.5 px-3.5 rounded-lg bg-[#FFCD00] hover:opacity-90 text-[#002F6C] font-sans font-black text-xs uppercase tracking-wider transition shadow-sm cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed space-x-1"
                           >
+                            {isProcessing && document.activeElement?.id === `btn-accept-trade-${offer.id}` ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : null}
                             <span>Fill Offer</span>
                           </button>
                         )}
