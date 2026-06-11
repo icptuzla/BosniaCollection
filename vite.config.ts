@@ -12,13 +12,10 @@ export default defineConfig(() => {
       },
     },
     build: {
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes('@solana/') || id.includes('@metaplex-foundation/')) {
-              return 'web3-vendor';
-            }
             if (id.includes('node_modules')) {
               return 'vendor';
             }
