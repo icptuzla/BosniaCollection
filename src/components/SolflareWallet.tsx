@@ -5,12 +5,15 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
+import { Language } from "../data/translations";
+
 interface SolflareWalletProps {
   wallet: WalletState;
   onWalletChange: (newWallet: WalletState) => void;
+  lang: Language;
 }
 
-export default function SolflareWallet({ wallet, onWalletChange }: SolflareWalletProps) {
+export default function SolflareWallet({ wallet, onWalletChange, lang }: SolflareWalletProps) {
   const { publicKey, connected, disconnect } = useWallet();
   const { connection } = useConnection();
   const [error, setError] = useState<string | null>(null);

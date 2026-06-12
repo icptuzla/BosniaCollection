@@ -2,13 +2,13 @@
 @import "tailwindcss";
 
 @theme {
-  --font-serif: "Libre Baskerville", Georgia, serif;
-  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive, sans-serif;
+  --font-sans: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive, sans-serif;
+  --font-mono: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive, sans-serif;
 }
 
 body {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   background: linear-gradient(135deg, #FFF9D4 0%, #FFCD00 50%, #E69D00 100%) !important;
   background-attachment: fixed;
   color: #1a1a1a;

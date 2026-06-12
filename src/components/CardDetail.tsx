@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Shield, Calendar, Users, Award, Zap, Activity } from "lucide-react";
-import { Sticker, StickerType, UserSticker } from "../types";
-import logoImage from "./zmajevi logo.png";
+import { X, Calendar, Zap, Activity } from "lucide-react";
+import { Sticker, UserSticker } from "../types";
+import { Language } from "../data/translations";
+import logoImage from "./zmajevi logo.webp";
 
-// Import all uploaded player photos
+// Import all uploaded player photos in WebP format
 import dzekoImg from "./players/Pi_dzeko.webp";
 import demirovicImg from "./players/Pi_Demirovic.webp";
 import dedicImg from "./players/Pi_dedic.webp";
@@ -14,11 +15,29 @@ import hadziahmetovicImg from "./players/amir-hadziahmetovic.webp";
 import alajbegovicImg from "./players/kenan-alajbegovic.webp";
 import bazdarImg from "./players/samed-bazdar.webp";
 import radeljicImg from "./players/stjepan-radeljic.webp";
+import gigovicImg from "./players/Gigovic.webp";
+import muharemovicImg from "./players/Muharemovic.webp";
+import basicImg from "./players/ivan-basic.webp";
+import amirImg from "./players/amir-hadziahmetovic.webp";
+import mujakicImg from "./players/mujakic.webp";
 
+import vasiljImg from "./players/nikola-vasilj.webp";
+import kolasinacImg from "./players/sead-kolasinac.webp";
+import katicImg from "./players/nikola-katic.webp";
+import hadzikadunicImg from "./players/hadzikadunic.webp";
+import zlomislicImg from "./players/zlomislic.webp";
+import bajraktarevicImg from "./players/esmir-bajraktarevic.webp";
+import tabakovicImg from "./players/haris.tabakovicpng.webp";
+import malicImg from "./players/malic.webp";
+import sunjicImg from "./players/sunjic.webp";
+import husejinbasicImg from "./players/husejinbasic.webp";
+import mahmicImg from "./players/mahmic.webp";
+
+// Special Collection imports
 import grbImg from "./special_collection/grb.png";
-import stadionImg from "./special_collection/stadionzenica.jpg";
-import gen2014Img from "./special_collection/2014.jpg";
-import bhfanaticosImg from "./special_collection/bhfanaticos.png";
+import stadionImg from "./special_collection/stadionzenica.webp";
+import cohort2014Img from "./special_collection/2014.webp";
+import bhfImg from "./special_collection/bhfanaticos.webp";
 
 const playerImageMap: Record<string, string> = {
   "Pi_dzeko.webp": dzekoImg,
@@ -31,29 +50,33 @@ const playerImageMap: Record<string, string> = {
   "kenan-alajbegovic.webp": alajbegovicImg,
   "samed-bazdar.webp": bazdarImg,
   "stjepan-radeljic.webp": radeljicImg,
+  "Gigovic.webp": gigovicImg,
+  "Muharemovic.webp": muharemovicImg,
+  "ivan-basic.webp": basicImg,
+  "mujakic.webp": mujakicImg,
+  "nikola-vasilj.webp": vasiljImg,
+  "sead-kolasinac.webp": kolasinacImg,
+  "nikola-katic.webp": katicImg,
+  "hadzikadunic.webp": hadzikadunicImg,
+  "zlomislic.webp": zlomislicImg,
+  "esmir-bajraktarevic.webp": bajraktarevicImg,
+  "haris.tabakovicpng.webp": tabakovicImg,
+  "malic.webp": malicImg,
+  "sunjic.webp": sunjicImg,
+  "husejinbasic.webp": husejinbasicImg,
+  "mahmic.webp": mahmicImg,
+
+  // Special collection
   "grb.png": grbImg,
-  "stadionzenica.jpg": stadionImg,
-  "2014.jpg": gen2014Img,
-  "bhfanaticos.png": bhfanaticosImg,
+  "stadionzenica.webp": stadionImg,
+  "2014.webp": cohort2014Img,
+  "bhfanaticos.webp": bhfImg,
 };
 
 const getPlayerImage = (sticker: Sticker) => {
   if (sticker.imageFile && playerImageMap[sticker.imageFile]) {
     return playerImageMap[sticker.imageFile];
   }
-  if (sticker.id === 1) return playerImageMap["Pi_dzeko.webp"];
-  if (sticker.id === 2) return playerImageMap["Pi_Demirovic.webp"];
-  if (sticker.id === 5) return playerImageMap["Pi_dedic.webp"];
-  if (sticker.id === 8) return playerImageMap["benjamin-tahirovic.webp"];
-  if (sticker.id === 17) return playerImageMap["denis-burnic.webp"];
-  
-  const lowerName = sticker.name.toLowerCase();
-  if (lowerName.includes("memic") || lowerName.includes("memić")) return playerImageMap["amer-memic.webp"];
-  if (lowerName.includes("hadžiahmetović") || lowerName.includes("hadziahmetovic")) return playerImageMap["amir-hadziahmetovic.webp"];
-  if (lowerName.includes("alajbegović") || lowerName.includes("alajbegovic")) return playerImageMap["kenan-alajbegovic.webp"];
-  if (lowerName.includes("baždar") || lowerName.includes("bazdar")) return playerImageMap["samed-bazdar.webp"];
-  if (lowerName.includes("radeljić") || lowerName.includes("radeljic")) return playerImageMap["stjepan-radeljic.webp"];
-  
   return null;
 };
 
@@ -63,24 +86,25 @@ interface CardDetailProps {
   onClose: () => void;
   onPaste?: (id: number) => void;
   walletConnected: boolean;
+  lang: Language;
 }
 
-export default function CardDetail({ sticker, userSticker, onClose, onPaste, walletConnected }: CardDetailProps) {
+export default function CardDetail({ sticker, userSticker, onClose, onPaste, walletConnected, lang }: CardDetailProps) {
   const [foilStyle, setFoilStyle] = useState({ rotateX: 0, rotateY: 0, shineX: 50, shineY: 50 });
   const [scale, setScale] = useState(1);
+  const [flipped, setFlipped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Dynamically scale card and controls to fit small smartphone screens perfectly
   useEffect(() => {
     const handleResize = () => {
-      const padding = 20; // safe padding margins on small screens
+      const padding = 20;
       const cardW = 600;
-      const cardH = 800; // accounts for close button above and spacing around layout
-      
+      const cardH = 750;
+
       const scaleW = (window.innerWidth - padding) / cardW;
       const scaleH = (window.innerHeight - padding) / cardH;
-      
-      // Select the safest minimum scale factor so it fits inside the narrowest boundary
+
       setScale(Math.min(1, Math.min(scaleW, scaleH)));
     };
 
@@ -91,15 +115,15 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   // Generate holographic tilt effects on mouse move
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || flipped) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     // Normalize coordinates from -15 to +15 deg
-    const rotateY = ((x / rect.width) - 0.5) * 20;
-    const rotateX = (((y / rect.height) - 0.5) * -20);
-    
+    const rotateY = ((x / rect.width) - 0.5) * 22;
+    const rotateX = (((y / rect.height) - 0.5) * -22);
+
     // Normalized shine percentages
     const shineX = (x / rect.width) * 100;
     const shineY = (y / rect.height) * 100;
@@ -111,14 +135,40 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
     setFoilStyle({ rotateX: 0, rotateY: 0, shineX: 50, shineY: 50 });
   };
 
-  // Play audio synthesize effect when sticking/viewing
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Avoid flipping if they clicked on standard paste interactive action button
+    const target = e.target as HTMLElement;
+    if (target.closest("#btn-paste-sticker-action") || target.closest("#btn-close-card-modal")) {
+      return;
+    }
+    // Flip card between front and back
+    setFlipped(!flipped);
+
+    // Synthesize quick flip swoop
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(flipped ? 350 : 250, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(flipped ? 150 : 450, audioCtx.currentTime + 0.12);
+      gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch (_) { }
+  };
+
+  // Play audio synthesize effect when viewing
   useEffect(() => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(440, audioCtx.currentTime); // Sound of looking at card
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
       gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
       gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
@@ -126,251 +176,249 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
       gainNode.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + 0.2);
-    } catch (e) {
-      // Ignored if browser prevents autoplay
-    }
+    } catch (_) { }
   }, [sticker.id]);
 
   const hasStickerPouch = userSticker && userSticker.count > 0;
   const isPasted = userSticker && userSticker.pasted;
+  const playerImg = getPlayerImage(sticker);
+
+  // Localized sticker biography
+  const bio = lang === "BS" && sticker.biographyBS ? sticker.biographyBS : sticker.biography;
 
   return (
     <div id="card-detail-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm overflow-hidden select-none">
-      
-      {/* Floating emergency close button for smartphones in top-right corner of viewport */}
+
+      {/* Viewport Floating Close Button */}
       <button
+        id="btn-close-card-modal-viewport"
         onClick={onClose}
-        className="fixed top-4 right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-[#00f0ff] backdrop-blur-md transition-all duration-200 cursor-pointer z-[60] border border-white/25 flex sm:hidden shadow-lg items-center justify-center"
+        className="fixed top-4 right-4 p-3.5 rounded-full bg-[#002F6C] hover:bg-[#FFCD00] text-white hover:text-[#002F6C] transition-all duration-250 cursor-pointer z-[60] border-2 border-white/80 shadow-[0_0_15px_rgba(255,205,0,0.55)] flex items-center justify-center scale-100 md:scale-110 active:scale-90"
         title="Close Detail"
       >
-        <X className="h-6 w-6" />
+        <X className="h-6 w-6 stroke-[3px]" />
       </button>
 
       {/* Dynamic Scaling Wrapper to enforce exact 600px x 700px specs within mobile viewports */}
-      <div 
+      <div
         style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
         className="relative flex flex-col items-center justify-center transition-transform"
       >
-        
-        {/* Close Button above the card */}
-        <button
-          id="btn-close-card-modal"
-          onClick={onClose}
-          className="absolute -top-12 right-0 p-2.5 rounded-full bg-white border border-gray-300 text-gray-700 hover:text-gray-900 shadow-sm transition cursor-pointer z-50"
-          title="Back to Album"
-        >
-          <X className="h-5 w-5" />
-        </button>
 
-        {/* Pure 600px x 700px Card Area */}
+        {/* Floating instructions ribbon */}
+        <p className="absolute -top-8 text-white/80 text-xs font-sans tracking-widest uppercase font-bold items-center space-x-1 flex">
+          <Zap className="h-3.5 w-3.5 text-[#FFCD00] animate-pulse" />
+          <span>{lang === "BS" ? "Kliknite za detalje / Okrenite sličicu" : "Click card to reveal stats / Flip details"}</span>
+        </p>
+
+        {/* 3D Scene Wrapper */}
         <div
-          ref={cardRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{
-            width: "600px",
-            height: "700px",
-            transform: `perspective(1000px) rotateX(${foilStyle.rotateX}deg) rotateY(${foilStyle.rotateY}deg)`,
-            transition: "transform 0.1s ease-out",
-          }}
-          className="relative rounded-3xl p-6 select-none shadow-[0_0_30px_rgba(0,240,255,0.7)] border-4 border-[#00f0ff] overflow-hidden bg-white text-gray-800 flex flex-col justify-between"
+          onClick={handleCardClick}
+          className="relative w-[600px] h-[700px] cursor-pointer animate-fade-in"
+          style={{ perspective: "1500px" }}
         >
-          
-          {/* Holographic Refraction Overlay */}
+          {/* Card Container holding both faces */}
           <div
+            ref={cardRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
             style={{
-              background: `radial-gradient(circle at ${foilStyle.shineX}% ${foilStyle.shineY}%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 65%), linear-gradient(${foilStyle.rotateY * 4}deg, rgba(255,205,0,0.06) 0%, rgba(0,47,108,0.04) 50%, rgba(255,255,255,0.05) 100%)`,
+              width: "100%",
+              height: "100%",
+              transformStyle: "preserve-3d",
+              transform: flipped
+                ? "rotateY(180deg)"
+                : `perspective(1000px) rotateX(${foilStyle.rotateX}deg) rotateY(${foilStyle.rotateY}deg)`,
+              transition: flipped ? "transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)" : "transform 0.1s ease-out",
             }}
-            className="absolute inset-0 pointer-events-none z-10 mix-blend-overlay"
-          />
+            className="relative rounded-3xl shadow-[0_0_40px_rgba(0,240,255,0.7)] border-4 border-[#00f0ff]"
+          >
 
-          {/* Micro Card grid noise patterns to look like paper/fiber physical sticker */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
+            {/* ======================================================== */}
+            {/* FRONT FACE (Full WebP Graphic Image is the Background)   */}
+            {/* ======================================================== */}
+            <div
+              style={{
+                backgroundImage: playerImg ? `url(${playerImg})` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backfaceVisibility: "hidden",
+                transform: "rotateY(0deg)",
+              }}
+              className={`absolute inset-0 flex flex-col justify-end p-6 rounded-[22px] overflow-hidden transition-all duration-300 ${!playerImg ? "bg-gradient-to-br from-[#002f6c] via-[#091e3b] to-[#011026]" : "bg-white"
+                } ${flipped ? "opacity-0 pointer-events-none z-0" : "opacity-100 z-10"}`}
+            >
+              {/* Micro hologram fiber pattern */}
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
 
-          {/* Top Section */}
-          <div className="flex justify-between items-start z-20">
-            <div className="flex items-center space-x-3 text-left">
-              <span className="font-sans text-xl font-black px-3 py-1.5 bg-[#FFCD00] text-[#002F6C] rounded-lg shadow-sm">
-                {sticker.number}
-              </span>
-              <div>
-                <h2 className="font-sans font-black text-2xl tracking-tight text-[#002F6C] leading-none mb-1">
+              {/* Holographic Refraction Overlay */}
+              <div
+                style={{
+                  background: `radial-gradient(circle at ${foilStyle.shineX}% ${foilStyle.shineY}%, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%), linear-gradient(${foilStyle.rotateY * 4.5}deg, rgba(255,205,0,0.08) 0%, rgba(0,47,108,0.05) 50%, rgba(255,255,255,0.06) 100%)`,
+                }}
+                className="absolute inset-0 pointer-events-none z-10 mix-blend-overlay"
+              />
+
+              {!playerImg && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 text-white space-y-4">
+                  <div className="w-32 h-32 bg-slate-950/40 border border-white/20 rounded-full flex items-center justify-center shadow-lg">
+                    {sticker.id === 27 ? (
+                      <img src={logoImage} alt="Grb Saveza" className="w-24 h-24 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)]" />
+                    ) : (
+                      <span className="text-6xl">⚽</span>
+                    )}
+                  </div>
+                  <p className="text-xs uppercase tracking-widest text-[#FFCD00] font-black">{lang === "BS" ? "Nedostaje grafička datoteka" : "No Graphic Load File"}</p>
+                </div>
+              )}
+
+              {/* Premium bottom slate containing Name, Club & Position in Comic Sans (bold title, regular text) */}
+              <div className="p-4 bg-[#002F6C]/95 border-2 border-[#00f0ff]/80 backdrop-blur-md rounded-2xl text-center shadow-2xl relative z-20 font-sans border-t-4 border-t-[#FFCD00]">
+                <h2 className="font-bold text-2xl text-[#FFCD00] truncate leading-none uppercase tracking-wide">
                   {sticker.name}
                 </h2>
-                <p className="text-xs font-sans text-gray-550 font-bold tracking-wide flex items-center space-x-1">
-                  <Shield className="h-3.5 w-3.5 text-gray-400" />
-                  <span>{sticker.role}</span>
-                  <span className="text-gray-300">•</span>
-                  <span>{sticker.club}</span>
+                <p className="text-sm text-white font-medium block mt-1.5 uppercase tracking-widest opacity-95">
+                  {lang === "BS" ? sticker.roleBS : sticker.role} — {sticker.club}
                 </p>
+                <div className="h-0.5 w-16 bg-[#FFCD00] mx-auto mt-2 opacity-80" />
+                <span className="text-[10px] text-gray-300 block mt-1.5 uppercase font-bold tracking-widest">
+                  {lang === "BS" ? "Kliknite na karticu za biografiju i statistiku" : "Click Card to Inspect Stats & Biography"}
+                </span>
               </div>
             </div>
-            {sticker.stats && (
-              <div className="text-right">
-                <span className="font-sans text-4xl font-black text-[#002F6C] tracking-tight">
-                  {sticker.stats.overall}
-                </span>
-                <p className="text-[9px] font-sans font-bold text-gray-400 tracking-wider block uppercase">{sticker.gameRatingRef}</p>
-              </div>
-            )}
-            {sticker.type === StickerType.SPECIAL && (
-              <span className="text-[10px] font-sans px-2.5 py-1 bg-[#FFCD00] text-[#002F6C] rounded font-black uppercase tracking-widest border border-[#FFCD00] shadow-sm">
-                ★ Special Art
-              </span>
-            )}
-          </div>
 
-          {/* Core Visual Body */}
-          <div className="grid grid-cols-5 gap-4 items-center my-4 z-20 flex-1">
-            
-            {/* Player Avatar / Dynamic Vector Shield Silhouette */}
-            <div className="col-span-2 flex flex-col items-center justify-center relative">
-              <div className="relative w-44 h-48 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shadow-inner">
-                
-                {/* Floating holographic particle elements */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#002F6C]/5 to-transparent animate-pulse" />
-                
-                {getPlayerImage(sticker) ? (
-                  <img 
-                    src={getPlayerImage(sticker) || undefined} 
-                    alt={sticker.name} 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
-                    referrerPolicy="no-referrer" 
-                  />
-                ) : sticker.type === StickerType.STANDARD ? (
-                   // Elegant silhouette representing Crest
-                  <div className="relative w-full h-full flex flex-col items-center justify-end pt-6">
-                    <div className="w-22 h-22 rounded-full bg-white border border-gray-200 flex items-center justify-center relative shadow-sm">
-                      <Users className="h-10 w-10 text-gray-400" />
-                    </div>
-                    {/* Simulated football jersey torso */}
-                    <div className="w-32 h-20 bg-gradient-to-b from-[#002F6C] to-[#124285] rounded-t-2xl flex flex-col items-center mt-3 justify-center shadow-md">
-                      <span className="text-[9px] font-sans text-[#FFCD00] font-black uppercase tracking-wider">BIH SQUAD</span>
-                      <span className="text-base font-sans font-extrabold text-white tracking-widest">{sticker.number}</span>
-                    </div>
+            {/* ======================================================== */}
+            {/* BACK FACE (Stats, Biography, Contract Ledger Details)   */}
+            {/* ======================================================== */}
+            <div
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateY(180deg) translateZ(1px)",
+                transformStyle: "preserve-3d",
+              }}
+              className={`absolute inset-0 flex flex-col justify-between p-7 bg-gradient-to-br from-[#021f47] via-[#0b1b30] to-[#010914] text-white flex-shrink-0 rounded-[22px] overflow-hidden transition-all duration-300 antialiased ${flipped ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
+                }`}
+            >
+              {/* micro grid back pattern */}
+              <div className="absolute inset-0 bg-[#002F6C]/5 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-10" />
+
+              {/* Back Header */}
+              <div className="flex justify-between items-start border-b border-[#00f0ff]/30 pb-3.5 z-20 font-sans">
+                <div className="flex items-center space-x-3.5 text-left">
+                  <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shrink-0">
+                    <img src={logoImage} alt="BIH FA Crest" className="h-8.5 w-8.5 object-contain" />
                   </div>
-                ) : sticker.id === 23 ? (
-                  // Golden Crest is actually the official Zmajevi logo!
-                  <div className="text-center p-3 flex flex-col items-center justify-center">
-                    <img src={logoImage} alt="Zmajevi Gold Badge" className="w-28 h-28 object-contain filter drop-shadow-[0_0_12px_rgba(255,205,0,0.85)]" referrerPolicy="no-referrer" />
-                    <span className="text-[9px] font-sans text-[#002F6C] block mt-2.5 font-black uppercase tracking-wider">
-                      OFFICIAL FA GRB
-                    </span>
+                  <div>
+                    <span className="text-[11px] tracking-[0.18em] text-[#FFCD00] font-extrabold uppercase block leading-none">{lang === "BS" ? "SPECIFIKACIJA KOLEKCIONARA" : "COLLECTOR SPEC SHEET"}</span>
+                    <h2 className="font-bold text-xl text-white mb-0.5 mt-1.5 truncate uppercase leading-tight">
+                      {sticker.name}
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-xs font-mono font-bold text-gray-300 block uppercase leading-none">MINT ID:</span>
+                  <span className="text-[#00f0ff] font-mono text-sm font-black tracking-wider block mt-1">#BIH-WC26-{sticker.id.toString().padStart(3, "0")}</span>
+                </div>
+              </div>
+
+              {/* Biography Section */}
+              <div className="bg-white/10 border border-white/20 p-5 rounded-2xl text-left z-20 space-y-3 shadow-inner">
+                <h4 className="text-xs uppercase text-[#FFCD00] font-black tracking-widest flex items-center space-x-2 font-sans">
+                  <Activity className="h-4.5 w-4.5 text-[#00f0ff]" />
+                  <span>{lang === "BS" ? "BIOGRAFIJA I ISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
+                </h4>
+                <p className="text-[13.5px] text-white leading-relaxed font-sans font-medium pr-2 antialiased">
+                  "{bio ? bio : sticker.biography}"
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-white/15 text-[13px] font-sans text-gray-200 font-semibold">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[#FFCD00]">{lang === "BS" ? "Datum rođenja:" : "Date of Birth:"}</span>
+                    <span className="text-white font-black">{sticker.birthDate}</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[#FFCD00]">{lang === "BS" ? "Visina:" : "Height:"}</span>
+                    <span className="text-white font-black">{sticker.height}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistics Grid */}
+              <div className="bg-white/10 border border-white/20 rounded-2xl p-5 text-left z-20">
+                <h3 className="text-xs uppercase tracking-widest text-[#FFCD00] font-black mb-4 font-sans">
+                  {lang === "BS" ? "STVARNA FUDBALSKA STATISTIKA" : "REAL-WORLD GAME PERFORMANCE METRICS"}
+                </h3>
+
+                {sticker.stats ? (
+                  <div className="grid grid-cols-3 gap-y-4 gap-x-6 font-sans">
+                    {[
+                      { label: lang === "BS" ? "PAC (Brzina)" : "PAC (Pace)", val: sticker.stats.pace, color: "bg-[#00f0ff]" },
+                      { label: lang === "BS" ? "SHO (Udarac)" : "SHO (Shooting)", val: sticker.stats.shooting, color: "bg-[#FFCD00]" },
+                      { label: lang === "BS" ? "PAS (Pasovi)" : "PAS (Passing)", val: sticker.stats.passing, color: "bg-emerald-400" },
+                      { label: lang === "BS" ? "DRI (Dribling)" : "DRI (Dribbling)", val: sticker.stats.dribbling, color: "bg-purple-400" },
+                      { label: lang === "BS" ? "DEF (Odbrana)" : "DEF (Defending)", val: sticker.stats.defending, color: "bg-rose-400" },
+                      { label: lang === "BS" ? "PHY (Fizika)" : "PHY (Physical)", val: sticker.stats.physicality, color: "bg-orange-400" }
+                    ].map((s) => (
+                      <div key={s.label} className="text-left">
+                        <div className="flex justify-between items-center text-[11.5px] text-gray-100 font-extrabold mb-1">
+                          <span className="truncate max-w-[85px] tracking-wide">{s.label}</span>
+                          <span className="text-white font-black">{s.val}</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-950/70 rounded-full overflow-hidden p-0.5 border border-white/10">
+                          <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.val}%` }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  // Special collectible vector emblem rendering
-                  <div className="text-center p-4">
-                    <Award className="h-16 w-16 mx-auto text-[#FFCD00] animate-pulse drop-shadow-sm" />
-                    <span className="text-[9px] font-sans text-[#002F6C] block mt-3 font-bold uppercase tracking-widest">
-                      MEMORABILIA TYPE
-                    </span>
+                  <div className="py-2.5 text-center text-[13px] font-medium text-gray-100 italic leading-relaxed">
+                    {lang === "BS"
+                      ? "★ Ovaj specijalni kolekcionarski predmet posjeduje posebnu istorijsku težinu. Njegova vrijednost u igri bazira se na unikatnosti i rijetkosti na web3 Solana tržištu sličica!"
+                      : "★ This special collectible is high-level historical memorabilia. Its valuation is fueled purely by physical rarity, scarcity index, and web3 Solana trading market volume!"}
                   </div>
                 )}
               </div>
-              
-              {/* Sticker physical shadow paper foot label */}
-              <div className="mt-2.5 bg-[#fbfaf6] border border-gray-250 rounded py-1 px-3 text-[9px] font-sans font-bold text-gray-500 uppercase tracking-widest">
-                MINT: # B-WC26-{sticker.id.toString().padStart(3, "0")}
-              </div>
-            </div>
 
-            {/* Biography Description */}
-            <div className="col-span-3 h-full flex flex-col justify-between text-left pl-2">
-              <div className="bg-[#fffdf9] p-4.5 rounded-2xl border border-gray-300 flex-1 flex flex-col justify-between max-h-[210px] overflow-y-auto shadow-inner">
+              {/* Back Footer Bar / Actions */}
+              <div className="z-20 flex justify-between items-center border-t border-white/20 pt-4 text-left font-sans">
                 <div>
-                  <h4 className="text-[10px] font-sans uppercase text-[#002F6C] font-black tracking-wider mb-2 flex items-center space-x-1.5">
-                    <Activity className="h-3 w-3 text-gray-400" />
-                    <span>STORY & BIO</span>
-                  </h4>
-                  <p className="text-xs text-gray-600 leading-relaxed font-serif italic">
-                    "{sticker.biography}"
+                  <p className="text-[8.5px] font-bold text-[#FFCD00] uppercase tracking-widest leading-none mb-1">{lang === "BS" ? "SOLANA PAMETNI UGOVOR" : "SOLANA METAPLEX CONTRACT"}</p>
+                  <p className="text-xs text-[#14F195] font-bold flex items-center leading-none">
+                    <span>{lang === "BS" ? "✓ Sertifikat Verifikovan" : "✓ Metaplex Certificate Verified"}</span>
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-250 text-[10px] font-sans font-bold text-gray-500">
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="h-3 w-3 text-gray-400" />
-                    <span>Born: {sticker.birthDate}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Zap className="h-3 w-3 text-[#FFCD00]" />
-                    <span>Height: {sticker.height}</span>
-                  </div>
+                <div className="flex items-center space-x-3.5">
+                  {hasStickerPouch && !isPasted && onPaste && (
+                    <button
+                      id="btn-paste-sticker-action"
+                      onClick={() => onPaste(sticker.id)}
+                      className="py-2 px-5 rounded-xl bg-gradient-to-r from-[#14F195] to-teal-500 hover:opacity-95 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-[0_0_15px_rgba(20,241,149,0.55)] shrink-0 cursor-pointer"
+                    >
+                      {lang === "BS" ? "Zalijepi u Album!" : "Paste in Album!"}
+                    </button>
+                  )}
+                  {isPasted ? (
+                    <span className="py-2 px-4.5 rounded-xl bg-white/10 text-gray-350 border border-white/20 text-xs font-bold uppercase tracking-wider leading-none">
+                      {lang === "BS" ? "✓ Zalijepljeno" : "✓ Pasted"}
+                    </span>
+                  ) : !hasStickerPouch ? (
+                    <div className="text-right text-xs font-bold text-rose-400 font-sans uppercase tracking-widest leading-none">
+                      <span>{lang === "BS" ? "Kesica prazna" : "Pouch empty"}</span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Statistics Grid */}
-          <div className="z-20 bg-gray-50 border border-gray-200 rounded-2xl p-4 text-left">
-            <h3 className="text-[10px] font-sans uppercase tracking-wider text-gray-400 font-bold mb-3">
-              REAL WORLD GAME ATTRIBUTES LIST
-            </h3>
-            
-            {sticker.stats ? (
-              <div className="grid grid-cols-3 gap-y-3 gap-x-6">
-                {[
-                  { label: "PAC (Pace)", val: sticker.stats.pace, color: "bg-[#002F6C]" },
-                  { label: "SHO (Shooting)", val: sticker.stats.shooting, color: "bg-[#FFCD00]" },
-                  { label: "PAS (Passing)", val: sticker.stats.passing, color: "bg-emerald-600" },
-                  { label: "DRI (Dribbling)", val: sticker.stats.dribbling, color: "bg-purple-600" },
-                  { label: "DEF (Defending)", val: sticker.stats.defending, color: "bg-rose-600" },
-                  { label: "PHY (Physical)", val: sticker.stats.physicality, color: "bg-orange-500" }
-                ].map((s) => (
-                  <div key={s.label} className="text-left">
-                    <div className="flex justify-between items-center text-[10px] font-sans font-black text-gray-600 mb-1">
-                      <span>{s.label}</span>
-                      <span>{s.val}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div className={`h-full ${s.color}`} style={{ width: `${s.val}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-2 text-center text-xs font-serif text-gray-500 italic leading-relaxed">
-                ★ Special high-level emblem elements do not hold generic play game indexes. Pure collector rarity logic dictates their premium Solana Web3 valuation!
-              </div>
-            )}
-          </div>
-
-          {/* Bottom Action bar */}
-          <div className="z-20 flex justify-between items-center mt-3 pt-3 border-t border-gray-200 text-left">
-            <div>
-              <p className="text-[9px] font-sans font-black text-gray-450 uppercase tracking-widest leading-none mb-1">SOLANA CONTRACT METAPLEX</p>
-              <p className="text-xs font-sans text-emerald-700 font-bold flex items-center">
-                <span>Verified Metaplex Asset</span>
-              </p>
             </div>
 
-            <div className="flex items-center space-x-2">
-              {hasStickerPouch && !isPasted && onPaste && (
-                <button
-                  id="btn-paste-sticker-action"
-                  onClick={() => onPaste(sticker.id)}
-                  className="py-2 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-sm shrink-0 cursor-pointer"
-                >
-                  Paste in Album!
-                </button>
-              )}
-              {isPasted ? (
-                <span className="py-2 px-4 rounded-xl bg-gray-100 text-gray-600 border border-gray-200 text-xs font-sans font-bold">
-                  ✓ Mounted in Album
-                </span>
-              ) : !hasStickerPouch ? (
-                <div className="text-right text-xs font-sans font-bold text-rose-500">
-                  <span>Locked • Pouch empty</span>
-                </div>
-              ) : null}
-            </div>
           </div>
-
         </div>
 
-        {/* Info label under the card */}
-        <p className="mt-3 text-[10px] font-sans font-bold text-gray-400 tracking-wider">
-          * Drag mouse above to rotate card in real-time physical space.
+        {/* Tip Tagline below card */}
+        <p className="mt-4 text-[10.5px] font-sans font-bold text-white/70 tracking-wider flex items-center space-x-1 justify-center bg-slate-900/40 py-1.5 px-4 rounded-full border border-white/10">
+          <span>{lang === "BS" ? "* Kliknite bilo gdje na karticu da okrenete. Prevucite kursor za nagib ili 3D efekat." : "* Click anywhere on card to Flip. Drag cursor over to tilt."}</span>
         </p>
 
       </div>

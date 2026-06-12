@@ -18,10 +18,12 @@ export interface Sticker {
   number: string;
   name: string;
   role: string; // ST, CM, CB, GK, or special classification
+  roleBS?: string;
   club: string;
   birthDate: string;
   height: string;
   biography: string;
+  biographyBS?: string;
   stats?: PlayerStats; // Null for special collections
   gameRatingRef: string; // E.g., "FC24 Overall: 84"
   type: StickerType;

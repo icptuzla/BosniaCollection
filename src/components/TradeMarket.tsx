@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { ArrowLeftRight, Check, Coins, Plus, Trash2, AlertCircle, Sparkles, User, Tag, Loader2 } from "lucide-react";
 import { Sticker, UserSticker, TradeOffer, WalletState } from "../types";
 import { STICKERS } from "../data/players";
+import { Language } from "../data/translations";
 
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
@@ -17,6 +18,7 @@ interface TradeMarketProps {
   onSelfTradePosted: (offer: TradeOffer) => void;
   tradeOffers: TradeOffer[];
   onRemoveTradeOffer: (id: string) => void;
+  lang: Language;
 }
 
 export default function TradeMarket({
@@ -27,6 +29,7 @@ export default function TradeMarket({
   onSelfTradePosted,
   tradeOffers,
   onRemoveTradeOffer,
+  lang,
 }: TradeMarketProps) {
   const solanaWallet = useWallet();
   const { connection } = useConnection();

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { BookOpen, Sparkles, Coins, ShoppingBag, ArrowLeftRight, Volume2, VolumeX, Award, HelpCircle, BadgeCheck, CheckCircle2, Star, Trophy } from "lucide-react";
 import { Sticker, UserSticker, TradeOffer, WalletState, StickerType } from "./types";
 import { STICKERS } from "./data/players";
-import logoImage from "./components/zmajevi logo.png";
+import logoImage from "./components/zmajevi logo.webp";
+import { UI_TRANSLATIONS, Language } from "./data/translations";
 
 // Import custom sub-components
 import SolflareWallet from "./components/SolflareWallet";
@@ -11,10 +12,21 @@ import PackOpener from "./components/PackOpener";
 import TradeMarket from "./components/TradeMarket";
 import CardDetail from "./components/CardDetail";
 import MatchBets from "./components/MatchBets";
+import HistoryPage from "./components/HistoryPage";
 
 export default function App() {
   // --- STATE SYSTEM ---
-  const [activeTab, setActiveTab] = useState<"album" | "pouch" | "packs" | "trades" | "bets">("album");
+  const [lang, setLang] = useState<Language>(() => {
+    const saved = localStorage.getItem("zmajevi_lang_pref");
+    return (saved as Language) || "BS";
+  });
+
+  const handleLangChange = (newLang: Language) => {
+    setLang(newLang);
+    localStorage.setItem("zmajevi_lang_pref", newLang);
+  };
+
+  const [activeTab, setActiveTab] = useState<"album" | "pouch" | "packs" | "trades" | "bets" | "history">("album");
   const [wallet, setWallet] = useState<WalletState>({
     connected: false,
     publicKey: null,
@@ -40,10 +52,10 @@ export default function App() {
       // Seed default starting stickers already pasted (Edin Džeko, Ermedin Demirović, and the Golden Crest)
       // and give them 1 duplication of Dennis Hadžikadunić so they can immediately see duplications/trade!
       const initialSeed: UserSticker[] = [
-        { stickerId: 1, count: 1, pasted: true }, // Edin Džeko (pasted)
-        { stickerId: 2, count: 1, pasted: true }, // Ermedin Demirović (pasted)
-        { stickerId: 23, count: 1, pasted: true }, // Golden Crest (pasted)
-        { stickerId: 7, count: 2, pasted: false }, // Hadžikadunić (Has 2 duplicates, unpasted)
+        { stickerId: 9, count: 1, pasted: true }, // Edin Džeko (pasted)
+        { stickerId: 10, count: 1, pasted: true }, // Ermedin Demirović (pasted)
+        { stickerId: 27, count: 1, pasted: true }, // Golden Crest (pasted)
+        { stickerId: 14, count: 2, pasted: false }, // Hadžikadunić (Has 2 duplicates, unpasted)
       ];
       setCollection(initialSeed);
       localStorage.setItem("bosnia_ sticker_collection_wc26", JSON.stringify(initialSeed));
@@ -56,11 +68,11 @@ export default function App() {
     } else {
       const liveOffers: TradeOffer[] = [
         {
-          id: "tx-trd-pjanic-demirovic",
+          id: "tx-trd-hadziahmetovic-demirovic",
           ownerAddress: "SolfP2Pm88SarajevoXyZ",
           ownerName: "SarajevoCollector_99",
-          offeredStickerId: 3, // Miralem Pjanić
-          requestedStickerId: 2, // Demirović
+          offeredStickerId: 12, // Amir Hadžiahmetović
+          requestedStickerId: 10, // Demirović
           status: "OPEN",
           createdAt: Date.now() - 3600000,
         },
@@ -68,7 +80,7 @@ export default function App() {
           id: "tx-trd-bilino-sol",
           ownerAddress: "SolfZenicaStadiumHost",
           ownerName: "Zenica_Tornado_88",
-          offeredStickerId: 24, // Stadion Bilino Polje (Special)
+          offeredStickerId: 28, // Stadion Bilino Polje (Special)
           requestedStickerId: -1, // Selling for SOL
           solPrice: 1.5,
           status: "OPEN",
@@ -78,7 +90,7 @@ export default function App() {
           id: "tx-trd-bajraktarevic-tabakovic",
           ownerAddress: "SolfDiasporaBosnjak",
           ownerName: "BHFanatic_Tuzla",
-          offeredStickerId: 19, // Esmir Bajraktarević
+          offeredStickerId: 11, // Esmir Bajraktarević
           requestedStickerId: 21, // Haris Tabaković
           status: "OPEN",
           createdAt: Date.now() - 200000,
@@ -88,7 +100,7 @@ export default function App() {
           ownerAddress: "SolfSalzburgFanatic",
           ownerName: "Amar_D_Zmaj",
           offeredStickerId: 5, // Amar Dedić
-          requestedStickerId: 4, // Kolašinac
+          requestedStickerId: 3, // Kolašinac
           status: "OPEN",
           createdAt: Date.now() - 50000,
         }
@@ -301,43 +313,69 @@ export default function App() {
             <img src={logoImage} alt="Zmajevi BIH Logo" className="w-12 h-12 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.8)] hover:scale-110 transition-transform duration-300" referrerPolicy="no-referrer" />
           </div>
           <div>
-            <h1 className="font-sans font-black text-2xl uppercase tracking-tighter leading-none text-[#002F6C]">
-              Zmajevi 2026
+            <h1 className="font-sans font-black text-xl sm:text-2xl uppercase tracking-tighter leading-none text-[#002F6C]">
+              {UI_TRANSLATIONS[lang].title}
             </h1>
-            <p className="text-xs font-serif italic text-gray-500">
-              Official Collector's Web3 Sticker Album
+            <p className="text-xs font-serif italic text-gray-500 mt-1">
+              {UI_TRANSLATIONS[lang].subtitle}
             </p>
           </div>
         </div>
 
         {/* Dynamic Sound Synthesizer & Solflare stats */}
-        <div className="flex items-center space-x-4 select-none shrink-0 w-full md:w-auto justify-end">
+        <div className="flex flex-wrap items-center gap-3 select-none justify-end w-full md:w-auto">
           
+          {/* Language Switcher Pill */}
+          <div className="flex bg-white/80 border border-gray-300 rounded-lg p-0.5 shadow-sm shrink-0">
+            <button
+              id="lang-switch-bs"
+              onClick={() => handleLangChange("BS")}
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
+                lang === "BS"
+                  ? "bg-[#002F6C] text-white shadow"
+                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
+              }`}
+            >
+              🇧🇦 BS
+            </button>
+            <button
+              id="lang-switch-en"
+              onClick={() => handleLangChange("EN")}
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
+                lang === "EN"
+                  ? "bg-[#002F6C] text-white shadow"
+                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
+              }`}
+            >
+              🇬🇧 EN
+            </button>
+          </div>
+
           {/* Sound Synthesizer hummer */}
           <button
             id="btn-arena-chants-ambient"
             onClick={toggleSound}
-            className={`p-2.5 rounded-lg border text-xs font-sans font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 cursor-pointer ${
+            className={`p-2 rounded-lg border text-xs font-sans font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 cursor-pointer shrink-0 ${
               soundEnabled
-                ? "bg-[#002F6C]/10 border-[#002F6C] text-[#002F6C] shadow-sm animate-pulse"
+                ? "bg-[#002F6C]/10 border-[#002F6C] text-[#002F6C] shadow-sm"
                 : "bg-white/80 border-gray-300 text-gray-500 hover:text-gray-700"
             }`}
             title="Toggle Synthesized Stadium Crowd Humming Chants"
           >
             {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            <span className="hidden sm:inline">Arena Hum</span>
+            <span className="hidden sm:inline">{UI_TRANSLATIONS[lang].arenaHum}</span>
           </button>
 
           {wallet.connected ? (
-            <div className="bg-white border border-gray-300 px-4 py-1.5 rounded-lg text-left hidden sm:block shadow-sm">
-              <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">CONNECTED ADDRESS:</span>
+            <div className="bg-white border border-gray-300 px-4 py-1 rounded-lg text-left hidden sm:block shadow-sm shrink-0">
+              <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">{UI_TRANSLATIONS[lang].connectedAddress}:</span>
               <span className="text-xs font-mono text-[#002F6C] font-black">
                 {wallet.publicKey?.substring(0, 6)}...{wallet.publicKey?.substring(wallet.publicKey.length - 6)}
               </span>
             </div>
           ) : (
-            <div className="text-right hidden sm:block">
-              <span className="text-xs font-sans font-bold tracking-widest text-[#002F6C]/60 uppercase">Wallet Offline</span>
+            <div className="text-right hidden sm:block shrink-0">
+              <span className="text-xs font-sans font-bold tracking-widest text-[#002F6C]/60 uppercase">{UI_TRANSLATIONS[lang].walletOffline}</span>
             </div>
           )}
 
@@ -349,18 +387,18 @@ export default function App() {
         
         {/* Left Drawer Block - Solana Wallet Connection Area */}
         <div className="lg:col-span-1 space-y-6">
-          <SolflareWallet wallet={wallet} onWalletChange={setWallet} />
+          <SolflareWallet wallet={wallet} onWalletChange={setWallet} lang={lang} />
           
           {/* Virtual pouch dashboard */}
           <div className="bg-white border border-gray-300/80 p-5 rounded-2xl text-left shadow-sm">
             <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider mb-3 flex items-center space-x-1.5 border-b border-gray-200 pb-2">
               <ShoppingBag className="h-4 w-4 text-[#002F6C]" />
-              <span>Pouch Unmounted Stickers ({pouchList.reduce((acc, current) => acc + current.count, 0)})</span>
+              <span>{UI_TRANSLATIONS[lang].pouchTitle} ({pouchList.reduce((acc, current) => acc + current.count, 0)})</span>
             </h3>
 
             {pouchList.length === 0 ? (
               <p className="text-xs font-serif text-gray-500 italic py-6 text-center">
-                Your pouch is currently empty. Buy sticker packs to collect players!
+                {UI_TRANSLATIONS[lang].pouchEmpty}
               </p>
             ) : (
               <div className="grid grid-cols-4 gap-1.5 max-h-[220px] overflow-y-auto pr-1">
@@ -392,7 +430,7 @@ export default function App() {
             )}
             
             <p className="text-[10px] font-sans text-gray-500 leading-relaxed mt-3 pt-3 border-t border-gray-200">
-              * Click any card in your unmounted pouch to flip open its full 600x700 stat block, detail metrics, and paste it directly into its album page slot.
+              {UI_TRANSLATIONS[lang].pouchInstructions}
             </p>
           </div>
 
@@ -400,10 +438,10 @@ export default function App() {
           <div className="bg-[#fffef8] border border-dashed border-gray-400/80 p-5 rounded-2xl text-left hidden lg:block shadow-sm">
             <h4 className="text-xs font-sans text-[#002F6C] font-bold uppercase tracking-wider mb-2 flex items-center space-x-1">
               <Star className="h-4 w-4 text-[#FFCD00]" />
-              <span>Special Album Mandate</span>
+              <span>{UI_TRANSLATIONS[lang].mandateTitle}</span>
             </h4>
             <p className="text-xs font-serif text-gray-600 leading-relaxed italic">
-              Complete the legendary 22-man Bosnian selection and find the 4 "Special Collectibles" (Golden Crest, Estadio Zenica, Generacija 2014, BHFanaticos) to get your verified Metaplex golden certificate of completion!
+              {UI_TRANSLATIONS[lang].mandateDesc}
             </p>
           </div>
         </div>
@@ -412,49 +450,60 @@ export default function App() {
         <div className="lg:col-span-3 space-y-6">
           
           {/* Dynamic Switch Tabs */}
-          <div className="flex bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold">
+          <div className="flex flex-wrap md:flex-nowrap gap-1.5 bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold">
             <button
               id="tab-open-album-book"
               onClick={() => setActiveTab("album")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider ${
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
                 activeTab === "album" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
               }`}
             >
               <BookOpen className="h-4.5 w-4.5" />
-              <span>Bosnian Album Book</span>
+              <span>{UI_TRANSLATIONS[lang].tabAlbum}</span>
             </button>
 
             <button
               id="tab-open-pack-opener"
               onClick={() => setActiveTab("packs")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider ${
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
                 activeTab === "packs" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
               }`}
             >
               <ShoppingBag className="h-4.5 w-4.5" />
-              <span>Rip Booster Packs</span>
+              <span>{UI_TRANSLATIONS[lang].tabPacks}</span>
             </button>
 
             <button
               id="tab-open-trade-market"
               onClick={() => setActiveTab("trades")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider ${
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[130px] ${
                 activeTab === "trades" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
               }`}
             >
               <ArrowLeftRight className="h-4.5 w-4.5" />
-              <span>Solana Swap Center</span>
+              <span>{UI_TRANSLATIONS[lang].tabTrades}</span>
             </button>
 
             <button
               id="tab-open-prediction-arena"
               onClick={() => setActiveTab("bets")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider ${
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
                 activeTab === "bets" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
               }`}
             >
               <Trophy className="h-4.5 w-4.5" />
-              <span>Prediction Arena</span>
+              <span>{UI_TRANSLATIONS[lang].tabPredictions}</span>
+            </button>
+
+            <button
+              id="tab-open-history"
+              onClick={() => setActiveTab("history")}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-1.5 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
+                activeTab === "history" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-[#002F6C]"
+              }`}
+            >
+              <Trophy className="h-4.5 w-4.5 text-[#FFCD00]" />
+              <span>{UI_TRANSLATIONS[lang].tabHistory}</span>
             </button>
           </div>
 
@@ -465,6 +514,7 @@ export default function App() {
                 collection={collection}
                 onViewSticker={setSelectedSticker}
                 pastedCount={pastedCount}
+                lang={lang}
               />
             )}
 
@@ -474,6 +524,7 @@ export default function App() {
                 onWalletChange={setWallet}
                 onAddStickers={handleAddStickers}
                 onViewSticker={setSelectedSticker}
+                lang={lang}
               />
             )}
 
@@ -486,6 +537,7 @@ export default function App() {
                 onSelfTradePosted={handleSelfTradePosted}
                 tradeOffers={tradeOffers}
                 onRemoveTradeOffer={handleRemoveTradeOffer}
+                lang={lang}
               />
             )}
 
@@ -495,7 +547,12 @@ export default function App() {
                 onWalletChange={setWallet}
                 collection={collection}
                 onCollectionChange={saveCollection}
+                lang={lang}
               />
+            )}
+
+            {activeTab === "history" && (
+              <HistoryPage lang={lang} />
             )}
           </div>
 
@@ -510,6 +567,7 @@ export default function App() {
           onClose={() => setSelectedSticker(null)}
           onPaste={handlePasteStickerInAlbum}
           walletConnected={wallet.connected}
+          lang={lang}
         />
       )}
 
@@ -522,29 +580,31 @@ export default function App() {
             </div>
 
             <div className="space-y-2">
-              <span className="text-[10px] font-sans font-bold text-gray-400 tracking-[0.3em] uppercase block">WELCOME COLLECTOR</span>
+              <span className="text-[10px] font-sans font-bold text-gray-400 tracking-[0.3em] uppercase block">
+                {UI_TRANSLATIONS[lang].welcomeTitle}
+              </span>
               <h2 className="text-3xl font-sans font-black tracking-tight text-[#002F6C] uppercase leading-none">
-                ZMAJEVI 2026 ALBUM
+                {UI_TRANSLATIONS[lang].welcomeHeader}
               </h2>
               <div className="h-0.5 w-1/3 bg-[#FFCD00] mx-auto" />
             </div>
 
             <div className="text-gray-750 text-sm leading-relaxed space-y-3 font-serif">
               <p>
-                We have credited your virtual tray with <strong>5.0 Simulated SOL</strong> in your sandbox wallet and placed <strong>4 starting stickers</strong> in your portfolio to begin.
+                {UI_TRANSLATIONS[lang].welcomeText1}<strong>5.0 Simulated SOL</strong>{UI_TRANSLATIONS[lang].welcomeText2}<strong>4 starting stickers</strong>{UI_TRANSLATIONS[lang].welcomeText3}
               </p>
               <ul className="text-left bg-white border border-gray-300 p-4 rounded-xl space-y-2 text-xs font-sans list-none">
                 <li className="flex items-center space-x-2 text-gray-800">
                   <BadgeCheck className="h-4.5 w-4.5 text-[#002F6C] shrink-0" />
-                  <span>Edin Džeko & Ermedin Demirović already mounted!</span>
+                  <span>{UI_TRANSLATIONS[lang].starterKit1}</span>
                 </li>
                 <li className="flex items-center space-x-2 text-gray-800">
                   <BadgeCheck className="h-4.5 w-4.5 text-[#002F6C] shrink-0" />
-                  <span>Holographic Golden Crest (S1) mounted!</span>
+                  <span>{UI_TRANSLATIONS[lang].starterKit2}</span>
                 </li>
                 <li className="flex items-center space-x-2 text-gray-800">
                   <BadgeCheck className="h-4.5 w-4.5 text-[#002F6C] shrink-0" />
-                  <span>Duplicate Dennis Hadžikadunić added to your pouch!</span>
+                  <span>{UI_TRANSLATIONS[lang].starterKit3}</span>
                 </li>
               </ul>
             </div>
@@ -553,10 +613,12 @@ export default function App() {
               id="btn-confirm-welcome-onboard"
               onClick={() => {
                 setShowWelcome(false);
+                // Connect simulated sandbox wallet immediately to minimize friction
+                setWallet({ connected: true, publicKey: "SolfZmaj99InitialTestAddressFmC26", balance: 5.0, isSimulated: true });
               }}
               className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 font-black tracking-wide text-sm transition shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer font-sans"
             >
-              Claim Starter Kit & Open Album
+              {UI_TRANSLATIONS[lang].starterKitButton}
             </button>
           </div>
         </div>
