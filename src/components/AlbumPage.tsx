@@ -32,6 +32,7 @@ import malicImg from "./players/malic.webp";
 import sunjicImg from "./players/sunjic.webp";
 import husejinbasicImg from "./players/husejinbasic.webp";
 import mahmicImg from "./players/mahmic.webp";
+import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
 import grbImg from "./special_collection/grb.png";
@@ -67,6 +68,7 @@ const playerImageMap: Record<string, string> = {
   "sunjic.webp": sunjicImg,
   "husejinbasic.webp": husejinbasicImg,
   "mahmic.webp": mahmicImg,
+  "lukic.webp": lukicImg,
 
   // Special collection
   "grb.png": grbImg,
@@ -107,7 +109,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
       case 2: return STICKERS.slice(6, 12);
       case 3: return STICKERS.slice(12, 18);
       case 4: return STICKERS.slice(18, 24);
-      case 5: return STICKERS.slice(24, 28);
+      case 5: return STICKERS.slice(24, 29);
       default: return [];
     }
   };
@@ -374,13 +376,14 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
               } else {
                 return (
                   <div className="space-y-6 flex-1 px-1 animate-fade-in text-left">
-                    {/* Player 24 (Haris Tabakovic) */}
+                    {/* Player 24 & 25 */}
                     <div>
                       <span className="text-[10px] font-sans font-bold text-gray-400 tracking-wider uppercase block mb-1.5">
-                        {lang === "BS" ? "Rezervni napadač — Broj 24" : "Substitution Striker — Number 24"}
+                        {lang === "BS" ? "Rezervni igrači — Brojevi 12 i 25" : "Substitution Players — Numbers 12 and 25"}
                       </span>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
                         {renderStickerSlot(STICKERS[23])}
+                        {renderStickerSlot(STICKERS[24])}
                       </div>
                     </div>
 
@@ -388,15 +391,15 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                     <div className="py-2.5 flex items-center space-x-3 text-[#002F6C]">
                       <div className="h-0.5 bg-gradient-to-r from-transparent via-[#002F6C]/35 to-transparent flex-1" />
                       <span className="text-[9.5px] sm:text-[10.5px] font-sans font-black tracking-[0.22em] uppercase text-center shrink-0">
-                        {lang === "BS" ? "★ SPECIJALNA KOLEKCIJA BOSANSKIH SIMBOLA (25 - 28) ★" : "★ SPECIAL HERITAGE COLLECTION (25 - 28) ★"}
+                        {lang === "BS" ? "★ SPECIJALNA KOLEKCIJA BOSANSKIH SIMBOLA (26 - 29) ★" : "★ SPECIAL HERITAGE COLLECTION (26 - 29) ★"}
                       </span>
                       <div className="h-0.5 bg-gradient-to-r from-transparent via-[#002F6C]/35 to-transparent flex-1" />
                     </div>
 
-                    {/* Special Memorabilia Spots 25, 26, 27, 28 */}
+                    {/* Special Memorabilia Spots 26, 27, 28, 29 */}
                     <div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                        {STICKERS.slice(24, 28).map((st) => renderStickerSlot(st))}
+                        {STICKERS.slice(25, 29).map((st) => renderStickerSlot(st))}
                       </div>
                     </div>
                   </div>

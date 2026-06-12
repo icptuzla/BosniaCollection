@@ -118,7 +118,7 @@ export const STICKERS: Sticker[] = [
     imageFile: "sead-kolasinac.webp"
   },
   {
-    id: 5,
+    id: 6,
     number: "06",
     name: "Benjamin Tahirović",
     role: "CDM",
@@ -141,7 +141,7 @@ export const STICKERS: Sticker[] = [
     imageFile: "benjamin-tahirovic.webp"
   },
   {
-    id: 6,
+    id: 8,
     number: "08",
     name: "Armin Gigović",
     role: "CM",
@@ -187,29 +187,7 @@ export const STICKERS: Sticker[] = [
     imageTheme: "from-amber-400 via-yellow-600 to-blue-900 animate-pulse bg-[length:200%_200%]",
     imageFile: "kenan-alajbegovic.webp"
   },
-  {
-    id: 8,
-    number: "13",
-    name: "Ivan Bašić",
-    role: "CAM / CM",
-    club: "F.C. Astana",
-    birthDate: "30.04.2002",
-    height: "180 cm",
-    biography: "An exceptionally skillful, high-potential technician. Bašić is noted for his incredible curving shots, precise set-piece deliveries, and smart, flowing attacking support.",
-    stats: {
-      overall: 72,
-      pace: 72,
-      shooting: 69,
-      passing: 74,
-      dribbling: 73,
-      defending: 51,
-      physicality: 62
-    },
-    gameRatingRef: "FC26 Rating: 72",
-    type: StickerType.STANDARD,
-    imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "ivan-basic.webp"
-  },
+
   {
     id: 9,
     number: "20",
@@ -282,7 +260,7 @@ export const STICKERS: Sticker[] = [
 
   // ==================== SUBSTITUTIONS (Indices 11 - 21) ====================
   {
-    id: 13,
+    id: 12,
     number: "22",
     name: "Martin Zlomislić",
     role: "GK",
@@ -303,6 +281,29 @@ export const STICKERS: Sticker[] = [
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
     imageFile: "zlomislic.webp"
+  },
+  {
+    id: 13,
+    number: "13",
+    name: "Ivan Bašić",
+    role: "CAM / CM",
+    club: "F.C. Astana",
+    birthDate: "30.04.2002",
+    height: "180 cm",
+    biography: "An exceptionally skillful, high-potential technician. Bašić is noted for his incredible curving shots, precise set-piece deliveries, and smart, flowing attacking support.",
+    stats: {
+      overall: 72,
+      pace: 72,
+      shooting: 69,
+      passing: 74,
+      dribbling: 73,
+      defending: 51,
+      physicality: 62
+    },
+    gameRatingRef: "FC26 Rating: 72",
+    type: StickerType.STANDARD,
+    imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
+    imageFile: "ivan-basic.webp"
   },
   {
     id: 14,
@@ -552,9 +553,33 @@ export const STICKERS: Sticker[] = [
     imageFile: "amir-hadziahmetovic.webp"
   },
 
-  // ==================== SPECIAL COLLECTION (Indices 24 - 27) ====================
   {
     id: 25,
+    number: "25",
+    name: "Jovo Lukić",
+    role: "ST",
+    club: "Universitatea Cluj",
+    birthDate: "28.11.1998",
+    height: "193 cm",
+    biography: "A tall, physical target man playing in the Romanian Superliga. Known for his aerial presence and goalscoring instinct, providing a different dimension to the Bosnian attack.",
+    stats: {
+      overall: 70,
+      pace: 65,
+      shooting: 72,
+      passing: 60,
+      dribbling: 65,
+      defending: 35,
+      physicality: 80
+    },
+    gameRatingRef: "FC26 Rating: 70",
+    type: StickerType.STANDARD,
+    imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
+    imageFile: "lukic.webp"
+  },
+
+  // ==================== SPECIAL COLLECTION ====================
+  {
+    id: 26,
     number: "S1",
     name: "Golden Crest (Grb Saveza)",
     role: "Special Emblem",
@@ -568,7 +593,7 @@ export const STICKERS: Sticker[] = [
     imageFile: "grb.png"
   },
   {
-    id: 26,
+    id: 27,
     number: "S2",
     name: "Bilino Polje Stadium",
     role: "Special Venue",
@@ -582,7 +607,7 @@ export const STICKERS: Sticker[] = [
     imageFile: "stadionzenica.webp"
   },
   {
-    id: 27,
+    id: 28,
     number: "S3",
     name: "Generacija 2014 (Brazil)",
     role: "Special Milestone",
@@ -596,7 +621,7 @@ export const STICKERS: Sticker[] = [
     imageFile: "2014.webp"
   },
   {
-    id: 28,
+    id: 29,
     number: "S4",
     name: "BHFanaticos Support",
     role: "The 12th Man",

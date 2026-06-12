@@ -32,6 +32,7 @@ import malicImg from "./players/malic.webp";
 import sunjicImg from "./players/sunjic.webp";
 import husejinbasicImg from "./players/husejinbasic.webp";
 import mahmicImg from "./players/mahmic.webp";
+import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
 import grbImg from "./special_collection/grb.png";
@@ -65,6 +66,7 @@ const playerImageMap: Record<string, string> = {
   "sunjic.webp": sunjicImg,
   "husejinbasic.webp": husejinbasicImg,
   "mahmic.webp": mahmicImg,
+  "lukic.webp": lukicImg,
 
   // Special collection
   "grb.png": grbImg,
