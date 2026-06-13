@@ -328,7 +328,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
               <div className="bg-white/10 border border-white/20 p-5 rounded-2xl text-left z-20 space-y-3 shadow-inner">
                 <h4 className="text-xs uppercase text-[#FFCD00] font-black tracking-widest flex items-center space-x-2 font-sans">
                   <Activity className="h-4.5 w-4.5 text-[#00f0ff]" />
-                  <span>{lang === "BS" ? "BIOGRAFIJA I ISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
+                  <span>{lang === "BS" ? "BIOGRAFIJA I HISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
                 </h4>
                 <p className="text-[13.5px] text-white leading-relaxed font-sans font-medium pr-2 antialiased">
                   "{bio ? bio : sticker.biography}"

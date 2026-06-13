@@ -28,7 +28,6 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
             connected: true,
             publicKey: publicKey.toBase58(),
             balance: balance / LAMPORTS_PER_SOL,
-            isSimulated: false,
           });
         } catch (err: any) {
           console.error("Failed to fetch balance", err);
@@ -38,7 +37,6 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
           connected: false,
           publicKey: null,
           balance: 0,
-          isSimulated: false,
         });
       }
     };
@@ -105,7 +103,7 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
         </div>
         {wallet.connected && (
           <span className="text-[9px] font-sans font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-            {wallet.isSimulated ? "SANDBOX" : "DEVNET"}
+            ONLINE
           </span>
         )}
       </div>
@@ -148,7 +146,6 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
           </div>
 
           <div className="flex space-x-2">
-            {!wallet.isSimulated && (
               <button
                 id="btn-solana-faucet-airdrop"
                 onClick={handleFaucetClaim}
@@ -162,7 +159,6 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
                 )}
                 <span>{isAirdropping ? "AIRDROPPING..." : "AIRDROP +5 SOL"}</span>
               </button>
-            )}
 
             <button
               id="btn-disconnect-solana"

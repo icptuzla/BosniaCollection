@@ -63,7 +63,7 @@ export default function TradeMarket({
     setSuccessText(null);
 
     if (!wallet.connected || !solanaWallet.publicKey) {
-      setErrorText("You must connect your Solflare or Sandbox wallet before listing a trade offer!");
+      setErrorText("You must connect your Solflare wallet before listing a trade offer!");
       return;
     }
 

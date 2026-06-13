@@ -6,10 +6,15 @@ import './index.css';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { clusterApiUrl } from '@solana/web3.js';
 import '@solana/wallet-adapter-react-ui/styles.css';
 
-const endpoint = clusterApiUrl('devnet');
+const network = import.meta.env.VITE_SOLANA_NETWORK === 'mainnet-beta' 
+  ? WalletAdapterNetwork.Mainnet 
+  : WalletAdapterNetwork.Devnet;
+
+const endpoint = clusterApiUrl(network);
 const wallets = [new SolflareWalletAdapter()];
 
 createRoot(document.getElementById('root')!).render(

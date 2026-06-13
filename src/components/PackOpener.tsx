@@ -118,8 +118,8 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
   const handlePurchasePack = async () => {
     if (!wallet.connected) {
       alert(lang === "BS"
-        ? "Prvo povežite Vaš Solflare ili Sandbox novčanik kako biste kupili paketić!"
-        : "Please connect your Solflare or Sandbox Wallet first to buy a packet!");
+        ? "Prvo povežite Vaš Solflare novčanik kako biste kupili paketić!"
+        : "Please connect your Solflare Wallet first to buy a packet!");
       return;
     }
     if (wallet.balance < packCost) {
@@ -129,45 +129,37 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
       return;
     }
 
-    if (wallet.isSimulated) {
-      // Sandbox simulated mode
+    // Real Devnet/Mainnet Transaction using Solana Wallet
+    setIsProcessing(true);
+    try {
+      if (!wallet.publicKey) {
+        throw new Error(lang === "BS" ? "Nema javnog ključa novčanika!" : "No wallet public key found!");
+      }
+
+      // Build transfer transaction sending 0.1 SOL back to the user's own address (Self-Transfer)
+      const tx = transactionBuilder().add(transferSol(umi, {
+        source: umi.identity,
+        destination: publicKey(wallet.publicKey),
+        amount: sol(packCost)
+      }));
+
+      const result = await tx.sendAndConfirm(umi);
+      console.log("Pack purchase transfer successful. Tx:", result.signature);
+
+      // Manually decrement the state balance locally so it changes immediately visually
       onWalletChange({
         ...wallet,
-        balance: Number((wallet.balance - packCost).toFixed(2)),
+        balance: Number((wallet.balance - packCost).toFixed(4)),
       });
-    } else {
-      // Real Devnet Transaction using Solana Wallet
-      setIsProcessing(true);
-      try {
-        if (!wallet.publicKey) {
-          throw new Error(lang === "BS" ? "Nema javnog ključa novčanika!" : "No wallet public key found!");
-        }
-
-        // Build transfer transaction sending 0.1 SOL back to the user's own address (Self-Transfer)
-        const tx = transactionBuilder().add(transferSol(umi, {
-          source: umi.identity,
-          destination: publicKey(wallet.publicKey),
-          amount: sol(packCost)
-        }));
-
-        const result = await tx.sendAndConfirm(umi);
-        console.log("Pack purchase transfer successful. Tx:", result.signature);
-
-        // Manually decrement the state balance locally so it changes immediately visually
-        onWalletChange({
-          ...wallet,
-          balance: Number((wallet.balance - packCost).toFixed(4)),
-        });
-      } catch (err: any) {
-        console.error("Pack purchase transaction failed:", err);
-        alert(lang === "BS"
-          ? "Greška prilikom transakcije: " + (err.message || err.toString())
-          : "Transaction failed: " + (err.message || err.toString()));
-        setIsProcessing(false);
-        return;
-      }
+    } catch (err: any) {
+      console.error("Pack purchase transaction failed:", err);
+      alert(lang === "BS"
+        ? "Greška prilikom transakcije: " + (err.message || err.toString())
+        : "Transaction failed: " + (err.message || err.toString()));
       setIsProcessing(false);
+      return;
     }
+    setIsProcessing(false);
 
     // Synthesize laser-gong buy audio
     try {
@@ -360,7 +352,7 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
 
             {!wallet.connected && (
               <p className="text-[10px] font-sans font-bold text-rose-500 text-center animate-pulse">
-                {lang === "BS" ? "* Molimo Vas da prvo povežete novčanik iznad!" : "* Please connect Solflare or Sandbox wallet above!"}
+                {lang === "BS" ? "* Molimo Vas da prvo povežete novčanik iznad!" : "* Please connect Solflare wallet above!"}
               </p>
             )}
           </div>
