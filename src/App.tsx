@@ -427,10 +427,23 @@ export default function App() {
                 })}
               </div>
             )}
-            
-            <p className="text-[10px] font-sans text-gray-500 leading-relaxed mt-3 pt-3 border-t border-gray-200">
-              {UI_TRANSLATIONS[lang].pouchInstructions}
-            </p>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <span className="text-[10px] font-sans font-bold text-[#002F6C] uppercase mb-1.5 flex items-center justify-between">
+                <span>{lang === "BS" ? "Zalijepljene" : "Collected"}</span>
+                <span className="bg-[#002F6C] text-white px-1.5 rounded-full">{collection.filter(c => c.pasted).length}/29</span>
+              </span>
+              <div className="text-[9px] font-sans text-gray-600 leading-relaxed max-h-[90px] overflow-y-auto pr-1 flex flex-wrap gap-1">
+                {collection.filter(c => c.pasted).length > 0 ? (
+                  collection.filter(c => c.pasted).map(c => STICKERS.find(s => s.id === c.stickerId)).filter(Boolean).map((s) => (
+                    <span key={`col-${s!.id}`} className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap shadow-sm">
+                      {s!.name.split(" ").slice(-1)[0]}
+                    </span>
+                  ))
+                ) : (
+                  <span className="italic">{lang === "BS" ? "Još nema zalijepljenih sličica." : "No pasted stickers yet."}</span>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Golden Era Trophy Box widget */}
@@ -449,7 +462,7 @@ export default function App() {
         <div className="lg:col-span-3 space-y-6">
           
           {/* Dynamic Switch Tabs */}
-          <div className="flex flex-wrap md:flex-nowrap gap-1.5 bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold">
+          <div className="flex flex-nowrap overflow-x-auto scrollbar-hide snap-x gap-1.5 bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button
               id="tab-open-album-book"
               onClick={() => setActiveTab("album")}

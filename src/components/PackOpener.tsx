@@ -136,10 +136,10 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
         throw new Error(lang === "BS" ? "Nema javnog ključa novčanika!" : "No wallet public key found!");
       }
 
-      // Build transfer transaction sending 0.1 SOL back to the user's own address (Self-Transfer)
+      // Build transfer transaction sending 0.1 SOL to the treasury address
       const tx = transactionBuilder().add(transferSol(umi, {
         source: umi.identity,
-        destination: publicKey(wallet.publicKey),
+        destination: publicKey("DrQQhXb2dk99XvhM1Rem7PnKZDkah6C5aFU9Uyd5ju54"),
         amount: sol(packCost)
       }));
 
@@ -223,12 +223,14 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
     setTimeout(() => {
       const pulled: Sticker[] = [];
       const totalCount = STICKERS.length;
+      const pulledIds = new Set<number>();
 
-      for (let i = 0; i < 5; i++) {
+      while (pulled.length < 5) {
         let rolled: Sticker;
+        const isFinalCard = pulled.length === 4;
 
         // Ensure some cool distribution
-        if (i === 4) {
+        if (isFinalCard) {
           // Guaranteed special or top player (>80 rating) roll
           const excitingList = STICKERS.filter(s => s.id >= 25 || (s.stats && s.stats.overall >= 80));
           rolled = excitingList[Math.floor(Math.random() * excitingList.length)];
@@ -236,19 +238,27 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
           // Standard random roll
           rolled = STICKERS[Math.floor(Math.random() * totalCount)];
         }
-        pulled.push(rolled);
+
+        if (!pulledIds.has(rolled.id)) {
+          pulled.push(rolled);
+          pulledIds.add(rolled.id);
+        }
       }
 
       setRevealedStickers(pulled);
       setPackStatus("opened");
+      
+      // Auto-claim the stickers to the pouch immediately so if they click to view details, it shows they own it!
+      if (!hasClaimed) {
+        onAddStickers(pulled.map(s => s.id));
+        setHasClaimed(true);
+      }
     }, 850);
   };
 
   const handleClaimStickers = () => {
-    if (hasClaimed) return;
-    const ids = revealedStickers.map(s => s.id);
-    onAddStickers(ids);
-    setHasClaimed(true);
+    // Stickers are already added to collection upon rip. This just closes the view.
+
 
     // Synthesize magic confirmation cash sound
     try {
