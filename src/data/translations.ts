@@ -17,7 +17,7 @@ export const UI_TRANSLATIONS = {
     tabTrades: "Berza za razmjenu",
     tabPredictions: "Arena prognoza",
     tabHistory: "Put do 2026.",
-    welcomeTitle: "DOBRODOŠLI SAKUPLJAČU",
+    welcomeTitle: "DOBRODOŠLI FANOVI",
     welcomeHeader: "ALBUM ZMAJEVI 2026",
     welcomeText1: "Dodijelili smo Vam ",
     welcomeText2: " u Vaš virtuelni novčanik i poklonili Vam ",
@@ -265,99 +265,99 @@ export const UI_TRANSLATIONS = {
   }
 };
 
-export const PLAYER_TRANSLATIONS: Record<number, { 
-  role: { BS: string; EN: string }; 
-  biography: { BS: string; EN: string }; 
+export const PLAYER_TRANSLATIONS: Record<number, {
+  role: { BS: string; EN: string };
+  biography: { BS: string; EN: string };
 }> = {
-  12: {
+  1: {
     role: { BS: "Golman", EN: "GK" },
     biography: {
       BS: "Prvi čuvar mreže u njemačkoj Bundesligi s ekipom St. Pauli. Ističe se nevjerovatnim refleksima pri izvođenju jedanaesteraca, stabilnim komandovanjem u petercu i spektakularnim odbranama koje ulijevaju veliku sigurnost zadnjoj liniji.",
       EN: "Starting goalkeeper in the German Bundesliga with St. Pauli. Renowned for incredible reflexes in penalty duels, solid command of the 6-yard box, and spectacular shot-stopping capabilities."
     }
   },
-  5: {
+  2: {
     role: { BS: "Desni bek / Krilni bek", EN: "RB / RWB" },
     biography: {
       BS: "Jedan od najuzbudljivijih mladih desnih bekova u evropskom fudbalu, član Benfice. Ističe se sjajnim trkačkim dionicama, taktičkom zrelošću i kvalitetnom podrškom ofanzivnim akcijama, čime privlači skaute brojnih fudbalskih velikana.",
       EN: "One of the most exciting young right-backs in European football. Possesses raw pace, phenomenal recovery runs, and high tactical flexibility. Already attracting scouts from elite Champions League clubs worldwide."
     }
   },
-  11: {
+  3: {
     role: { BS: "Centralni bek", EN: "CB" },
     biography: {
       BS: "Jedan od najperspektivnijih defanzivaca u Evropi. Školovan u torinskom Juventusu, razvio se kroz utakmice u Sassuolu te prerastao u jednog od najboljih mladih odbrambenih igrača i stubova modernog bh. nacionalnog tima.",
       EN: "One of the most perspective defenders in Europe. Trained by Juventus, he rose at Sassuolo to become one of the best young defenders of the Bosnian team."
     }
   },
-  7: {
+  4: {
     role: { BS: "Centralni bek", EN: "CB" },
     biography: {
       BS: "Hrabar i fizički besprijekoran centralni defanzivac sa odličnim smislom za pozicioniranje u odbrani. Hadžikadunić igra sa srcem, neumoljivo blokira protivničke šuteve i dobija ključne vazdušne i klizeće duele na terenu.",
       EN: "A brave, physical central defender with excellent positioning. Hadžikadunić plays with heart, blocking shots, winning key slide tackles, and serving as a key wall in the Bosnian defense."
     }
   },
-  4: {
+  5: {
     role: { BS: "Centralni / Lijevi bek", EN: "CB / LB" },
     biography: {
       BS: "S pravom nazvan 'Bosanski Hulk' ili 'Kola'. Kolašinac je odbrambena sila poznata po fizički dominantnom prisustvu i neustrašivoj igri. Izgradio veliku karijeru nastupajući za Schalke, Arsenal, Marseille i osvajača Evropske lige Atalantu.",
       EN: "Appropriately nicknamed 'The Bosnian Hulk' or 'The Tank'. Kolašinac is a powerhouse defender known for his physically intimidating presence and sheer resilience, having played for Schalke, Arsenal, Marseille, and Europa League winners Atalanta."
     }
   },
-  8: {
+  6: {
     role: { BS: "Zadnji vezni", EN: "CDM" },
     biography: {
       BS: "Visoko ocijenjeni mladi veznjak i neumorni motor tima kojeg je José Mourinho prepoznao i lansirao u prvoj ekipi Rome prije njegovog prelaska u slavni Ajax. Fizički moćan, briljira pod pritiskom i kreira brze napade iz dubine.",
       EN: "A highly rated young midfield engine, discovered and promoted by José Mourinho at AS Roma before moving to Ajax. Tall, superb under pressure, and highly adept at building attacks from deep positions."
     }
   },
-  16: {
+  7: {
+    role: { BS: "Lijevo krilo / Ofanzivni vezni", EN: "LW / AM" },
+    biography: {
+      BS: "Jedan od najdominantnijih mladih evropskih talenata sa fantastičnom tehnikom u omladinskom pogonu RB Salzburga. Nevjerovatno brz krilni napadač sa vrhunskim driblingom i izrazito ubojitim i preciznim šutem.",
+      EN: "One of the brightest young prospects from Cologne, Germany, showing exceptional creative versatility at RB Salzburg. A rapid midfielder/winger with amazing dribbling, passing, and clinical shooting ability."
+    }
+  },
+  8: {
     role: { BS: "Centralni vezni", EN: "CM" },
     biography: {
       BS: "Taktički izuzetno koristan i borben vezni igrač koji uspješno nastupa u Švicarskoj za renomirani klub Young Boys. Spaja robustan fizički profil sa inteligentnom distribucijom kratkih lopti pod velikim protivničkim presingom.",
       EN: "A tactical dynamic midfielder playing for Young Boys. Combines robust physical presence with elegant pass mechanics, working tirelessly in counter-pressing mechanics representing Bosnia's modern core."
     }
   },
-  17: {
-    role: { BS: "Centralni vezni", EN: "CM / LM" },
-    biography: {
-      BS: "Talentovani veznjak fine lijeve noge koji je prošao školu čuvene akademije njemačkog giganta Borussia Dortmund. Odlikuje se izuzetnim osjećajem za prostor, zavidnom tehnikom i pametnim i tečnim proigravanjem na terenu.",
-      EN: "A talented left-footed deep engine who graduated from Borussia Dortmund's prestigious academy. Gifted with intense spatial agility and clever pass distribution qualities."
-    }
-  },
-  19: {
+  9: {
     role: { BS: "Desno krilo / Vezni", EN: "RW / RM" },
     biography: {
       BS: "Čudo od djeteta bosansko-američkog porijekla koje sada oduševljava publiku u holandskom PSV Eindhovenu. Njegovi munjeviti prodori, nevjerovatan dribling i sjajna kontrola lopte čine ga miljenikom navijača i kreativnim krilom.",
       EN: "The wonderkid of American-Bosnian heritage playing in PSV. His rapid dribbling cuts, insane control logic, and explosive pace made him an immediate fan favorite for the national team's creative future wings."
     }
   },
-  2: {
+  10: {
     role: { BS: "Napadač", EN: "ST" },
     biography: {
       BS: "Agresivan napadač visoke klase koji predvodi modernu golgetersku generaciju. Demirović je gol-mašina u njemačkoj Bundesligi s ekipom VfB Stuttgart, prepoznatljiv po razornoj završnici i vrhunskoj skok igri.",
       EN: "A high-intensity, power-driven striker representing Bosnia's modern attacking generation. Demirović is a goalscoring machine in the German Bundesliga, showing lethal finishing, tireless workrate, and extreme aerial dominance."
     }
   },
-  1: {
+  11: {
     role: { BS: "Napadač / Kapiten", EN: "ST / Captain" },
     biography: {
       BS: "Najveći bosanskohercegovački napadač i strijelac svih vremena, poznat pod nadimkom 'Bosanski dijamant'. Osvajao je titule sa Wolfsburgom i Manchester Cityjem, te ostavio dubok trag u Romi i Interu. Istinski lider i simbol države.",
       EN: "The greatest Bosnian striker of all time, nicknamed 'The Bosnian Diamond'. Renowned for winning titles with Wolfsburg, Manchester City, and AS Roma. Bosnia's all-time record goalscorer, carrying the hopes of the Zmajevi with unmatched mental toughness."
     }
   },
-  13: {
+  12: {
     role: { BS: "Golman", EN: "GK" },
     biography: {
       BS: "Pouzdani rezervni čuvar mreže koji brani boje HNK Rijeka. Pruža maksimalan mir ekipi zahvaljujući vrhunskoj kontroli vazdušnog prostora u šesnaestercu i brzim refleksima u situacijama jedan-na-jedan.",
       EN: "An exceptionally reliable auxiliary shot-stopper with intense international experience. Known for his aerial control and leadership in the penalty area."
     }
   },
-  15: {
-    role: { BS: "Centralni bek", EN: "CB" },
+  13: {
+    role: { BS: "Ofanzivni / Centralni vezni", EN: "CAM / CM" },
     biography: {
-      BS: "Stameni odbrambeni igrač koji nastupa i brusi talenat u Švicarskoj. Pokazuje konstantnu čvrstinu, besprijekoran postotak osvojenih duela na tlu i u vazduhu, te se profilira kao važan predvodnik bh. odbrambene generacije.",
-      EN: "An athletic, aggressive strong center back sharpening his craft at Switzerland. Already showing strong interception records and immense potential to lead the generational defence line."
+      BS: "Izrazito daroviti tehničar visoke klase sa nevjerovatnim potencijalom u igri prema naprijed. Bašić je prepoznatljiv po opasnim felširanim šutevima s distance, preciznim prekidima i tečnom, kreativnom rješavanju akcija.",
+      EN: "An exceptionally skillful, high-potential technician. Bašić is noted for his incredible curving shots, precise set-piece deliveries, and smart, flowing attacking support."
     }
   },
   14: {
@@ -367,98 +367,105 @@ export const PLAYER_TRANSLATIONS: Record<number, {
       EN: "Affectionately called 'The Iron Nermin'. A veteran defensive hero who represents true grit, slide-tackle blocks, and the legendary 2014 world cup qualifying era spirits."
     }
   },
-  22: {
-    role: { BS: "Odbrambeni / Desni bek", EN: "CB / RB" },
-    biography: {
-      BS: "Izuzetno talentovan i marljiv odbrambeni igrač koji uspješno privlači oči javnosti nastupajući u francuskoj Ligue 1. Odlikuje se taktičkom disciplinom, brzinom u pokrivanju dubokih lopti i velikom borbenošću.",
-      EN: "A versatile, hard-working defender. He possesses highly impressive tactical discipline, young and brave playing regularly in Ligue 1."
-    }
-  },
-  3: {
-    role: { BS: "Vezni igrač", EN: "Midfielder" },
-    biography: {
-      BS: "Čvrst i izuzetno agilan defanzivni veznjak sa velikim iskustvom dobijanja teških duela u veznom redu. Pokriva ogroman dio terena, blokira napade protivnika i donosi prijeko potrebnu stabilnost i agresivnost u reprezentaciju.",
-      EN: "A rugged, energetic defensive midfielder known for his high physical work rate, robust sliding tackles, and clever positioning under deep pressure."
-    }
-  },
-  20: {
-    role: { BS: "Centralni vezni", EN: "CM" },
-    biography: {
-      BS: "Svestrani i inteligentni kreator igre njemačkog FC Kölna. Njegov neumorni trk s kraja na kraj terena, sjajna kontrola tempa utakmice i pravovremena uklizavanja čine ga neizostavnim članom bosanskohercegovačke ekipe.",
-      EN: "An exceptionally versatile intelligence engine dominating the midfield play for Köln. His box-to-box endurance, timing inside deep runs, and physical ball-recovery make him an absolute lock-in."
-    }
-  },
-  23: {
-    role: { BS: "Odbrambeni", EN: "CB / LB" },
-    biography: {
-      BS: "Mladi perspektivni defanzivac rođen u slovenskim Jesenicama, koji sa velikim uspjehom nastupa za austrijski Sturm Graz. Karakteriše ga izuzetno zrela i sigurna igra u duelima, vazdušna dominacija i brzina u postavljanju.",
-      EN: "An emerging youth prospect born in Jesenice, Slovenia, playing for Sturm Graz. His rapid physical maturity, aerial abilities, and clean playing style make him a fantastic defensive option for the national team's future."
-    }
-  },
-  24: {
+  15: {
     role: { BS: "Centralni bek", EN: "CB" },
     biography: {
-      BS: "Gorostasni centralni defanzivac visok preko dva metra. Igrajući za HNK Rijeka, Radeljić se nametnuo kao kralj vazdušnog prostora koji bez imalo muke rješava visoke ubačaje i donosi veliku sigurnost svom golmanu.",
-      EN: "A towering, physical central defender who stands at 2.01m tall. Playing for HNK Rijeka, Radeljić is dominating in aerial duels and provides crucial safety inside deep defensive structures."
+      BS: "Stameni odbrambeni igrač koji nastupa i brusi talenat u Švicarskoj. Pokazuje konstantnu čvrstinu, besprijekoran postotak osvojenih duela na tlu i u vazduhu, te se profilira kao važan predvodnik bh. odbrambene generacije.",
+      EN: "An athletic, aggressive strong center back sharpening his craft at Switzerland. Already showing strong interception records and immense potential to lead the generational defence line."
     }
   },
-  18: {
-    role: { BS: "Ofanzivni / Centralni vezni", EN: "CAM / CM" },
-    biography: {
-      BS: "Izrazito daroviti tehničar visoke klase sa nevjerovatnim potencijalom u igri prema naprijed. Bašić je prepoznatljiv po opasnim felširanim šutevima s distance, preciznim prekidima i tečnom, kreativnom rješavanju akcija.",
-      EN: "An exceptionally skillful, high-potential technician. Bašić is noted for his incredible curving shots, precise set-piece deliveries, and smart, flowing attacking support."
-    }
-  },
-  6: {
+  16: {
     role: { BS: "Vezni igrač", EN: "Midfielder" },
     biography: {
       BS: "Mladi talentovani vezni igrač koji nastupa i razvija se u ekipi Slovan Liberec. Odlikuje se agresivnošću u duelima na sredini terena i izrazito tačnom dugom loptom koja brzo mijenja težište igre u ofanzivu.",
       EN: "A talented left-footed deep engine who graduated from Borussia Dortmund's prestigious academy. Gifted with intense spatial agility and clever pass distribution qualities."
     }
   },
-  10: {
-    role: { BS: "Lijevo krilo / Ofanzivni vezni", EN: "LW / AM" },
+  17: {
+    role: { BS: "Vezni igrač", EN: "Midfielder" },
     biography: {
-      BS: "Jedan od najdominantnijih mladih evropskih talenata sa fantastičnom tehnikom u omladinskom pogonu RB Salzburga. Nevjerovatno brz krilni napadač sa vrhunskim driblingom i izrazito ubojitim i preciznim šutem.",
-      EN: "One of the brightest young prospects from Cologne, Germany, showing exceptional creative versatility at RB Salzburg. A rapid midfielder/winger with amazing dribbling, passing, and clinical shooting ability."
+      BS: "Čvrst i izuzetno agilan defanzivni veznjak sa velikim iskustvom dobijanja teških duela u veznom redu. Pokriva ogroman dio terena, blokira napade protivnika i donosi prijeko potrebnu stabilnost i agresivnost u reprezentaciju.",
+      EN: "A rugged, energetic defensive midfielder known for his high physical work rate, robust sliding tackles, and clever positioning under deep pressure."
     }
   },
-  9: {
+  18: {
+    role: { BS: "Centralni vezni", EN: "CM / LM" },
+    biography: {
+      BS: "Talentovani veznjak fine lijeve noge koji je prošao školu čuvene akademije njemačkog giganta Borussia Dortmund. Odlikuje se izuzetnim osjećajem za prostor, zavidnom tehnikom i pametnim i tečnim proigravanjem na terenu.",
+      EN: "A talented left-footed deep engine who graduated from Borussia Dortmund's prestigious academy. Gifted with intense spatial agility and clever pass distribution qualities."
+    }
+  },
+  19: {
+    role: { BS: "Centralni vezni", EN: "CM" },
+    biography: {
+      BS: "Svestrani i inteligentni kreator igre njemačkog FC Kölna. Njegov neumorni trk s kraja na kraj terena, sjajna kontrola tempa utakmice i pravovremena uklizavanja čine ga neizostavnim članom bosanskohercegovačke ekipe.",
+      EN: "An exceptionally versatile intelligence engine dominating the midfield play for Köln. His box-to-box endurance, timing inside deep runs, and physical ball-recovery make him an absolute lock-in."
+    }
+  },
+  20: {
+    role: { BS: "Odbrambeni", EN: "CB / LB" },
+    biography: {
+      BS: "Mladi perspektivni defanzivac rođen u slovenskim Jesenicama, koji sa velikim uspjehom nastupa za austrijski Sturm Graz. Karakteriše ga izuzetno zrela i sigurna igra u duelima, vazdušna dominacija i brzina u postavljanju.",
+      EN: "An emerging youth prospect born in Jesenice, Slovenia, playing for Sturm Graz. His rapid physical maturity, aerial abilities, and clean playing style make him a fantastic defensive option for the national team's future."
+    }
+  },
+  21: {
+    role: { BS: "Centralni bek", EN: "CB" },
+    biography: {
+      BS: "Gorostasni centralni defanzivac visok preko dva metra. Igrajući za HNK Rijeka, Radeljić se nametnuo kao kralj vazdušnog prostora koji bez imalo muke rješava visoke ubačaje i donosi veliku sigurnost svom golmanu.",
+      EN: "A towering, physical central defender who stands at 2.01m tall. Playing for HNK Rijeka, Radeljić is dominating in aerial duels and provides crucial safety inside deep defensive structures."
+    }
+  },
+  22: {
     role: { BS: "Napadač", EN: "Forward" },
     biography: {
       BS: "Tehnički potkovan i brz napadač Real Zaragoze, čiji brzi instinkti pred golom i sjajna kretnja bez lopte privlače veliku pažnju evropskih stručnjaka, proglašavajući ga budućnošću našeg napada.",
       EN: "A gifted attacker whose technical intelligence and quick goal instincts have positioned him as one of the most promising young talents in his generation."
     }
   },
-  21: {
+  23: {
     role: { BS: "Napadač", EN: "ST" },
     biography: {
       BS: "Klasični napadač, takozvani 'sidraš', koji je bio apsolutni kralj strijelaca u njemačkoj 2. Bundesligi prije prelaska u Borussiju M'gladbach. Izuzetno koristan za rješavanje dugih, vazdušnih lopti u kaznenom prostoru.",
       EN: "A clinical traditional target-man who was the top goalscorer in Germany's 2. Bundesliga before his move to TSG Hoffenheim. Invaluable target structure inside long-ball aerial schemes."
     }
   },
-  27: {
+  24: {
+    role: { BS: "Zadnji vezni", EN: "CDM" },
+    biography: {
+      BS: "Tehnički izvanredan defanzivni vezni igrač sa sjajnim pregledom igre. Ključni dio sredine terena koji donosi stabilnost i precizan pas.",
+      EN: "Technical defensive midfielder with excellent vision. A key piece of the central engine room who brings stability and precise passing."
+    }
+  },
+  25: {
+    role: { BS: "Napadač", EN: "ST" },
+    biography: {
+      BS: "Visoki i snažni napadač koji igra u rumunskoj Superligi za Universitatea Cluj. Poznat po odličnoj skok igri i golgeterskom instinktu.",
+      EN: "A tall, physical target man playing in the Romanian Superliga for Universitatea Cluj. Known for his aerial presence and goalscoring instinct."
+    }
+  },
+  26: {
     role: { BS: "Specijalni amblem", EN: "Special Emblem" },
     biography: {
       BS: "Holografski amblem Fudbalskog saveza Bosne i Hercegovine u prepoznatljivim plavim i zlatnim nijansama sa sjajnim zvijezdama. Simbol jedinstva, nacionalnog ponosa i vječne sportske strasti miliona građana pod zastavom Zmajeva.",
       EN: "Holographic Emblem of the Football Association of Bosnia and Herzegovina. Adorned with the national colors of gold and blue, and stars depicting the night sky. The symbol of hope, unity, and deep-seated football patriotisms."
     }
   },
-  28: {
+  27: {
     role: { BS: "Kultni stadion", EN: "Special Venue" },
     biography: {
       BS: "Legendarno zeničko 'gnijezdo' i nepobjediva tvrđava reprezentacije BiH. Poznat po nevjerovatno vjernoj, vatrenoj i bučnoj atmosferi gdje navijači sjede tik uz linije terena, kreirajući gromoglasni plavo-žuti talas podrške.",
       EN: "The historical fortress and spiritual home of the Bosnian National Team in Zenica. Renowned for its incredibly intense atmosphere, where fans sit extremely close to the pitch, creating an intimidating wall."
     }
   },
-  29: {
+  28: {
     role: { BS: "Zlatni jubilej", EN: "Special Milestone" },
     biography: {
       BS: "Istorijska ekipa koja je ostvarila prvi plasman Bosne i Hercegovine na jedno veliko takmičenje - Svjetsko prvenstvo u Brazilu 2014. godine. Predvođeni Safetom Sušićem, Spahićem, Misimovićem, Ibiševićem, Lulićem i Džekom, ušli su u vječnost.",
       EN: "The historic generation of 2014 that qualified for Bosnia's first-ever FIFA World Cup in Brazil. Led by manager Safet Sušić, Spahić, Misimović, Ibišević, Lulić, and Džeko."
     }
   },
-  30: {
+  29: {
     role: { BS: "Slavna podrška", EN: "The 12th Man" },
     biography: {
       BS: "Zvanična organizovana navijačka skupina svih nacionalnih timova Bosne i Hercegovine. Putuju po cijelom svijetu od Evrope do Južne Amerike, dajući bezrezervni glas i energiju sa tribina plavo-žutim herojima.",

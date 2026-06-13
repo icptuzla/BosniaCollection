@@ -141,7 +141,7 @@ export const STICKERS: Sticker[] = [
     imageFile: "benjamin-tahirovic.webp"
   },
   {
-    id: 8,
+    id: 7,
     number: "08",
     name: "Armin Gigović",
     role: "CM",
@@ -165,7 +165,7 @@ export const STICKERS: Sticker[] = [
 
   },
   {
-    id: 7,
+    id: 8,
     number: "19",
     name: "Kerim Alajbegović",
     role: "LW / AM",

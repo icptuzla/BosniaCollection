@@ -106,10 +106,10 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
   const getPageStickers = (pageNum: number): Sticker[] => {
     switch (pageNum) {
       case 1: return STICKERS.slice(0, 6);
-      case 2: return STICKERS.slice(6, 12);
-      case 3: return STICKERS.slice(12, 18);
-      case 4: return STICKERS.slice(18, 24);
-      case 5: return STICKERS.slice(24, 29);
+      case 2: return STICKERS.slice(6, 11);
+      case 3: return STICKERS.slice(11, 17);
+      case 4: return STICKERS.slice(17, 23);
+      case 5: return STICKERS.slice(23, 29);
       default: return [];
     }
   };
