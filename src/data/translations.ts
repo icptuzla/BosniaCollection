@@ -142,7 +142,7 @@ export const UI_TRANSLATIONS = {
     pouchEmpty: "Your pouch is currently empty. Buy sticker packs to collect players!",
     pouchInstructions: "* Click any card in your unmounted pouch to flip open its full 600x700 stat block, detail metrics, and paste it directly into its album page slot.",
     mandateTitle: "Special Album Mandate",
-    mandateDesc: "Complete the legendary 22-man Bosnian selection and find the 4 \"Special Collectibles\" (Golden Crest, Estadio Zenica, Generacija 2014, BHFanaticos) to get your verified Metaplex golden certificate of completion!",
+    mandateDesc: "Complete the legendary 22-man Bosnian selection and find the 4 \"Special Collectibles\" (Golden Crest, Stadion Zenica, Generacija 2014, BHFanaticos) to get your verified Metaplex golden certificate of completion!",
     tabAlbum: "Bosnian Album Book",
     tabPacks: "Rip Booster Packs",
     tabTrades: "Solana Swap Center",

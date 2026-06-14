@@ -440,8 +440,9 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                     onClick={() => onViewSticker(revealedStickers[currentIndex])}
                     style={{
                       backgroundImage: getPlayerImage(revealedStickers[currentIndex]) ? `url(${getPlayerImage(revealedStickers[currentIndex])})` : undefined,
-                      backgroundSize: "cover",
-                      backgroundPosition: "top",
+                      backgroundSize: revealedStickers[currentIndex].type === StickerType.SPECIAL ? "contain" : "cover",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
                     }}
                     className={`relative w-56 sm:w-64 h-72 sm:h-80 rounded-2xl border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col justify-end cursor-pointer hover:scale-105 hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(revealedStickers[currentIndex]) ? "bg-gradient-to-b from-[#124285] to-[#002F6C]" : "bg-white"
                       }`}

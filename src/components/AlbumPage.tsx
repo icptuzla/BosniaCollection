@@ -330,8 +330,9 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                       <div
                         style={{
                           backgroundImage: getPlayerImage(st) ? `url(${getPlayerImage(st)})` : undefined,
-                          backgroundSize: "cover",
-                          backgroundPosition: "top",
+                          backgroundSize: st.type === StickerType.SPECIAL ? "contain" : "cover",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
                         }}
                         className={`absolute inset-0 border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col justify-end text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(st) ? "bg-gradient-to-b from-[#124285] to-[#002F6C]" : "bg-white"
                           }`}

@@ -595,7 +595,7 @@ export const STICKERS: Sticker[] = [
   {
     id: 27,
     number: "S2",
-    name: "Bilino Polje Stadium",
+    name: "Stadion \"Bilino Polje\" Zenica",
     role: "Special Venue",
     club: "Zenica Fortress",
     birthDate: "Built 1972",

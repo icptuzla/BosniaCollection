@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Calendar, Zap, Activity } from "lucide-react";
-import { Sticker, UserSticker } from "../types";
-import { Language } from "../data/translations";
+import { Sticker, UserSticker, StickerType } from "../types";
+import { Language, PLAYER_TRANSLATIONS } from "../data/translations";
 import logoImage from "./zmajevi logo.webp";
 
 // Import all uploaded player photos in WebP format
@@ -186,7 +186,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
   const playerImg = getPlayerImage(sticker);
 
   // Localized sticker biography
-  const bio = lang === "BS" && sticker.biographyBS ? sticker.biographyBS : sticker.biography;
+  const bio = PLAYER_TRANSLATIONS[sticker.id]?.biography[lang] || sticker.biography;
 
   return (
     <div id="card-detail-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm overflow-hidden select-none">
@@ -242,7 +242,8 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
             <div
               style={{
                 backgroundImage: playerImg ? `url(${playerImg})` : undefined,
-                backgroundSize: "cover",
+                backgroundSize: sticker.type === StickerType.SPECIAL ? "contain" : "cover",
+                backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
                 backfaceVisibility: "hidden",
                 transform: "rotateY(0deg)",
