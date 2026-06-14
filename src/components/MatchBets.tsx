@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Play, Calendar, Clock, MapPin, Award, Lock, Trophy, Sparkles, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Play, Calendar, Clock, MapPin, Award, Lock, Trophy, Sparkles, CheckCircle2, AlertTriangle, Coins } from "lucide-react";
 import { Sticker, UserSticker, WalletState } from "../types";
 import { STICKERS } from "../data/players";
 import { Language, UI_TRANSLATIONS } from "../data/translations";
@@ -29,12 +29,17 @@ interface Match {
 interface Bet {
   id: string;
   matchId: string;
+  wagerType: "SOL" | "STICKER";
+  predOutcome: "WIN" | "DRAW" | "LOSS";
   predHomeGoals: number;
   predAwayGoals: number;
-  betStickerId: number;
+  predScorerId: number;
+  betStickerId?: number;
   status: "ACTIVE" | "WON" | "LOST";
   actualHomeGoals?: number;
   actualAwayGoals?: number;
+  actualScorerId?: number;
+  correctPicks?: number;
   createdAt: number;
 }
 
@@ -81,10 +86,16 @@ const UPCOMING_MATCHES: Match[] = [
 ];
 
 export default function MatchBets({ wallet, onWalletChange, collection, onCollectionChange, lang }: MatchBetsProps) {
-  const [selectedMatch, setSelectedMatch] = useState<Match>(UPCOMING_MATCHES[0]);
+  // Default to Switzerland since Canada ended 1:1
+  const [selectedMatch, setSelectedMatch] = useState<Match>(UPCOMING_MATCHES[1]);
+  
+  const [wagerType, setWagerType] = useState<"SOL" | "STICKER">("SOL");
+  const [predOutcome, setPredOutcome] = useState<"WIN" | "DRAW" | "LOSS">("WIN");
   const [predHome, setPredHome] = useState<number>(2);
   const [predAway, setPredAway] = useState<number>(1);
+  const [predScorerId, setPredScorerId] = useState<number>(-1);
   const [betStickerId, setBetStickerId] = useState<number>(-1);
+  
   const [bets, setBets] = useState<Bet[]>([]);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -93,12 +104,12 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
   const [simulatingBetId, setSimulatingBetId] = useState<string | null>(null);
   const [simProgress, setSimProgress] = useState<number>(0);
   const [simLog, setSimLog] = useState<string[]>([]);
-  const [simFinalResult, setSimFinalResult] = useState<{ home: number; away: number } | null>(null);
+  const [simFinalResult, setSimFinalResult] = useState<{ home: number; away: number; scorerId: number } | null>(null);
 
   const t = UI_TRANSLATIONS[lang];
 
   useEffect(() => {
-    const savedBets = localStorage.getItem("bosnia_wc26_match_bets");
+    const savedBets = localStorage.getItem("bosnia_wc26_match_bets_v2");
     if (savedBets) {
       setBets(JSON.parse(savedBets));
     }
@@ -106,19 +117,16 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
   const saveBetsList = (newBets: Bet[]) => {
     setBets(newBets);
-    localStorage.setItem("bosnia_wc26_match_bets", JSON.stringify(newBets));
+    localStorage.setItem("bosnia_wc26_match_bets_v2", JSON.stringify(newBets));
   };
 
-  // Extract all unpasted duplicate cards from pouch
   const bettableStickers = collection.filter(c => c.count > 0 && !c.pasted).map(c => {
     const orig = STICKERS.find(s => s.id === c.stickerId);
-    return {
-      ...c,
-      player: orig
-    };
+    return { ...c, player: orig };
   }).filter(item => item.player !== undefined);
 
-  // Handle Placing a Bet
+  const squadPlayers = selectedMatch.squadIds.map(id => STICKERS.find(s => s.id === id)).filter(Boolean) as Sticker[];
+
   const handlePlaceBet = (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMsg(null);
@@ -127,43 +135,54 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     if (!wallet.connected) {
       setErrorMsg(lang === "BS" 
         ? "Prvo povežite Vaš virtuelni novčanik za zaključavanje Metaplex pametnog ugovora!" 
-        : "Please connect your Solflare mock wallet first to confirm Metaplex asset lock!");
+        : "Please connect your Solflare mock wallet first to place a prediction!");
       return;
     }
 
-    if (betStickerId === -1) {
+    if (wagerType === "SOL" && wallet.balance < 0.02) {
+      setErrorMsg("You need at least 0.02 SOL to place a prediction!");
+      return;
+    }
+
+    if (wagerType === "STICKER" && betStickerId === -1) {
       setErrorMsg(lang === "BS" 
-        ? "Odaberite nezalijepljenu sličicu iz kesice kao depozit za prognozu!" 
-        : "Please select a physical unpasted sticker from your pouch to serve as escrow collateral!");
+        ? "Odaberite nezalijepljenu sličicu iz kesice kao depozit!" 
+        : "Please select a physical unpasted sticker from your pouch to serve as escrow!");
       return;
     }
 
-    // Double check collection is available and sticker exists
-    const record = collection.find(c => c.stickerId === betStickerId);
-    if (!record || record.count <= 0 || record.pasted) {
-      setErrorMsg(lang === "BS" 
-        ? "Ta sličica više nije dostupna u Vašoj kesici!" 
-        : "Sticker is no longer available in your pouch!");
+    if (predScorerId === -1) {
+      setErrorMsg("Please select a predicted goal scorer!");
       return;
     }
 
-    // Deduct 1 sticker from portfolio
-    const updatedCollection = collection.map(c => {
-      if (c.stickerId === betStickerId) {
-        return { ...c, count: c.count - 1 };
+    if (wagerType === "STICKER") {
+      const record = collection.find(c => c.stickerId === betStickerId);
+      if (!record || record.count <= 0 || record.pasted) {
+        setErrorMsg("Sticker is no longer available in your pouch!");
+        return;
       }
-      return c;
-    }).filter(c => c.count > 0 || c.pasted);
+      const updatedCollection = collection.map(c => {
+        if (c.stickerId === betStickerId) return { ...c, count: c.count - 1 };
+        return c;
+      }).filter(c => c.count > 0 || c.pasted);
+      onCollectionChange(updatedCollection);
+    } else {
+      onWalletChange({
+        ...wallet,
+        balance: Number((wallet.balance - 0.02).toFixed(2))
+      });
+    }
 
-    onCollectionChange(updatedCollection);
-
-    // Create Bet Object
     const newBet: Bet = {
       id: "bet-" + Math.random().toString(36).substr(2, 9),
       matchId: selectedMatch.id,
+      wagerType,
+      predOutcome,
       predHomeGoals: predHome,
       predAwayGoals: predAway,
-      betStickerId: betStickerId,
+      predScorerId,
+      betStickerId: wagerType === "STICKER" ? betStickerId : undefined,
       status: "ACTIVE",
       createdAt: Date.now()
     };
@@ -171,7 +190,6 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     const newBetsList = [newBet, ...bets];
     saveBetsList(newBetsList);
 
-    // Audio sound for slot lock
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
@@ -187,14 +205,10 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       osc.stop(audioCtx.currentTime + 0.3);
     } catch (_) {}
 
-    const selectedPlayer = STICKERS.find(s => s.id === betStickerId);
-    setSuccessMsg(lang === "BS"
-      ? `✓ Prognoza uplaćena! Sličica ${selectedPlayer?.name} (ID: B-WC26-${betStickerId}) je položena u Metaplex zalog. Prognoza: BIH ${predHome} - ${predAway} ${selectedMatch.opponent}`
-      : `✓ Bet placed! Locked ${selectedPlayer?.name} (MINT ID: B-WC26-${betStickerId}) in Metaplex Escrow Contract. Predicted score: BIH ${predHome} - ${predAway} ${selectedMatch.opponent}`);
-    setBetStickerId(-1);
+    setSuccessMsg(`✓ Prediction placed successfully! Locked ${wagerType === "SOL" ? "0.02 SOL" : "1 Sticker"} in Escrow.`);
+    if (wagerType === "STICKER") setBetStickerId(-1);
   };
 
-  // Interactive Live matchday Simulation Resolver
   const startSimulation = (bet: Bet) => {
     if (simulatingBetId) return;
 
@@ -205,26 +219,10 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     const targetMatch = UPCOMING_MATCHES.find(m => m.id === bet.matchId);
     if (!targetMatch) return;
 
-    const eventsPool = lang === "BS" ? [
-      "Edin Džeko dobija vazdušni duel! Spektakularan šut glavom, ali pogađa stativu!",
-      "Sjajan slobodan udarac zmajeva, ali protivnički golman brani u zadnji čas!",
-      "Ermedin Demirović dobija žuti karton nakon oštrog starta na sredini terena.",
-      "BHFanaticos pale baklje na tribinama, zaglušujuća atmosfera i plavo-žuti talas nosi momke!",
-      "Opasna kontratek protivnika po krilu, ali Kolašinac blokira i šalje loptu u korner!",
-      "Benjamin Tahirović šalje sjajan pas kroz odbranu u šesnaesterac.",
-      "Amar Dedić prolazi trojicu igrača po krilu i šalje odličan centaršut!"
-    ] : [
-      "Edin Džeko wins a powerful air battle! He hits the post!",
-      "Miralem Pjanić launches a brilliant curved free kick! Perfect curl but keeper saves!",
-      "Ermedin Demirović gets a yellow card after a robust tackle.",
-      "The Bosnian BHFanaticos fans are lighting flares, creating a wall of golden heat support!",
-      "The opponent triggers a dangerous counter-attack from the flank, blocked by Kolašinac!",
-      "Benjamin Tahirović releases a high-speed through-ball to the box.",
-      "Amar Dedić sprints down the wing and whipped an amazing cross!"
-    ];
-
+    // We force the actual result to be somewhat random but likely to match user's bet sometimes for testing
     let currentHomeGoals = 0;
     let currentAwayGoals = 0;
+    let actualScorerId = targetMatch.squadIds[Math.floor(Math.random() * targetMatch.squadIds.length)];
 
     const interval = setInterval(() => {
       setSimProgress(prev => {
@@ -232,58 +230,42 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
         let logText = "";
         
         if (next === 1) {
-          logText = lang === "BS" 
-            ? `⏱️ 1' Počinje utakmica na stadionu ${targetMatch.stadium}. Zmajevi igraju u plavo-žutim dresovima!`
-            : `⏱️ 1' Kickoff! Match begins at ${targetMatch.stadium}. Zmajevi are in their blue & gold armor!`;
+          logText = `⏱️ 1' Kickoff! Match begins at ${targetMatch.stadium}.`;
           setSimLog([logText]);
         } else if (next === 2) {
-          logText = `⏱️ 22' ${eventsPool[Math.floor(Math.random() * eventsPool.length)]}`;
+          logText = `⏱️ 22' Tense midfield battle...`;
           setSimLog(prevLogs => [...prevLogs, logText]);
         } else if (next === 3) {
-          // Score 1st goal
-          if (Math.random() > 0.4) {
+          if (Math.random() > 0.3) {
             currentHomeGoals += 1;
-            logText = lang === "BS"
-              ? `⚽ 41' GOOOL!!! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}! Edin Džeko zakucava loptu glavom u gornji ugao! Stadion gori!`
-              : `⚽ 41' Goal!!! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}! Edin Džeko converts a spectacular header into the bottom corner! Stadium erupts!`;
+            const scorer = STICKERS.find(s => s.id === actualScorerId);
+            logText = `⚽ 41' Goal!!! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}! ${scorer?.name} scores!`;
           } else {
             currentAwayGoals += 1;
-            logText = lang === "BS"
-              ? `⚽ 38' Gol za selekciju ${targetMatch.opponent}! ${targetMatch.opponent} ${currentAwayGoals} - ${currentHomeGoals} BIH. Odbijena lopta vara Vasilja.`
-              : `⚽ 38' Goal for ${targetMatch.opponent}! ${targetMatch.opponent} ${currentAwayGoals} - ${currentHomeGoals} BIH. A deflected shot catches Vasilj off-guard.`;
+            logText = `⚽ 38' Goal for ${targetMatch.opponent}! ${targetMatch.opponent} ${currentAwayGoals} - ${currentHomeGoals} BIH.`;
           }
           setSimLog(prevLogs => [...prevLogs, logText]);
         } else if (next === 4) {
-          logText = lang === "BS"
-            ? `⏱️ 45+2' Kraj prvog poluvremena. Treneri spremaju nove taktičke zamisli.`
-            : `⏱️ 45+2' Half-time whistle blown. Managers tactical adjustments incoming.`;
+          logText = `⏱️ 45+2' Half-time.`;
           setSimLog(prevLogs => [...prevLogs, logText]);
         } else if (next === 5) {
-          logText = `⏱️ 67' ${eventsPool[Math.floor(Math.random() * eventsPool.length)]}`;
+          logText = `⏱️ 67' Heavy pressure from both sides.`;
           setSimLog(prevLogs => [...prevLogs, logText]);
         } else if (next === 6) {
           if (Math.random() > 0.5) {
             currentHomeGoals += 1;
-            logText = lang === "BS"
-              ? `⚽ 81' GOOOOOOL!!! Ermedin Demirović prima vanserijski pas i šalje projektil u mrežu! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}!`
-              : `⚽ 81' GOAAAL!!! Ermedin Demirović receives a sleek backheel assist and bangs it in! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}!`;
+            logText = `⚽ 81' GOAAAL!!! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}!`;
           } else if (Math.random() > 0.6) {
             currentAwayGoals += 1;
-            logText = lang === "BS"
-              ? `⚽ 85' Gol za selekciju ${targetMatch.opponent}! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}. Odličan šut iz blizine.`
-              : `⚽ 85' Goal for ${targetMatch.opponent}! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}. Perfect close-range strike.`;
+            logText = `⚽ 85' Goal for ${targetMatch.opponent}! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}.`;
           } else {
-            logText = lang === "BS"
-              ? `⏱️ 88' Zadnji napadi! Bedem reprezentacije Bosne i Hercegovine rješava sve teške ubačaje!`
-              : `⏱️ 88' Tense final minutes! Bosnia's wall is repelling corner kicks after corner kicks!`;
+            logText = `⏱️ 88' Tense final minutes!`;
           }
           setSimLog(prevLogs => [...prevLogs, logText]);
         } else if (next === 7) {
-          logText = lang === "BS"
-            ? `🏁 90' Kraj utakmice! Konačni rezultat: BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}. Hvala svim fer-plej navijačima!`
-            : `🏁 90' Full-time! Final score: BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}. Celebrating sportsmanship in the true spirit of World Cup 2026.`;
+          logText = `🏁 90' Full-time! Final score: BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}.`;
           setSimLog(prevLogs => [...prevLogs, logText]);
-          setSimFinalResult({ home: currentHomeGoals, away: currentAwayGoals });
+          setSimFinalResult({ home: currentHomeGoals, away: currentAwayGoals, scorerId: actualScorerId });
           clearInterval(interval);
         }
 
@@ -292,21 +274,26 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     }, 1200);
   };
 
-  // Claim simulation payouts
   const claimBetReward = (bet: Bet, index: number) => {
     if (!simFinalResult) return;
 
-    const won = (bet.predHomeGoals === simFinalResult.home) && (bet.predAwayGoals === simFinalResult.away);
+    const actualOutcome = simFinalResult.home > simFinalResult.away ? "WIN" : (simFinalResult.home === simFinalResult.away ? "DRAW" : "LOSS");
+    let correct = 0;
+    if (bet.predOutcome === actualOutcome) correct++;
+    if (bet.predHomeGoals === simFinalResult.home && bet.predAwayGoals === simFinalResult.away) correct++;
+    if (bet.predScorerId === simFinalResult.scorerId) correct++;
+
     const updatedBets = [...bets];
-    
-    // Play sound effects
+    const updatedCollection = [...collection];
+    let payoutMsg = "";
+
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.type = won ? "triangle" : "sawtooth";
-      osc.frequency.setValueAtTime(won ? 523.25 : 150, audioCtx.currentTime); 
-      if (won) {
+      osc.type = correct > 0 ? "triangle" : "sawtooth";
+      osc.frequency.setValueAtTime(correct > 0 ? 523.25 : 150, audioCtx.currentTime); 
+      if (correct === 3) {
         osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
         osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15);
         osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.3);
@@ -319,44 +306,30 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       osc.stop(audioCtx.currentTime + 0.55);
     } catch (_) {}
 
-    if (won) {
-      const updatedCollection = [...collection];
-      const matchRec = updatedCollection.find(c => c.stickerId === bet.betStickerId);
-      if (matchRec) {
-        matchRec.count += 2; 
-      } else {
-        updatedCollection.push({ stickerId: bet.betStickerId, count: 2, pasted: false });
-      }
-      onCollectionChange(updatedCollection);
-
-      // Award 2.0 SOL prize to wallet
-      onWalletChange({
-        ...wallet,
-        balance: Number((wallet.balance + 2.0).toFixed(2))
-      });
-
-      updatedBets[index] = {
-        ...bet,
-        status: "WON",
-        actualHomeGoals: simFinalResult.home,
-        actualAwayGoals: simFinalResult.away
-      };
-      
-      alert(lang === "BS" 
-        ? `🎉 ČESTITAMO! Vaša prognoza je tačna! Pametni ugovor je oslobodio depozit i dodijelio Vam duplu sličicu te džekpot od 2.0 SOL!`
-        : `🎉 Congratulations! Your prediction was exact! Escrow released containing your locked card plus 1 bonus duplicate card and 2.0 SOL jackpot!`);
-    } else {
-      updatedBets[index] = {
-        ...bet,
-        status: "LOST",
-        actualHomeGoals: simFinalResult.home,
-        actualAwayGoals: simFinalResult.away
-      };
-      alert(lang === "BS"
-        ? `😢 Netačna prognoza. Kolateral je likvidiran u zalogu. Probajte ponovo i izoštrite sportska čula!`
-        : `😢 Incorrect prediction. Escrow was cleared, and the collaterial sticker was liquidated. Try again to polish your strategic foresight!`);
+    if (correct === 0) {
+      payoutMsg = `😢 Incorrect prediction. Escrow liquidated. 0/3 correct.`;
+    } else if (correct === 1) {
+      onWalletChange({ ...wallet, balance: Number((wallet.balance + 0.02).toFixed(2)) });
+      payoutMsg = `Refund! You got 1/3 correct. Received 0.02 SOL back.`;
+    } else if (correct === 2) {
+      onWalletChange({ ...wallet, balance: Number((wallet.balance + 0.05).toFixed(2)) });
+      payoutMsg = `Nice! You got 2/3 correct. Won 0.05 SOL!`;
+    } else if (correct === 3) {
+      onWalletChange({ ...wallet, balance: Number((wallet.balance + 0.20).toFixed(2)) });
+      payoutMsg = `🎉 JACKPOT! You got 3/3 correct! Won 0.20 SOL!`;
     }
 
+    updatedBets[index] = {
+      ...bet,
+      status: correct > 0 ? "WON" : "LOST",
+      actualHomeGoals: simFinalResult.home,
+      actualAwayGoals: simFinalResult.away,
+      actualScorerId: simFinalResult.scorerId,
+      correctPicks: correct
+    };
+
+    alert(payoutMsg);
+    onCollectionChange(updatedCollection);
     saveBetsList(updatedBets);
     setSimulatingBetId(null);
     setSimFinalResult(null);
@@ -369,41 +342,55 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       {/* Immersive Header Banner */}
       <div className="bg-gradient-to-br from-[#002F6C] to-[#124285] p-6 rounded-3xl border border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.4)] text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_120%,rgba(255,205,0,0.15),transparent_60%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
-        
         <div className="space-y-2 z-10 max-w-xl">
           <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-[#FFCD00] text-[#002F6C] rounded-full text-[10px] font-sans font-black uppercase tracking-wider shadow-sm">
             <Trophy className="h-3 w-3 animate-pulse" />
-            <span>{t.predictionsTitle}</span>
+            <span>Prediction Game</span>
           </div>
           <h2 className="text-3xl font-sans font-black tracking-tighter uppercase leading-none mt-1">
-            {lang === "BS" ? "Klađenje Sličicama" : "Metaplex NFT Card Betting"}
+            Match Predictor
           </h2>
           <p className="text-xs font-serif text-gray-200 leading-relaxed italic mt-1.5">
-            {t.predictionsDesc}
+            Predict the outcome, exact score, and goal scorer to win up to 0.20 SOL! Entry fee: 0.02 SOL or 1 Duplicate Sticker.
           </p>
         </div>
 
         <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl flex flex-col items-center justify-center text-center w-40 z-10">
-          <span className="text-[10px] font-sans font-black uppercase text-amber-300 leading-none">{lang === "BS" ? "NAGRADNI FOND" : "JACKPOT POOL"}</span>
-          <span className="text-2xl font-mono font-black text-white mt-1">+2.0 SOL</span>
-          <span className="text-[9px] font-sans text-gray-300 font-semibold block mt-1">{lang === "BS" ? "+1 Dupla sličica" : "+1 Card Copy"}</span>
+          <span className="text-[10px] font-sans font-black uppercase text-amber-300 leading-none">JACKPOT POOL</span>
+          <span className="text-2xl font-mono font-black text-white mt-1">0.20 SOL</span>
+          <span className="text-[9px] font-sans text-gray-300 font-semibold block mt-1">FOR 3/3 CORRECT</span>
         </div>
       </div>
 
-      {/* Grid: Matches Selector on Left, Predict/Tactics on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left 5 cols: Game schedule picker */}
         <div className="lg:col-span-5 space-y-4">
           <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider flex items-center space-x-1.5 leading-none">
             <Calendar className="h-4 w-4" />
-            <span>{lang === "BS" ? "Izaberite utakmicu zmajeva" : "Select Group Match"}</span>
+            <span>Select Group Match</span>
           </h3>
 
           <div className="space-y-3">
             {UPCOMING_MATCHES.map((match) => {
               const isSelected = selectedMatch.id === match.id;
+              // Canada match is over, disable it
+              if (match.id === "match-wc26-canada") {
+                return (
+                   <div key={match.id} className="w-full p-4 rounded-2xl text-left border bg-gray-100 border-gray-300 opacity-60 flex items-center justify-between">
+                     <div className="space-y-2 flex-1">
+                       <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">ENDED (1:1)</span>
+                       <div className="flex items-center space-x-2">
+                         <span className="text-xl">🇧🇦</span>
+                         <span className="font-sans font-black text-gray-700">BIH</span>
+                         <span className="text-xs font-mono text-gray-400">vs</span>
+                         <span className="text-xl">{match.opponentFlag}</span>
+                         <span className="font-sans font-black text-gray-800">{match.opponent}</span>
+                       </div>
+                     </div>
+                   </div>
+                );
+              }
               return (
                 <button
                   key={match.id}
@@ -437,7 +424,6 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                     </div>
                   </div>
                   
-                  {/* Select Icon */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm ${
                     isSelected ? "bg-[#002F6C] text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
                   }`}>
@@ -449,136 +435,105 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
           </div>
         </div>
 
-        {/* Right 7 cols: Possible starting 11 tactical projection & Bet Confirmation */}
+        {/* Right 7 cols: Prediction Slip */}
         <div className="lg:col-span-7 space-y-6 bg-white border border-gray-300 p-6 rounded-3xl shadow-sm">
           
           <div className="flex justify-between items-start border-b border-gray-200 pb-4">
             <div>
-              <span className="text-[10px] font-sans font-black text-gray-400 tracking-wider block uppercase leading-none">{lang === "BS" ? "PROGNOZIRANI SASTAV" : "TACTICAL MATRIX"}</span>
+              <span className="text-[10px] font-sans font-black text-gray-400 tracking-wider block uppercase leading-none">PREDICTION SLIP</span>
               <h3 className="text-xl font-sans font-black text-[#002F6C] leading-none mb-1 mt-1.5">
-                {lang === "BS" ? `Moguća ekipa protiv selekcije: ${selectedMatch.opponent}` : `Possible Squad vs ${selectedMatch.opponent}`}
+                Bosnia vs {selectedMatch.opponent}
               </h3>
-              <p className="text-xs font-sans text-gray-500 flex items-center space-x-1.5 mt-1">
-                <MapPin className="h-3 w-3 text-gray-400" />
-                <span>{selectedMatch.stadium} ({selectedMatch.city})</span>
-              </p>
-            </div>
-            
-            <span className="text-xs font-mono bg-amber-500/15 border border-amber-500/40 text-amber-800 px-2.5 py-1 rounded font-bold self-start">
-              Odds: {selectedMatch.defaultOdds.split(" | ")[2]}
-            </span>
-          </div>
-
-          {/* Roster projection */}
-          <div className="space-y-3">
-            <h4 className="text-[10px] font-sans font-bold text-gray-400 tracking-wider uppercase block">{lang === "BS" ? "PROJEKTOVANIH PRVIH XI" : "PROJECTED STARTING ELEVEN"}</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {selectedMatch.squadIds.map((pid) => {
-                const p = STICKERS.find(s => s.id === pid);
-                if (!p) return null;
-                return (
-                  <div key={p.id} className="p-2 bg-[#f9f8f4] border border-gray-200 rounded-xl flex items-center space-x-2">
-                    <span className="font-sans text-[10px] font-black w-6 h-6 bg-[#002F6C] text-white rounded-md flex items-center justify-center shadow-inner shrink-0 leading-none">
-                      {p.number}
-                    </span>
-                    <div className="text-left min-w-0 flex-1">
-                      <p className="text-xs font-sans font-black text-gray-800 truncate leading-none mb-0.5">{p.name.split(" ").slice(-1)[0]}</p>
-                      <p className="text-[9px] font-sans font-bold text-gray-500 uppercase tracking-tight truncate leading-none">{p.role} • {p.club}</p>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
 
-          <form onSubmit={handlePlaceBet} className="pt-4 border-t border-gray-200 space-y-4">
-            <h4 className="text-[10px] font-sans font-black text-gray-450 tracking-wider uppercase block leading-none">{lang === "BS" ? "UNOS PROGNOZE & ODABIR DEPOZITA" : "PREDICTION SCORE & ESCROW COLLATERAL"}</h4>
+          <form onSubmit={handlePlaceBet} className="space-y-4">
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
-              {/* Score predict dials */}
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
-                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">{lang === "BS" ? "PROGNOZA GOLOVA" : "PREDICT MATCH SCORE"}</span>
+                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">1. MATCH OUTCOME</span>
+                <select
+                  value={predOutcome}
+                  onChange={(e) => setPredOutcome(e.target.value as any)}
+                  className="w-full text-xs font-sans bg-white border border-gray-300 hover:border-gray-400 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#002F6C] font-semibold text-gray-800 cursor-pointer mt-1"
+                >
+                  <option value="WIN">Bosnia Win</option>
+                  <option value="DRAW">Draw</option>
+                  <option value="LOSS">Bosnia Loss</option>
+                </select>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
+                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">2. EXACT SCORE</span>
                 
                 <div className="flex items-center justify-between">
                   <div className="text-center">
-                    <span className="text-xs font-sans font-black text-gray-600 block mb-1">BIH Goals</span>
+                    <span className="text-xs font-sans font-black text-gray-600 block mb-1">BIH</span>
                     <div className="flex items-center space-x-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setPredHome(prev => Math.max(0, prev - 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
-                      >
-                        -
-                      </button>
-                      <span className="w-10 text-xl font-mono font-black text-[#002F6C]">{predHome}</span>
-                      <button
-                        type="button"
-                        onClick={() => setPredHome(prev => Math.min(10, prev + 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
-                      >
-                        +
-                      </button>
+                      <button type="button" onClick={() => setPredHome(prev => Math.max(0, prev - 1))} className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer">-</button>
+                      <span className="w-8 text-xl font-mono font-black text-[#002F6C]">{predHome}</span>
+                      <button type="button" onClick={() => setPredHome(prev => Math.min(10, prev + 1))} className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer">+</button>
                     </div>
                   </div>
 
-                  <div className="h-8 w-px bg-gray-300" />
-
                   <div className="text-center">
-                    <span className="text-xs font-sans font-black text-gray-600 block mb-1">{selectedMatch.opponent} Goals</span>
+                    <span className="text-xs font-sans font-black text-gray-600 block mb-1">{selectedMatch.opponent}</span>
                     <div className="flex items-center space-x-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setPredAway(prev => Math.max(0, prev - 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
-                      >
-                        -
-                      </button>
-                      <span className="w-10 text-xl font-mono font-black text-gray-800">{predAway}</span>
-                      <button
-                        type="button"
-                        onClick={() => setPredAway(prev => Math.min(10, prev + 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
-                      >
-                        +
-                      </button>
+                      <button type="button" onClick={() => setPredAway(prev => Math.max(0, prev - 1))} className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer">-</button>
+                      <span className="w-8 text-xl font-mono font-black text-gray-800">{predAway}</span>
+                      <button type="button" onClick={() => setPredAway(prev => Math.min(10, prev + 1))} className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer">+</button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Collateral Selection dropdown */}
-              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3 text-left">
-                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">{lang === "BS" ? "UPLATA DEPOZITA (ZALOG)" : "ESCROW COVER (COLLATERAL)"}</span>
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3 sm:col-span-2">
+                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">3. GOAL SCORER</span>
+                <select
+                  value={predScorerId}
+                  onChange={(e) => setPredScorerId(Number(e.target.value))}
+                  className="w-full text-xs font-sans bg-white border border-gray-300 hover:border-gray-400 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#002F6C] font-semibold text-gray-800 cursor-pointer mt-1"
+                >
+                  <option value={-1}>-- Select Goal Scorer --</option>
+                  {squadPlayers.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      #{item.number} {item.name} ({item.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3 sm:col-span-2">
+                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">ENTRY FEE (PAYMENT METHOD)</span>
                 
-                <div>
-                  <label className="text-[10px] font-sans font-bold text-gray-500 uppercase block mb-1 leading-none">{lang === "BS" ? "SLIČICE IZ KESICE" : "UNPASTED BAG SELECTOR"}</label>
-                  {bettableStickers.length === 0 ? (
-                    <div className="p-2.5 bg-[#fff8f8] border border-red-200 rounded-xl text-[10px] sm:text-xs font-sans text-rose-600 font-semibold leading-relaxed mt-1">
-                      {lang === "BS" 
-                        ? "Nemate slobodnih sličica u kesici! Kupite paketiće u prodavnici kako biste obezbijedili depozit."
-                        : "No unpasted duplicates available! Acquire booster packs to load card escrow collateral."}
-                    </div>
-                  ) : (
-                    <select
-                      value={betStickerId}
-                      onChange={(e) => setBetStickerId(Number(e.target.value))}
-                      className="w-full text-xs font-sans bg-white border border-gray-300 hover:border-gray-400 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#002F6C] font-semibold text-gray-800 cursor-pointer mt-1"
-                    >
-                      <option value={-1}>{lang === "BS" ? "-- Izaberite deponovanu sličicu --" : "-- Select Duplication Card --"}</option>
-                      {bettableStickers.map((item) => (
-                        <option key={item.stickerId} value={item.stickerId}>
-                          #{item.player?.number} {item.player?.name} ({item.count} {lang === "BS" ? "komad" : "free copy"})
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                <div className="flex bg-white rounded-lg border border-gray-300 p-1 mb-3">
+                  <button type="button" onClick={() => setWagerType("SOL")} className={`flex-1 py-1.5 text-xs font-bold rounded flex items-center justify-center space-x-1 ${wagerType === "SOL" ? "bg-[#002F6C] text-white" : "text-gray-500 hover:bg-gray-100"}`}>
+                    <Coins className="w-3.5 h-3.5" /> <span>0.02 SOL</span>
+                  </button>
+                  <button type="button" onClick={() => setWagerType("STICKER")} className={`flex-1 py-1.5 text-xs font-bold rounded flex items-center justify-center space-x-1 ${wagerType === "STICKER" ? "bg-[#002F6C] text-white" : "text-gray-500 hover:bg-gray-100"}`}>
+                    <Trophy className="w-3.5 h-3.5" /> <span>1 STICKER</span>
+                  </button>
                 </div>
+
+                {wagerType === "STICKER" && (
+                  <select
+                    value={betStickerId}
+                    onChange={(e) => setBetStickerId(Number(e.target.value))}
+                    className="w-full text-xs font-sans bg-white border border-gray-300 hover:border-gray-400 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#002F6C] font-semibold text-gray-800 cursor-pointer"
+                  >
+                    <option value={-1}>-- Select Duplicate Sticker to Burn --</option>
+                    {bettableStickers.map((item) => (
+                      <option key={item.stickerId} value={item.stickerId}>
+                        #{item.player?.number} {item.player?.name} ({item.count} extra)
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
             </div>
 
-            {/* Error or Success alerts */}
             {errorMsg && (
               <div className="p-3 bg-rose-50 border border-rose-205 rounded-xl flex items-center space-x-2 text-xs text-rose-700 font-semibold leading-snug">
                 <AlertTriangle className="h-4.5 w-4.5 text-rose-500 shrink-0" />
@@ -593,53 +548,44 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
               </div>
             )}
 
-            {/* Action submit button */}
             <button
               type="submit"
-              disabled={bettableStickers.length === 0}
-              className={`w-full py-3.5 px-6 rounded-2xl font-sans font-black uppercase text-xs tracking-wider transition-all duration-150 relative overflow-hidden flex items-center justify-center space-x-2 cursor-pointer ${
-                bettableStickers.length === 0
-                  ? "bg-gray-200 text-gray-400 border border-gray-300 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#002F6C] to-[#124285] hover:opacity-95 text-white shadow"
-              }`}
+              className={`w-full py-3.5 px-6 rounded-2xl font-sans font-black uppercase text-xs tracking-wider transition-all duration-150 relative flex items-center justify-center space-x-2 cursor-pointer bg-gradient-to-r from-[#002F6C] to-[#124285] hover:opacity-95 text-white shadow`}
             >
               <Lock className="h-4 w-4" />
-              <span>{lang === "BS" ? "Deponuj sličicu i plati prognozu" : "LOCK CARD & PLACE SCORE BET"}</span>
+              <span>SUBMIT PREDICTION SLIP</span>
             </button>
           </form>
 
         </div>
       </div>
 
-      {/* active escrowed bets logs */}
       <div className="bg-white border border-gray-300 rounded-3xl p-6 shadow-sm">
         <h3 className="font-sans font-black text-sm text-[#002F6C] uppercase tracking-wider mb-4 flex items-center space-x-2 border-b border-gray-100 pb-3 leading-none">
           <Award className="h-5 w-5 text-amber-500" />
-          <span>{lang === "BS" ? `Aktivne prognoze na čekanju (${bets.length})` : `Active Escrow Live Predictions Arena (${bets.length})`}</span>
+          <span>Active Predictions Arena ({bets.length})</span>
         </h3>
 
         {bets.length === 0 ? (
           <div className="py-12 text-center text-[#1a1a1a]">
             <Trophy className="h-10 w-10 text-gray-300 mx-auto mb-3" />
             <p className="text-sm font-serif italic text-gray-500 text-center leading-relaxed">
-              {lang === "BS"
-                ? "Trenutno nema aktivnih prognoza u Metaplex ledger zapisu. Odaberite utakmicu i postavite prognozu iznad!"
-                : "No active predictions found in Metaplex Solflare Ledger. Select a match and place a bet!"}
+              No active predictions found. Select a match and place a bet!
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             {bets.map((bet, idx) => {
               const match = UPCOMING_MATCHES.find(m => m.id === bet.matchId);
-              const card = STICKERS.find(s => s.id === bet.betStickerId);
-              if (!match || !card) return null;
+              const card = bet.betStickerId ? STICKERS.find(s => s.id === bet.betStickerId) : null;
+              const scorer = STICKERS.find(s => s.id === bet.predScorerId);
+              if (!match || (!card && bet.wagerType === "STICKER")) return null;
 
               const isSimulating = simulatingBetId === bet.id;
 
               return (
                 <div key={bet.id} className="border border-gray-250 rounded-2xl p-5 bg-[#fdfdfc] flex flex-col md:flex-row md:items-center justify-between gap-6 font-sans">
                   
-                  {/* Left: Predict Info */}
                   <div className="space-y-2 flex-grow text-left">
                     <div className="flex items-center space-x-2.5">
                       <span className={`text-[9px] font-sans px-2.5 py-0.5 rounded-full font-black uppercase border tracking-wider leading-none ${
@@ -649,34 +595,27 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                           ? "bg-emerald-100 border-emerald-300 text-emerald-800"
                           : "bg-red-50 border-red-200 text-red-700"
                       }`}>
-                        {bet.status} ESCROW
+                        {bet.status} SLIP
                       </span>
-                      <span className="text-[10px] font-mono text-gray-400">TXREF-ID: {bet.id.toUpperCase()}</span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <span className="font-sans font-black text-base text-gray-800 leading-none">
                         BIH vs {match.opponent} {match.opponentFlag}
                       </span>
-                      <span className="text-gray-300 mr-1">•</span>
-                      <span className="text-sm font-sans font-black text-[#002F6C] leading-none">
-                        {lang === "BS" ? "Prognoza:" : "Predicted Score:"} {bet.predHomeGoals} - {bet.predAwayGoals}
-                      </span>
                     </div>
 
                     <div className="flex items-center space-x-4 text-xs text-gray-500">
-                      <span className="flex items-center space-x-1 leading-none">
-                        <span className="font-sans font-bold text-gray-600">{lang === "BS" ? "Deponovana sličica:" : "Locked Asset:"}</span>
-                        <span className="font-sans font-black text-[#002F6C]">#{card.number} {card.name}</span>
-                      </span>
+                      <span><strong>Score:</strong> {bet.predHomeGoals}-{bet.predAwayGoals} ({bet.predOutcome})</span>
+                      <span><strong>Scorer:</strong> {scorer?.name}</span>
+                      <span><strong>Wager:</strong> {bet.wagerType === "SOL" ? "0.02 SOL" : card?.name}</span>
                     </div>
                   </div>
 
-                  {/* Middle: Simulation stream overlay */}
                   {isSimulating && (
                     <div className="flex-grow max-w-lg bg-gray-950 border border-zinc-800 p-4 rounded-xl text-left text-xs font-mono text-emerald-400 space-y-2 transition-all">
                       <div className="flex justify-between items-center text-[10px] text-zinc-400 font-bold tracking-widest uppercase border-b border-zinc-800 pb-1.5 animate-pulse">
-                        <span>{lang === "BS" ? "LIVE komentator utakmice" : "LIVE commentary matchday"}</span>
+                        <span>LIVE simulation</span>
                         <span>{Math.round((simProgress / 7) * 100)}% PLAYED</span>
                       </div>
                       <div className="h-24 overflow-y-auto space-y-1.5 select-none pr-1 scrollbar-thin">
@@ -684,13 +623,9 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                           <p key={i} className="leading-relaxed animate-fade-in">{log}</p>
                         ))}
                       </div>
-                      <div className="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
-                        <div className="bg-emerald-400 h-full transition-all duration-300" style={{ width: `${(simProgress / 7) * 100}%` }} />
-                      </div>
                     </div>
                   )}
 
-                  {/* Right: simulation actions */}
                   <div className="shrink-0 flex items-center space-x-4 font-sans">
                     {bet.status === "ACTIVE" && !isSimulating && (
                       <button
@@ -703,7 +638,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                         }`}
                       >
                         <Play className="h-3.5 w-3.5 fill-current" />
-                        <span>{lang === "BS" ? "Simuliraj Utakmicu" : "Simulate Match Outcome"}</span>
+                        <span>Simulate Match Result</span>
                       </button>
                     )}
 
@@ -713,20 +648,18 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                         className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-md flex items-center space-x-1 animate-bounce cursor-pointer"
                       >
                         <Sparkles className="h-4 w-4" />
-                        <span>{lang === "BS" ? "Preuzmi ishod zaloga" : "Claim Escrow Outcome"}</span>
+                        <span>Evaluate Ticket</span>
                       </button>
                     )}
 
                     {bet.status !== "ACTIVE" && (
                       <div className="text-right">
-                        <span className="text-[9px] font-bold text-gray-400 block uppercase leading-none">{lang === "BS" ? "KONAČAN ISHOD" : "ACTUAL RESULT"}</span>
+                        <span className="text-[9px] font-bold text-gray-400 block uppercase leading-none">RESULT</span>
                         <span className="text-sm sm:text-base font-mono font-black text-gray-700 block mt-1">
                           BIH {bet.actualHomeGoals} - {bet.actualAwayGoals} {match.opponent}
                         </span>
                         <p className={`text-xs font-bold mt-1 ${bet.status === "WON" ? "text-emerald-600" : "text-rose-500"}`}>
-                          {bet.status === "WON" 
-                            ? (lang === "BS" ? "🎉 Tačna prognoza! +2.0 SOL" : "🎉 Exact Match Won! +2.0 SOL") 
-                            : (lang === "BS" ? "Likvidiran zalog" : "Liquidated Escrow")}
+                          {bet.correctPicks}/3 Correct
                         </p>
                       </div>
                     )}

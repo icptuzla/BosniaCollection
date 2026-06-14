@@ -40,6 +40,7 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [ambientNode, setAmbientNode] = useState<BiquadFilterNode | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [sandboxMode, setSandboxMode] = useState(false);
 
   // --- INITIAL SEEDING ---
   useEffect(() => {
@@ -386,7 +387,21 @@ export default function App() {
         
         {/* Left Drawer Block - Solana Wallet Connection Area */}
         <div className="lg:col-span-1 space-y-6">
-          <SolflareWallet wallet={wallet} onWalletChange={setWallet} lang={lang} />
+          <SolflareWallet 
+            wallet={wallet} 
+            onWalletChange={setWallet} 
+            lang={lang} 
+            sandboxMode={sandboxMode}
+            onToggleSandbox={() => {
+              if (sandboxMode) {
+                setSandboxMode(false);
+                setWallet({ connected: false, publicKey: null, balance: 0 });
+              } else {
+                setSandboxMode(true);
+                setWallet({ connected: true, publicKey: "SANDBOX...WALLET", balance: 10.0 });
+              }
+            }}
+          />
           
           {/* Virtual pouch dashboard */}
           <div className="bg-white border border-gray-300/80 p-5 rounded-2xl text-left shadow-sm">

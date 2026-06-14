@@ -96,9 +96,10 @@ interface PackOpenerProps {
   onAddStickers: (ids: number[]) => void;
   onViewSticker: (sticker: Sticker) => void;
   lang: Language;
+  sandboxMode?: boolean;
 }
 
-export default function PackOpener({ wallet, onWalletChange, onAddStickers, onViewSticker, lang }: PackOpenerProps) {
+export default function PackOpener({ wallet, onWalletChange, onAddStickers, onViewSticker, lang, sandboxMode }: PackOpenerProps) {
   const [isBought, setIsBought] = useState(false);
   const [packStatus, setPackStatus] = useState<"ready" | "tearing" | "opened">("ready");
   const [revealedStickers, setRevealedStickers] = useState<Sticker[]>([]);
@@ -132,19 +133,24 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
     // Real Devnet/Mainnet Transaction using Solana Wallet
     setIsProcessing(true);
     try {
-      if (!wallet.publicKey) {
-        throw new Error(lang === "BS" ? "Nema javnog ključa novčanika!" : "No wallet public key found!");
+      if (!sandboxMode) {
+        if (!wallet.publicKey) {
+          throw new Error(lang === "BS" ? "Nema javnog ključa novčanika!" : "No wallet public key found!");
+        }
+
+        // Build transfer transaction sending 0.1 SOL to the treasury address
+        const tx = transactionBuilder().add(transferSol(umi, {
+          source: umi.identity,
+          destination: publicKey("DrQQhXb2dk99XvhM1Rem7PnKZDkah6C5aFU9Uyd5ju54"),
+          amount: sol(packCost)
+        }));
+
+        const result = await tx.sendAndConfirm(umi);
+        console.log("Pack purchase transfer successful. Tx:", result.signature);
+      } else {
+        await new Promise(r => setTimeout(r, 600)); // Simulate delay
+        console.log("Sandbox mode: Bypassed UMI transaction");
       }
-
-      // Build transfer transaction sending 0.1 SOL to the treasury address
-      const tx = transactionBuilder().add(transferSol(umi, {
-        source: umi.identity,
-        destination: publicKey("DrQQhXb2dk99XvhM1Rem7PnKZDkah6C5aFU9Uyd5ju54"),
-        amount: sol(packCost)
-      }));
-
-      const result = await tx.sendAndConfirm(umi);
-      console.log("Pack purchase transfer successful. Tx:", result.signature);
 
       // Manually decrement the state balance locally so it changes immediately visually
       onWalletChange({

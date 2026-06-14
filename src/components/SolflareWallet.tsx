@@ -11,15 +11,18 @@ interface SolflareWalletProps {
   wallet: WalletState;
   onWalletChange: (newWallet: WalletState) => void;
   lang: Language;
+  sandboxMode: boolean;
+  onToggleSandbox: () => void;
 }
 
-export default function SolflareWallet({ wallet, onWalletChange, lang }: SolflareWalletProps) {
+export default function SolflareWallet({ wallet, onWalletChange, lang, sandboxMode, onToggleSandbox }: SolflareWalletProps) {
   const { publicKey, connected, disconnect } = useWallet();
   const { connection } = useConnection();
   const [error, setError] = useState<string | null>(null);
-  const [isAirdropping, setIsAirdropping] = useState(false);
 
   useEffect(() => {
+    if (sandboxMode) return;
+    
     const updateBalance = async () => {
       if (connected && publicKey) {
         try {
@@ -51,31 +54,8 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
     return () => clearInterval(interval);
   }, [connected, publicKey, connection]);
 
-  const handleFaucetClaim = async () => {
-    if (!publicKey || !connected) return;
-    
-    setIsAirdropping(true);
-    setError(null);
-    try {
-      const signature = await connection.requestAirdrop(publicKey, 5 * LAMPORTS_PER_SOL);
-      const latestBlockHash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({
-        blockhash: latestBlockHash.blockhash,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        signature: signature
-      });
-      
-      const newBalance = await connection.getBalance(publicKey);
-      onWalletChange({
-        ...wallet,
-        balance: newBalance / LAMPORTS_PER_SOL,
-      });
-    } catch (err: any) {
-      console.error("Airdrop failed:", err);
-      setError(err?.message || "Failed to airdrop SOL. Devnet faucet might be rate-limiting.");
-    } finally {
-      setIsAirdropping(false);
-    }
+  const handleFaucetClaim = () => {
+    window.open("https://faucet.solana.com/", "_blank");
   };
 
   const handleDisconnect = () => {
@@ -97,7 +77,7 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
           <div className="text-left">
             <h3 className="font-sans font-bold text-base text-[#002F6C] uppercase tracking-tight leading-none">Solana Node Wallet</h3>
             <span className="text-[10px] font-serif text-gray-500 italic block mt-1">
-              {wallet.connected ? "Network: Solana Devnet" : "Waiting for connection"}
+              {wallet.connected ? (sandboxMode ? "Network: Sandbox (Mock)" : "Network: Solana Devnet") : "Waiting for connection"}
             </span>
           </div>
         </div>
@@ -111,7 +91,7 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
       {!wallet.connected ? (
         <div className="space-y-3">
           <p className="text-xs font-serif text-gray-600 leading-relaxed text-left">
-            Connect your Solflare Wallet to sign physical card trade transactions and buy packs on Solana Devnet.
+            Connect your Solflare Wallet to sign physical card trade transactions and buy packs on Solana Devnet, or enable Sandbox Mode to test instantly without a wallet.
           </p>
 
           <div className="flex justify-center py-2 [&_.wallet-adapter-button]:!bg-[#002F6C] [&_.wallet-adapter-button]:hover:!opacity-95 [&_.wallet-adapter-button]:!h-auto [&_.wallet-adapter-button]:!py-2.5 [&_.wallet-adapter-button]:!px-4 [&_.wallet-adapter-button]:!rounded-lg [&_.wallet-adapter-button]:!font-sans [&_.wallet-adapter-button]:!font-bold [&_.wallet-adapter-button]:!text-xs [&_.wallet-adapter-button]:!uppercase [&_.wallet-adapter-button]:!tracking-wider [&_.wallet-adapter-button]:!transition [&_.wallet-adapter-button]:!shadow-sm [&_.wallet-adapter-button]:!w-full [&_.wallet-adapter-button]:!flex [&_.wallet-adapter-button]:!justify-center">
@@ -123,6 +103,15 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
               {error}
             </div>
           )}
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <button
+              onClick={onToggleSandbox}
+              className="w-full py-2.5 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-sans font-bold text-xs uppercase tracking-wider transition border border-gray-300"
+            >
+              Enable Sandbox Mode
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -149,23 +138,18 @@ export default function SolflareWallet({ wallet, onWalletChange, lang }: Solflar
               <button
                 id="btn-solana-faucet-airdrop"
                 onClick={handleFaucetClaim}
-                disabled={isAirdropping}
-                className="flex-1 py-2 px-3 rounded bg-[#FFCD00]/25 hover:bg-[#FFCD00]/40 text-[#002F6C] font-bold text-xs font-sans transition border border-[#FFCD00]/50 flex items-center justify-center space-x-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-2 px-3 rounded bg-[#FFCD00]/25 hover:bg-[#FFCD00]/40 text-[#002F6C] font-bold text-xs font-sans transition border border-[#FFCD00]/50 flex items-center justify-center space-x-1 cursor-pointer"
               >
-                {isAirdropping ? (
-                  <Loader2 className="h-3.5 w-3.5 text-[#002F6C] animate-spin" />
-                ) : (
-                  <Coins className="h-3.5 w-3.5 text-[#002F6C]" />
-                )}
-                <span>{isAirdropping ? "AIRDROPPING..." : "AIRDROP +5 SOL"}</span>
+                <Coins className="h-3.5 w-3.5 text-[#002F6C]" />
+                <span>MANUAL AIRDROP</span>
               </button>
 
             <button
               id="btn-disconnect-solana"
-              onClick={handleDisconnect}
+              onClick={sandboxMode ? onToggleSandbox : handleDisconnect}
               className="py-2 px-3 rounded hover:bg-rose-50 hover:text-rose-700 text-rose-600 font-sans font-bold text-xs transition border border-rose-200 flex items-center justify-center space-x-1 cursor-pointer"
             >
-              <span>DISCONNECT</span>
+              <span>{sandboxMode ? "EXIT SANDBOX" : "DISCONNECT"}</span>
             </button>
           </div>
           

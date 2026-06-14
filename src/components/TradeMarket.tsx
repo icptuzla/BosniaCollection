@@ -19,6 +19,7 @@ interface TradeMarketProps {
   tradeOffers: TradeOffer[];
   onRemoveTradeOffer: (id: string) => void;
   lang: Language;
+  sandboxMode?: boolean;
 }
 
 export default function TradeMarket({
@@ -30,6 +31,7 @@ export default function TradeMarket({
   tradeOffers,
   onRemoveTradeOffer,
   lang,
+  sandboxMode,
 }: TradeMarketProps) {
   const solanaWallet = useWallet();
   const { connection } = useConnection();
@@ -62,7 +64,7 @@ export default function TradeMarket({
     setErrorText(null);
     setSuccessText(null);
 
-    if (!wallet.connected || !solanaWallet.publicKey) {
+    if (!wallet.connected || (!sandboxMode && !solanaWallet.publicKey)) {
       setErrorText("You must connect your Solflare wallet before listing a trade offer!");
       return;
     }
@@ -97,23 +99,27 @@ export default function TradeMarket({
     setIsProcessing(true);
 
     try {
-      // 1. Simulate Maker signing their portion of the transaction (Partial Signature)
-      // We do a minimal transfer to System Program to prove wallet ownership and intent
-      let tx = transactionBuilder().add(transferSol(umi, {
-        source: umi.identity,
-        destination: publicKey("11111111111111111111111111111111"), 
-        amount: sol(0.00001)
-      }));
-      
-      const result = await tx.sendAndConfirm(umi);
-      console.log("Maker intent signed. Tx:", result.signature);
+      if (!sandboxMode) {
+        // 1. Simulate Maker signing their portion of the transaction (Partial Signature)
+        // We do a minimal transfer to System Program to prove wallet ownership and intent
+        let tx = transactionBuilder().add(transferSol(umi, {
+          source: umi.identity,
+          destination: umi.identity.publicKey, 
+          amount: sol(0.00001)
+        }));
+        
+        const result = await tx.sendAndConfirm(umi);
+        console.log("Maker intent signed. Tx:", result.signature);
+      } else {
+        await new Promise(r => setTimeout(r, 600));
+      }
 
       // Create trade offer
       const tradeId = "tx-trd-" + Math.random().toString(36).substr(2, 9);
       const newOffer: TradeOffer = {
         id: tradeId,
-        ownerAddress: solanaWallet.publicKey.toBase58(),
-        ownerName: "My Wallet (" + solanaWallet.publicKey.toBase58().substring(0, 5) + ")",
+        ownerAddress: sandboxMode ? "SANDBOX...WALLET" : solanaWallet.publicKey!.toBase58(),
+        ownerName: sandboxMode ? "Sandbox User" : "My Wallet (" + solanaWallet.publicKey!.toBase58().substring(0, 5) + ")",
         offeredStickerId: selectedOfferStickerId,
         requestedStickerId: sellingForSol ? -1 : selectedWantStickerId,
         solPrice: sellingForSol ? Number(solValue.toFixed(2)) : undefined,
@@ -142,12 +148,13 @@ export default function TradeMarket({
     setErrorText(null);
     setSuccessText(null);
 
-    if (!wallet.connected || !solanaWallet.publicKey) {
+    if (!wallet.connected || (!sandboxMode && !solanaWallet.publicKey)) {
       setErrorText("Connect your web3 Solana / Solflare wallet card first!");
       return;
     }
 
-    if (offer.ownerAddress === solanaWallet.publicKey.toBase58()) {
+    const currentAddress = sandboxMode ? "SANDBOX...WALLET" : solanaWallet.publicKey!.toBase58();
+    if (offer.ownerAddress === currentAddress) {
       setErrorText("You cannot accept your own trade listings!");
       return;
     }
@@ -172,32 +179,38 @@ export default function TradeMarket({
     setIsProcessing(true);
 
     try {
-      // Construct the counter-signature transaction
-      if (offer.solPrice) {
-        // True P2P: Taker transfers SOL directly to Maker
-        let tx = transactionBuilder().add(transferSol(umi, {
-          source: umi.identity,
-          destination: publicKey(offer.ownerAddress),
-          amount: sol(offer.solPrice)
-        }));
-        
-        const result = await tx.sendAndConfirm(umi);
-        console.log("Taker P2P SOL transfer signed. Tx:", result.signature);
+      if (!sandboxMode) {
+        // Construct the counter-signature transaction
+        if (offer.solPrice) {
+          // True P2P: Taker transfers SOL directly to Maker
+          let tx = transactionBuilder().add(transferSol(umi, {
+            source: umi.identity,
+            destination: publicKey(offer.ownerAddress),
+            amount: sol(offer.solPrice)
+          }));
+          
+          const result = await tx.sendAndConfirm(umi);
+          console.log("Taker P2P SOL transfer signed. Tx:", result.signature);
+        } else {
+          // Taker signs an intent to swap the asset (simulate)
+          let tx = transactionBuilder().add(transferSol(umi, {
+            source: umi.identity,
+            destination: publicKey(offer.ownerAddress), 
+            amount: sol(0.00001) // minimal network verification
+          }));
+          const result = await tx.sendAndConfirm(umi);
+          console.log("Taker swap intent signed. Tx:", result.signature);
+        }
+      } else {
+        await new Promise(r => setTimeout(r, 600));
+      }
 
+      if (offer.solPrice) {
         // Update local wallet balance visually
         onWalletChange({
           ...wallet,
           balance: Number((wallet.balance - offer.solPrice).toFixed(2)),
         });
-      } else {
-        // Taker signs an intent to swap the asset (simulate)
-        let tx = transactionBuilder().add(transferSol(umi, {
-          source: umi.identity,
-          destination: publicKey(offer.ownerAddress), 
-          amount: sol(0.00001) // minimal network verification
-        }));
-        const result = await tx.sendAndConfirm(umi);
-        console.log("Taker swap intent signed. Tx:", result.signature);
       }
 
       // Execute trade locally
@@ -401,7 +414,8 @@ export default function TradeMarket({
                 {tradeOffers.map((offer) => {
                   const offerSticker = getStickerById(offer.offeredStickerId);
                   const wantSticker = offer.requestedStickerId !== -1 ? getStickerById(offer.requestedStickerId) : null;
-                  const isMine = offer.ownerAddress === solanaWallet.publicKey?.toBase58();
+                  const currentAddress = sandboxMode ? "SANDBOX...WALLET" : solanaWallet.publicKey?.toBase58();
+                  const isMine = offer.ownerAddress === currentAddress;
 
                   return (
                     <div
