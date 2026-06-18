@@ -307,26 +307,26 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 14,
-    number: "02",
-    name: "Nermin Mujakić",
-    role: "CLB",
-    club: "Antalyspor",
-    birthDate: "24.01.1998",
-    height: "185 cm",
-    biography: "Affectionately called 'The Iron Nermin'. A veteran defensive hero who represents true grit, slide-tackle blocks, and the legendary 2014 world cup qualifying era spirits.",
+    number: "14",
+    name: "Ivan Šunjić",
+    role: "Midfielder",
+    club: "Pafos FC",
+    birthDate: "22.08.1997",
+    height: "184 cm",
+    biography: "A rugged, energetic defensive midfielder known for his high physical work rate, robust sliding tackles, and clever positioning under deep pressure.",
     stats: {
-      overall: 73,
-      pace: 56,
-      shooting: 40,
-      passing: 58,
-      dribbling: 54,
-      defending: 73,
-      physicality: 80
+      overall: 74,
+      pace: 61,
+      shooting: 53,
+      passing: 72,
+      dribbling: 78,
+      defending: 77,
+      physicality: 82
     },
-    gameRatingRef: "FC26 Rating: 73",
+    gameRatingRef: "FC26 Rating: 74",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "mujakic.webp"
+    imageFile: "sunjic.webp"
   },
   {
     id: 15,
@@ -376,26 +376,27 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 17,
-    number: "17",
-    name: "Ivan Šunjić",
-    role: "Midfielder",
-    club: "Pafos FC",
-    birthDate: "22.08.1997",
-    height: "184 cm",
-    biography: "A rugged, energetic defensive midfielder known for his high physical work rate, robust sliding tackles, and clever positioning under deep pressure.",
+    number: "02",
+    name: "Nermin Mujakić",
+    role: "CLB",
+    club: "Antalyspor",
+    birthDate: "24.01.1998",
+    height: "185 cm",
+    biography: "Affectionately called 'The Iron Nermin'. A veteran defensive hero who represents true grit, slide-tackle blocks, and the legendary 2014 world cup qualifying era spirits.",
     stats: {
-      overall: 74,
-      pace: 61,
-      shooting: 53,
-      passing: 72,
-      dribbling: 78,
-      defending: 77,
-      physicality: 82
+      overall: 73,
+      pace: 56,
+      shooting: 40,
+      passing: 58,
+      dribbling: 54,
+      defending: 73,
+      physicality: 80
     },
-    gameRatingRef: "FC26 Rating: 74",
+    gameRatingRef: "FC26 Rating: 73",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "sunjic.webp"
+    imageFile: "mujakic.webp"
+    
   },
   {
     id: 18,
@@ -423,7 +424,7 @@ export const STICKERS: Sticker[] = [
   {
 
     id: 19,
-    number: "14",
+    number: "28",
     name: "Denis Huseinbašić",
     role: "CM",
     club: "1. FC Köln",
@@ -516,7 +517,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 23,
-    number: "21",
+    number: "23",
     name: "Haris Tabaković",
     role: "ST",
     club: "Borussia Monchengladbach",
@@ -590,7 +591,7 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "Holographic Rarity ★★★★★",
     type: StickerType.SPECIAL,
     imageTheme: "from-amber-400 via-yellow-600 to-blue-900 animate-pulse bg-[length:200%_200%]",
-    imageFile: "grb.png"
+    imageFile: "GoldenCrest.png"
   },
   {
     id: 27,

@@ -7,7 +7,7 @@ import { Language } from "../data/translations";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
-import { transactionBuilder, publicKey, sol } from "@metaplex-foundation/umi";
+import { transactionBuilder, publicKey, sol, keypairIdentity, generateSigner } from "@metaplex-foundation/umi";
 import { transferSol } from "@metaplex-foundation/mpl-toolbox";
 
 interface TradeMarketProps {
@@ -38,11 +38,22 @@ export default function TradeMarket({
 
   const umi = useMemo(() => {
     const u = createUmi(connection.rpcEndpoint);
-    if (solanaWallet.wallet) {
-      u.use(walletAdapterIdentity(solanaWallet));
+    if (sandboxMode) {
+      try {
+        const kp = generateSigner(u);
+        u.use(keypairIdentity(kp));
+      } catch (e) {
+        console.warn("Failed to create sandbox signer for UMI:", e);
+      }
+    } else if (!sandboxMode && solanaWallet.wallet) {
+      try {
+        u.use(walletAdapterIdentity(solanaWallet));
+      } catch (e) {
+        console.warn("Wallet adapter not initialized:", e);
+      }
     }
     return u;
-  }, [connection, solanaWallet]);
+  }, [connection, solanaWallet, sandboxMode]);
 
   const [selectedOfferStickerId, setSelectedOfferStickerId] = useState<number>(-1);
   const [selectedWantStickerId, setSelectedWantStickerId] = useState<number>(-1);

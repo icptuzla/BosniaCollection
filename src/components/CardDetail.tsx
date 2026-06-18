@@ -35,7 +35,7 @@ import mahmicImg from "./players/mahmic.webp";
 import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
-import grbImg from "./special_collection/grb.png";
+import goldenCrestImg from "./special_collection/GoldenCrest.png";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
@@ -69,7 +69,7 @@ const playerImageMap: Record<string, string> = {
   "lukic.webp": lukicImg,
 
   // Special collection
-  "grb.png": grbImg,
+  "GoldenCrest.png": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
   "2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,

@@ -10,9 +10,9 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { clusterApiUrl } from '@solana/web3.js';
 import '@solana/wallet-adapter-react-ui/styles.css';
 
-const network = import.meta.env.VITE_SOLANA_NETWORK === 'mainnet-beta' 
-  ? WalletAdapterNetwork.Mainnet 
-  : WalletAdapterNetwork.Devnet;
+const network = import.meta.env.VITE_SOLANA_NETWORK === 'devnet' 
+  ? WalletAdapterNetwork.Devnet 
+  : WalletAdapterNetwork.Mainnet;
 
 const endpoint = clusterApiUrl(network);
 const wallets = [new SolflareWalletAdapter()];

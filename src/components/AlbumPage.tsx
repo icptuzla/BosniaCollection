@@ -35,7 +35,7 @@ import mahmicImg from "./players/mahmic.webp";
 import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
-import grbImg from "./special_collection/grb.png";
+import goldenCrestImg from "./special_collection/GoldenCrest.png";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
@@ -71,7 +71,7 @@ const playerImageMap: Record<string, string> = {
   "lukic.webp": lukicImg,
 
   // Special collection
-  "grb.png": grbImg,
+  "GoldenCrest.png": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
   "2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,
@@ -148,6 +148,10 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
   const totalPossible = STICKERS.length;
   const progressPercent = Math.round((pastedCount / totalPossible) * 100);
 
+  function setIsAlbumOpen(arg0: boolean) {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div className="w-full flex flex-col items-center space-y-6">
 
@@ -183,87 +187,39 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
       {/* Book Outer Binder */}
       <div className="relative w-full max-w-4xl min-h-[580px] rounded-lg bg-[#fffef8] border-l-8 md:border-l-[12px] border-[#002F6C] shadow-2xl border-t border-b border-r border-[#d1cfc5] overflow-hidden p-4 md:p-8 text-gray-800 flex flex-col justify-between">
 
-        {/* Subtle & Gorgeous Soccer Field Background Overlay with green touches */}
-        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center p-4 md:p-8 bg-gradient-to-b from-[#edf8eb] via-[#edf7ec] to-[#f0faf0]">
-          <svg className="w-full h-full text-[#2e7d32]/25" viewBox="0 0 100 64" fill="none" stroke="currentColor" strokeWidth="0.7">
-            {/* Outer Pitch Border (soft green field background) */}
-            <rect x="2" y="2" width="96" height="60" fill="#ccf0c8" fillOpacity="0.32" stroke="currentColor" strokeWidth="0.7" />
-
-            {/* Center Circle */}
-            <circle cx="50" cy="32" r="10" />
-            <circle cx="50" cy="32" r="0.8" fill="currentColor" />
-
-            {/* Left Penalty Area */}
-            <rect x="2" y="16" width="16" height="32" />
-            {/* Left Goal Area */}
-            <rect x="2" y="24" width="6" height="16" />
-            {/* Left Penalty Spot */}
-            <circle cx="14" cy="32" r="0.6" fill="currentColor" />
-            {/* Left Box D-Arc */}
-            <path d="M 18,26.5 A 10,10 0 0,1 18,37.5" />
-
-            {/* Right Penalty Area */}
-            <rect x="82" y="16" width="16" height="32" />
-            {/* Right Goal Area */}
-            <rect x="92" y="24" width="6" height="16" />
-            {/* Right Penalty Spot */}
-            <circle cx="86" cy="32" r="0.6" fill="currentColor" />
-            {/* Right Box D-Arc */}
-            <path d="M 82,26.5 A 10,10 0 0,0 82,37.5" />
-
-            {/* Corner Arcs */}
-            <path d="M 2,5 A 3,3 0 0,0 5,2" />
-            <path d="M 2,59 A 3,3 0 0,1 5,62" />
-            <path d="M 98,5 A 3,3 0 0,1 95,2" />
-            <path d="M 98,59 A 3,3 0 0,0 95,62" />
-          </svg>
-        </div>
-
         {/* ================= COVER PAGE ================= */}
-        {currentPage === 0 && (
-          <div className="flex flex-col items-center justify-center py-10 text-center space-y-6 max-w-xl mx-auto z-10">
-            <span className="text-[10px] font-sans tracking-[0.3em] font-bold text-[#002F6C] uppercase bg-[#002F6C]/10 py-1.5 px-4 rounded-full border border-[#002F6C]/20">
-              {t.coverBadge}
-            </span>
+{currentPage === 0 && (
+  <div className="relative w-full h-screen overflow-hidden">
+    {/* Background image */}
+    <img
+      src="/src/components/Album.png"
+      alt="Bosnia WC2026 Football Album Cover"
+      className="absolute inset-0 w-full h-full object-cover"
+    />
 
-            <div className="space-y-2">
-              <h1 className="text-2xl md:text-3xl font-sans font-black tracking-tight text-[#002F6C] uppercase leading-none">
-                {t.coverMainTitle}
-              </h1>
-              <p className="text-sm font-serif italic text-gray-500">
-                {t.coverSubtitle}
-              </p>
-            </div>
-
-            <div className="relative w-72 h-48 rounded-2xl bg-gradient-to-br from-[#002F6C] via-[#0b1f3c] to-[#01142e] border-4 border-[#00f0ff] shadow-[0_0_25px_rgba(0,240,255,0.7)] flex flex-col items-center justify-center p-4">
-              <div className="text-center flex flex-col items-center space-y-2">
-                <img src={logoImage} alt="Zmajevi BIH Crest" className="w-18 h-18 object-contain drop-shadow-[0_0_8px_rgba(255,205,0,0.55)]" />
-                <div>
-                  <span className="font-sans font-black text-xs text-[#FFCD00] block tracking-[0.3em] uppercase leading-none">
-                    {t.coverHeroes}
-                  </span>
-                  <span className="text-[9px] mt-1 block text-gray-300">
-                    {t.coverCollectibleSlots}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-600 leading-relaxed max-w-sm italic">
-              {t.coverText}
-            </p>
-
-            <button
-              id="album-flip-open-btn"
-              onClick={handleNextPage}
-              className="py-3 px-8 rounded-lg bg-[#002F6C] hover:bg-[#0c3f82] text-white font-sans font-bold uppercase text-xs tracking-wider transition shadow-sm flex items-center space-x-2 cursor-pointer"
-            >
-              <span>{t.flipOpenButton}</span>
-              <ChevronRight className="h-4 w-4 text-white" />
-            </button>
-          </div>
-        )}
-
+    {/* Slide animation container */}
+    <div
+      className={`absolute inset-0 transition-transform duration-700 ease-in-out ${
+        setIsAlbumOpen ? 'translate-y-[-100%]' : 'translate-y-0'
+      }`}
+    >
+      {/* Button at bottom */}
+      <div className="absolute bottom-10 left-0 right-0 flex justify-center">
+        <button
+          id="album-flip-open-btn"
+          onClick={() => {
+            setIsAlbumOpen(true);
+            handleNextPage();
+          }}
+          className="py-3 px-8 rounded-lg bg-[#002F6C] hover:bg-[#0c3f82] text-white font-sans font-bold uppercase text-xs tracking-wider transition shadow-sm flex items-center space-x-2 cursor-pointer"
+        >
+          <span>{t.flipOpenButton}</span>
+          <ChevronRight className="h-4 w-4 text-white" />
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         {/* ================= INDIVIDUAL STANDARD PAGES ================= */}
         {currentPage > 0 && (
           <div className="w-full flex-1 flex flex-col justify-between z-20">
