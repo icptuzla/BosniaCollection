@@ -23,7 +23,7 @@ interface Match {
   stage: string;
   stageBS: string;
   defaultOdds: string;
-  squadIds: number[]; 
+  squadIds: number[];
 }
 
 interface Bet {
@@ -55,7 +55,7 @@ const UPCOMING_MATCHES: Match[] = [
     stage: "Group Stage - Matchday 1",
     stageBS: "Grupna faza - 1. Kolo",
     defaultOdds: "Canada (2.35) | Draw (3.40) | Bosnia (2.95)",
-    squadIds: [1, 5, 2, 3, 17, 6, 7, 18, 8, 10, 9], 
+    squadIds: [1, 5, 2, 3, 17, 6, 7, 18, 8, 10, 9],
   },
   {
     id: "match-wc26-switzerland",
@@ -68,7 +68,7 @@ const UPCOMING_MATCHES: Match[] = [
     stage: "Group Stage - Matchday 2",
     stageBS: "Grupna faza - 2. Kolo",
     defaultOdds: "Switzerland (2.10) | Draw (3.30) | Bosnia (3.50)",
-    squadIds: [1, 5, 4, 2, 3, 6, 20, 19, 11, 10, 9], 
+    squadIds: [1, 5, 4, 2, 3, 6, 20, 19, 11, 10, 9],
   },
   {
     id: "match-wc26-qatar",
@@ -81,21 +81,21 @@ const UPCOMING_MATCHES: Match[] = [
     stage: "Group Stage - Matchday 3",
     stageBS: "Grupna faza - 3. Kolo",
     defaultOdds: "Qatar (3.60) | Draw (3.25) | Bosnia (2.00)",
-    squadIds: [16, 22, 2, 3, 17, 6, 7, 18, 8, 21, 10], 
+    squadIds: [16, 22, 2, 3, 17, 6, 7, 18, 8, 21, 10],
   }
 ];
 
 export default function MatchBets({ wallet, onWalletChange, collection, onCollectionChange, lang }: MatchBetsProps) {
   // Default to Switzerland since Canada ended 1:1
   const [selectedMatch, setSelectedMatch] = useState<Match>(UPCOMING_MATCHES[1]);
-  
+
   const [wagerType, setWagerType] = useState<"SOL" | "STICKER">("SOL");
   const [predOutcome, setPredOutcome] = useState<"WIN" | "DRAW" | "LOSS">("WIN");
   const [predHome, setPredHome] = useState<number>(2);
   const [predAway, setPredAway] = useState<number>(1);
   const [predScorerId, setPredScorerId] = useState<number>(-1);
   const [betStickerId, setBetStickerId] = useState<number>(-1);
-  
+
   const [bets, setBets] = useState<Bet[]>([]);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -133,8 +133,8 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     setErrorMsg(null);
 
     if (!wallet.connected) {
-      setErrorMsg(lang === "BS" 
-        ? "Prvo povežite Vaš virtuelni novčanik za zaključavanje Metaplex pametnog ugovora!" 
+      setErrorMsg(lang === "BS"
+        ? "Prvo povežite Vaš virtuelni novčanik za zaključavanje Metaplex pametnog ugovora!"
         : "Please connect your Solflare mock wallet first to place a prediction!");
       return;
     }
@@ -145,8 +145,8 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     }
 
     if (wagerType === "STICKER" && betStickerId === -1) {
-      setErrorMsg(lang === "BS" 
-        ? "Odaberite nezalijepljenu sličicu iz kesice kao depozit!" 
+      setErrorMsg(lang === "BS"
+        ? "Odaberite nezalijepljenu sličicu iz kesice kao depozit!"
         : "Please select a physical unpasted sticker from your pouch to serve as escrow!");
       return;
     }
@@ -203,7 +203,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       gain.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + 0.3);
-    } catch (_) {}
+    } catch (_) { }
 
     setSuccessMsg(`✓ Prediction placed successfully! Locked ${wagerType === "SOL" ? "0.02 SOL" : "1 Sticker"} in Escrow.`);
     if (wagerType === "STICKER") setBetStickerId(-1);
@@ -228,7 +228,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       setSimProgress(prev => {
         const next = prev + 1;
         let logText = "";
-        
+
         if (next === 1) {
           logText = `⏱️ 1' Kickoff! Match begins at ${targetMatch.stadium}.`;
           setSimLog([logText]);
@@ -292,7 +292,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = correct > 0 ? "triangle" : "sawtooth";
-      osc.frequency.setValueAtTime(correct > 0 ? 523.25 : 150, audioCtx.currentTime); 
+      osc.frequency.setValueAtTime(correct > 0 ? 523.25 : 150, audioCtx.currentTime);
       if (correct === 3) {
         osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
         osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15);
@@ -304,7 +304,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       gain.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + 0.55);
-    } catch (_) {}
+    } catch (_) { }
 
     if (correct === 0) {
       payoutMsg = `😢 Incorrect prediction. Escrow liquidated. 0/3 correct.`;
@@ -338,7 +338,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8 animate-fade-in text-left">
-      
+
       {/* Immersive Header Banner */}
       <div className="bg-gradient-to-br from-[#002F6C] to-[#124285] p-6 rounded-3xl border border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.4)] text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_120%,rgba(255,205,0,0.15),transparent_60%)] pointer-events-none" />
@@ -363,7 +363,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+
         {/* Left 5 cols: Game schedule picker */}
         <div className="lg:col-span-5 space-y-4">
           <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider flex items-center space-x-1.5 leading-none">
@@ -377,18 +377,18 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
               // Canada match is over, disable it
               if (match.id === "match-wc26-canada") {
                 return (
-                   <div key={match.id} className="w-full p-4 rounded-2xl text-left border bg-gray-100 border-gray-300 opacity-60 flex items-center justify-between">
-                     <div className="space-y-2 flex-1">
-                       <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">ENDED (1:1)</span>
-                       <div className="flex items-center space-x-2">
-                         <span className="text-xl">🇧🇦</span>
-                         <span className="font-sans font-black text-gray-700">BIH</span>
-                         <span className="text-xs font-mono text-gray-400">vs</span>
-                         <span className="text-xl">{match.opponentFlag}</span>
-                         <span className="font-sans font-black text-gray-800">{match.opponent}</span>
-                       </div>
-                     </div>
-                   </div>
+                  <div key={match.id} className="w-full p-4 rounded-2xl text-left border bg-gray-100 border-gray-300 opacity-60 flex items-center justify-between">
+                    <div className="space-y-2 flex-1">
+                      <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">ENDED (1:1)</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xl">🇧🇦</span>
+                        <span className="font-sans font-black text-gray-700">BIH</span>
+                        <span className="text-xs font-mono text-gray-400">vs</span>
+                        <span className="text-xl">{match.opponentFlag}</span>
+                        <span className="font-sans font-black text-gray-800">{match.opponent}</span>
+                      </div>
+                    </div>
+                  </div>
                 );
               }
               return (
@@ -399,11 +399,10 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                     setSuccessMsg(null);
                     setErrorMsg(null);
                   }}
-                  className={`w-full p-4 rounded-2xl text-left border transition relative flex items-center justify-between group cursor-pointer ${
-                    isSelected
+                  className={`w-full p-4 rounded-2xl text-left border transition relative flex items-center justify-between group cursor-pointer ${isSelected
                       ? "bg-white border-[#002F6C] shadow-md ring-2 ring-[#002F6C]/10"
                       : "bg-[#fcfbf7] hover:bg-white border-gray-300 hover:border-gray-500"
-                  }`}
+                    }`}
                 >
                   <div className="space-y-2 flex-1">
                     <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">
@@ -423,10 +422,9 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                       </span>
                     </div>
                   </div>
-                  
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm ${
-                    isSelected ? "bg-[#002F6C] text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
-                  }`}>
+
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm ${isSelected ? "bg-[#002F6C] text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
+                    }`}>
                     <Play className="h-3.5 w-3.5 fill-current" />
                   </div>
                 </button>
@@ -437,7 +435,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
         {/* Right 7 cols: Prediction Slip */}
         <div className="lg:col-span-7 space-y-6 bg-white border border-gray-300 p-6 rounded-3xl shadow-sm">
-          
+
           <div className="flex justify-between items-start border-b border-gray-200 pb-4">
             <div>
               <span className="text-[10px] font-sans font-black text-gray-400 tracking-wider block uppercase leading-none">PREDICTION SLIP</span>
@@ -448,9 +446,9 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
           </div>
 
           <form onSubmit={handlePlaceBet} className="space-y-4">
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
+
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
                 <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">1. MATCH OUTCOME</span>
                 <select
@@ -466,7 +464,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
                 <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">2. EXACT SCORE</span>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="text-center">
                     <span className="text-xs font-sans font-black text-gray-600 block mb-1">BIH</span>
@@ -506,7 +504,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3 sm:col-span-2">
                 <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">ENTRY FEE (PAYMENT METHOD)</span>
-                
+
                 <div className="flex bg-white rounded-lg border border-gray-300 p-1 mb-3">
                   <button type="button" onClick={() => setWagerType("SOL")} className={`flex-1 py-1.5 text-xs font-bold rounded flex items-center justify-center space-x-1 ${wagerType === "SOL" ? "bg-[#002F6C] text-white" : "text-gray-500 hover:bg-gray-100"}`}>
                     <Coins className="w-3.5 h-3.5" /> <span>0.02 SOL</span>
@@ -585,16 +583,15 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
               return (
                 <div key={bet.id} className="border border-gray-250 rounded-2xl p-5 bg-[#fdfdfc] flex flex-col md:flex-row md:items-center justify-between gap-6 font-sans">
-                  
+
                   <div className="space-y-2 flex-grow text-left">
                     <div className="flex items-center space-x-2.5">
-                      <span className={`text-[9px] font-sans px-2.5 py-0.5 rounded-full font-black uppercase border tracking-wider leading-none ${
-                        bet.status === "ACTIVE"
+                      <span className={`text-[9px] font-sans px-2.5 py-0.5 rounded-full font-black uppercase border tracking-wider leading-none ${bet.status === "ACTIVE"
                           ? "bg-amber-100 border-amber-300 text-amber-800"
                           : bet.status === "WON"
-                          ? "bg-emerald-100 border-emerald-300 text-emerald-800"
-                          : "bg-red-50 border-red-200 text-red-700"
-                      }`}>
+                            ? "bg-emerald-100 border-emerald-300 text-emerald-800"
+                            : "bg-red-50 border-red-200 text-red-700"
+                        }`}>
                         {bet.status} SLIP
                       </span>
                     </div>
@@ -631,11 +628,10 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                       <button
                         onClick={() => startSimulation(bet)}
                         disabled={simulatingBetId !== null}
-                        className={`py-2 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition shadow-sm flex items-center space-x-1.5 cursor-pointer ${
-                          simulatingBetId !== null
+                        className={`py-2 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition shadow-sm flex items-center space-x-1.5 cursor-pointer ${simulatingBetId !== null
                             ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
                             : "bg-[#002F6C]/10 border border-[#002F6C]/20 text-[#002F6C] hover:bg-[#002F6C] hover:text-white"
-                        }`}
+                          }`}
                       >
                         <Play className="h-3.5 w-3.5 fill-current" />
                         <span>Simulate Match Result</span>

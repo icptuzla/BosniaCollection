@@ -115,10 +115,10 @@ export default function TradeMarket({
         // We do a minimal transfer to System Program to prove wallet ownership and intent
         let tx = transactionBuilder().add(transferSol(umi, {
           source: umi.identity,
-          destination: umi.identity.publicKey, 
+          destination: umi.identity.publicKey,
           amount: sol(0.00001)
         }));
-        
+
         const result = await tx.sendAndConfirm(umi);
         console.log("Maker intent signed. Tx:", result.signature);
       } else {
@@ -139,9 +139,9 @@ export default function TradeMarket({
       };
 
       onSelfTradePosted(newOffer);
-      
+
       // Deduct count of dummy pending block locally
-      onTradeCompleted(selectedOfferStickerId, -1, undefined); 
+      onTradeCompleted(selectedOfferStickerId, -1, undefined);
 
       setSuccessText(`✓ Trade offer #${tradeId.toUpperCase()} listed successfully! Partial Signature verified on Devnet.`);
       setSelectedOfferStickerId(-1);
@@ -199,14 +199,14 @@ export default function TradeMarket({
             destination: publicKey(offer.ownerAddress),
             amount: sol(offer.solPrice)
           }));
-          
+
           const result = await tx.sendAndConfirm(umi);
           console.log("Taker P2P SOL transfer signed. Tx:", result.signature);
         } else {
           // Taker signs an intent to swap the asset (simulate)
           let tx = transactionBuilder().add(transferSol(umi, {
             source: umi.identity,
-            destination: publicKey(offer.ownerAddress), 
+            destination: publicKey(offer.ownerAddress),
             amount: sol(0.00001) // minimal network verification
           }));
           const result = await tx.sendAndConfirm(umi);
@@ -233,7 +233,7 @@ export default function TradeMarket({
 
       // Remove offer from global listings as completed
       onRemoveTradeOffer(offer.id);
-      
+
       // Synthesize transaction success sound
       try {
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -249,7 +249,7 @@ export default function TradeMarket({
         gainNode.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.4);
-      } catch (_) {}
+      } catch (_) { }
 
       setSuccessText(`✓ Trade completed! Received ${getStickerById(offer.offeredStickerId)?.name}. Blockchain synced.`);
     } catch (err: any) {
@@ -262,7 +262,7 @@ export default function TradeMarket({
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
-      
+
       {/* Visual Header */}
       <div className="text-center">
         <h2 className="text-2xl font-sans font-black text-[#002F6C] uppercase tracking-tighter leading-none">
@@ -274,7 +274,7 @@ export default function TradeMarket({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* ================= POST A NEW TRADE (Left Column) ================= */}
         <div className="lg:col-span-1 bg-white border border-gray-300 p-5 rounded-2xl shadow-sm text-left text-gray-800">
           <h3 className="text-md font-sans font-extrabold text-[#002F6C] mb-4 flex items-center space-x-2">
@@ -317,18 +317,16 @@ export default function TradeMarket({
                 <button
                   type="button"
                   onClick={() => setSellingForSol(false)}
-                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${
-                    !sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
-                  }`}
+                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${!sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
+                    }`}
                 >
                   Swap for Card
                 </button>
                 <button
                   type="button"
                   onClick={() => setSellingForSol(true)}
-                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${
-                    sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
-                  }`}
+                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
+                    }`}
                 >
                   Sell for SOL
                 </button>
@@ -384,7 +382,7 @@ export default function TradeMarket({
               ) : null}
               <span>Broadcast Trade to Ledger</span>
             </button>
-            
+
             {!wallet.connected && (
               <p className="text-[10px] font-sans font-bold text-rose-500 text-center">
                 * Please connect a Solana / Solflare wallet to broadcast.
@@ -431,11 +429,10 @@ export default function TradeMarket({
                   return (
                     <div
                       key={offer.id}
-                      className={`p-3.5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 transition duration-200 ${
-                        isMine
+                      className={`p-3.5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 transition duration-200 ${isMine
                           ? "bg-[#002F6C]/5 border-[#002F6C]/30"
                           : "bg-white border-gray-300 hover:border-gray-400 shadow-sm"
-                      }`}
+                        }`}
                     >
                       {/* Left: Swapping details */}
                       <div className="flex items-center space-x-4">
@@ -447,7 +444,7 @@ export default function TradeMarket({
                           <div className="flex flex-wrap items-center gap-1.5 mb-1.5 text-gray-800">
                             <span className="font-extrabold text-[#002F6C]">[{offerSticker?.number}] {offerSticker?.name}</span>
                             <span className="text-gray-400 font-serif italic text-[11px]">for</span>
-                            
+
                             {wantSticker ? (
                               <span className="font-extrabold text-[#002F6C]/90">[{wantSticker.number}] {wantSticker.name}</span>
                             ) : (

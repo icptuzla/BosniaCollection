@@ -184,7 +184,7 @@ export const STICKERS: Sticker[] = [
     },
     gameRatingRef: "FC26 Rating: 82",
     type: StickerType.SPECIAL,
-    imageTheme: "from-amber-400 via-yellow-600 to-blue-900 animate-pulse bg-[length:200%_200%]",
+    imageTheme: "from-amber-400 via-yellow-800 to-blue-950 animate-pulse bg-[length:200%_200%]",
     imageFile: "kenan-alajbegovic.webp"
   },
 
@@ -396,7 +396,7 @@ export const STICKERS: Sticker[] = [
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
     imageFile: "mujakic.webp"
-    
+
   },
   {
     id: 18,

@@ -37,9 +37,6 @@ export default function App() {
   const [tradeOffers, setTradeOffers] = useState<TradeOffer[]>([]);
   const [selectedSticker, setSelectedSticker] = useState<Sticker | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [ambientNode, setAmbientNode] = useState<BiquadFilterNode | null>(null);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [sandboxMode, setSandboxMode] = useState(false);
 
   // --- INITIAL SEEDING ---
@@ -117,68 +114,6 @@ export default function App() {
   };
 
   // --- AUDIO SYNTHESIZER ENGINE (Immersive Arena Sounds & Effects) ---
-  const toggleSound = () => {
-    if (soundEnabled) {
-      // Mute
-      if (ambientNode) {
-        try {
-          ambientNode.disconnect();
-        } catch (_) {}
-      }
-      setSoundEnabled(false);
-    } else {
-      // Unmute & Build Arena Crowd Sound Synthesizer!
-      try {
-        const ctx = audioContext || new (window.AudioContext || (window as any).webkitAudioContext)();
-        if (ctx.state === "suspended") {
-          ctx.resume();
-        }
-        setAudioContext(ctx);
-
-        // Brown noise simulation for heavy stadium wind/cheers
-        const bufferSize = 2 * ctx.sampleRate;
-        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        let lastOut = 0.0;
-        for (let i = 0; i < bufferSize; i++) {
-          const white = Math.random() * 2 - 1;
-          output[i] = (lastOut + (0.02 * white)) / 1.02;
-          lastOut = output[i];
-          output[i] *= 4.5; // Gain compensation
-        }
-
-        const whiteNoise = ctx.createBufferSource();
-        whiteNoise.buffer = noiseBuffer;
-        whiteNoise.loop = true;
-
-        // Bandpass sweeps to make it sound like dynamic crowd singing chants
-        const bandpass = ctx.createBiquadFilter();
-        bandpass.type = "bandpass";
-        bandpass.frequency.value = 260; // low frequency hum of deep chants
-        bandpass.Q.value = 4.0;
-
-        // Lowpass to make it muffled
-        const lowpass = ctx.createBiquadFilter();
-        lowpass.type = "lowpass";
-        lowpass.frequency.value = 350;
-
-        const volume = ctx.createGain();
-        volume.gain.value = 0.08; // subtle backgound whisper
-
-        whiteNoise.connect(bandpass);
-        bandpass.connect(lowpass);
-        lowpass.connect(volume);
-        volume.connect(ctx.destination);
-
-        whiteNoise.start();
-
-        setAmbientNode(lowpass); // Keep reference to shut down
-        setSoundEnabled(true);
-      } catch (e) {
-        console.warn("Audio Context init blocked:", e);
-      }
-    }
-  };
 
   // --- STICKER INTERACTIONS ---
   const handleAddStickers = (ids: number[]) => {
@@ -201,33 +136,6 @@ export default function App() {
       target.pasted = true;
       target.count -= 1; // deduct sticker from pouch when pasting
 
-      // Synthesize slap paper adhesive sound effect
-      try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const noise = ctx.createBufferSource();
-        
-        // Short friction rumble
-        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        noise.buffer = buf;
-
-        const lowpass = ctx.createBiquadFilter();
-        lowpass.type = "lowpass";
-        lowpass.frequency.value = 180;
-
-        const gainNode = ctx.createGain();
-        gainNode.gain.setValueAtTime(0.35, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-
-        noise.connect(lowpass);
-        lowpass.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        noise.start();
-        noise.stop(ctx.currentTime + 0.12);
-      } catch (_) {}
 
       saveCollection(updated);
       setSelectedSticker(null); // Close detail view upon mounting success
@@ -351,20 +259,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* Sound Synthesizer hummer */}
-          <button
-            id="btn-arena-chants-ambient"
-            onClick={toggleSound}
-            className={`p-2 rounded-lg border text-xs font-sans font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 cursor-pointer shrink-0 ${
-              soundEnabled
-                ? "bg-[#002F6C]/10 border-[#002F6C] text-[#002F6C] shadow-sm"
-                : "bg-white/80 border-gray-300 text-gray-500 hover:text-gray-700"
-            }`}
-            title="Toggle Synthesized Stadium Crowd Humming Chants"
-          >
-            {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            <span className="hidden sm:inline">{UI_TRANSLATIONS[lang].arenaHum}</span>
-          </button>
 
           {wallet.connected ? (
             <div className="bg-white border border-gray-300 px-4 py-1 rounded-lg text-left hidden sm:block shadow-sm shrink-0">
@@ -456,6 +350,28 @@ export default function App() {
                   ))
                 ) : (
                   <span className="italic">{lang === "BS" ? "Još nema zalijepljenih sličica." : "No pasted stickers yet."}</span>
+                )}
+              </div>
+            </div>
+            
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <span className="text-[10px] font-sans font-bold text-[#002F6C] uppercase mb-1.5 flex items-center justify-between">
+                <span>{lang === "BS" ? "Duplikati" : "Extras"}</span>
+                <span className="bg-[#002F6C] text-white px-1.5 rounded-full">{collection.filter(c => c.count > 0).reduce((acc, c) => acc + c.count, 0)}</span>
+              </span>
+              <div className="text-[9px] font-sans text-gray-600 leading-relaxed max-h-[90px] overflow-y-auto pr-1 flex flex-wrap gap-1">
+                {collection.filter(c => c.count > 0).length > 0 ? (
+                  collection.filter(c => c.count > 0).flatMap(c => {
+                    const st = STICKERS.find(s => s.id === c.stickerId);
+                    if (!st) return [];
+                    return Array(c.count).fill(st);
+                  }).map((s, idx) => (
+                    <span key={`dup-${s.id}-${idx}`} className="bg-amber-100/50 px-1.5 py-0.5 rounded border border-amber-200 whitespace-nowrap shadow-sm text-amber-800">
+                      {s.name.split(" ").slice(-1)[0]}
+                    </span>
+                  ))
+                ) : (
+                  <span className="italic">{lang === "BS" ? "Nemate duplikata." : "No extra cards."}</span>
                 )}
               </div>
             </div>
@@ -552,6 +468,7 @@ export default function App() {
                 onAddStickers={handleAddStickers}
                 onViewSticker={setSelectedSticker}
                 lang={lang}
+                sandboxMode={sandboxMode}
               />
             )}
 
@@ -565,6 +482,7 @@ export default function App() {
                 tradeOffers={tradeOffers}
                 onRemoveTradeOffer={handleRemoveTradeOffer}
                 lang={lang}
+                sandboxMode={sandboxMode}
               />
             )}
 

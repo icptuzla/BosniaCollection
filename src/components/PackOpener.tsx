@@ -292,9 +292,9 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
       // For premium WC2026: pool is all players sorted by overall desc, take top 12
       const premiumPool = isPremium
         ? [...STICKERS]
-            .filter(s => s.stats?.overall)
-            .sort((a, b) => (b.stats?.overall ?? 0) - (a.stats?.overall ?? 0))
-            .slice(0, 12)
+          .filter(s => s.stats?.overall)
+          .sort((a, b) => (b.stats?.overall ?? 0) - (a.stats?.overall ?? 0))
+          .slice(0, 12)
         : [];
 
       while (pulled.length < pullCount) {
@@ -328,7 +328,7 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
 
       setRevealedStickers(pulled);
       setPackStatus("opened");
-      
+
       // Auto-claim the stickers to the pouch immediately so if they click to view details, it shows they own it!
       if (!hasClaimed) {
         onAddStickers(pulled.map(s => s.id));

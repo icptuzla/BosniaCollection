@@ -114,44 +114,22 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
     }
   };
 
-  const playPageSound = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.18);
-      gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
-      osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.2);
-    } catch (_) { }
-  };
-
   const handleNextPage = () => {
     if (currentPage < 5) {
       setCurrentPage(currentPage + 1);
-      playPageSound();
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
       setCurrentPage(currentPage - 1);
-      playPageSound();
     }
   };
 
   const totalPossible = STICKERS.length;
   const progressPercent = Math.round((pastedCount / totalPossible) * 100);
 
-  function setIsAlbumOpen(arg0: boolean) {
-    throw new Error("Function not implemented.");
-  }
-
+  // Removing setIsAlbumOpen that throws an error
   return (
     <div className="w-full flex flex-col items-center space-y-6">
 
@@ -189,26 +167,23 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
 
         {/* ================= COVER PAGE ================= */}
 {currentPage === 0 && (
-  <div className="relative w-full h-screen overflow-hidden">
+  <div className="relative w-full flex justify-center items-center overflow-hidden bg-[#fffef8] aspect-[3/4.2]">
     {/* Background image */}
     <img
       src="/src/components/Album.png"
       alt="Bosnia WC2026 Football Album Cover"
-      className="absolute inset-0 w-full h-full object-cover"
+      className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl"
     />
 
     {/* Slide animation container */}
     <div
-      className={`absolute inset-0 transition-transform duration-700 ease-in-out ${
-        setIsAlbumOpen ? 'translate-y-[-100%]' : 'translate-y-0'
-      }`}
+      className={`absolute inset-0 transition-transform duration-700 ease-in-out translate-y-0`}
     >
       {/* Button at bottom */}
       <div className="absolute bottom-10 left-0 right-0 flex justify-center">
         <button
           id="album-flip-open-btn"
           onClick={() => {
-            setIsAlbumOpen(true);
             handleNextPage();
           }}
           className="py-3 px-8 rounded-lg bg-[#002F6C] hover:bg-[#0c3f82] text-white font-sans font-bold uppercase text-xs tracking-wider transition shadow-sm flex items-center space-x-2 cursor-pointer"
@@ -253,11 +228,11 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                   <div
                     key={st.id}
                     onClick={() => onViewSticker(st)}
-                    className="relative aspect-[3/4.2] rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                    className="relative rounded-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                   >
                     {!isPasted ? (
                       /* Empty Dotted slot where sticker goes */
-                      <div className="absolute inset-0 border-2 border-dashed border-gray-300 hover:border-[#002F6C] bg-white/45 flex flex-col justify-between p-3.5 text-center transition">
+                      <div className="w-full aspect-[3/4.2] border-2 border-dashed border-gray-300 hover:border-[#002F6C] bg-white/45 flex flex-col justify-between p-3.5 text-center transition rounded-xl">
                         <div className="flex justify-between items-start font-sans">
                           <span className="text-[10px] text-gray-500 font-extrabold bg-[#f4f2e9] border border-gray-300 px-1.5 py-0.5 rounded shadow-sm flex-shrink-0">
                             {st.number}
@@ -284,21 +259,19 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                     ) : (
                       /* Real pasted sticker card */
                       <div
-                        style={{
-                          backgroundImage: getPlayerImage(st) ? `url(${getPlayerImage(st)})` : undefined,
-                          backgroundSize: st.type === StickerType.SPECIAL ? "contain" : "cover",
-                          backgroundRepeat: "no-repeat",
-                          backgroundPosition: "center",
-                        }}
-                        className={`absolute inset-0 border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col justify-end text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(st) ? "bg-gradient-to-b from-[#124285] to-[#002F6C]" : "bg-white"
+                        className={`w-full border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(st) ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"
                           }`}
                       >
-                        {/* Shimmer physical sticker overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none z-10" />
+                        {/* If we have an image, show it using an img tag to respect its natural aspect ratio */}
+                        {getPlayerImage(st) && (
+                          <div className="relative w-full bg-white flex flex-col justify-end">
+                            <img src={getPlayerImage(st)!} alt={st.name} className="w-full h-auto object-contain block" />
+                          </div>
+                        )}
 
                         {/* Default emblem placeholder if no player image could be loaded */}
                         {!getPlayerImage(st) && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
+                          <div className="flex-1 flex flex-col items-center justify-center p-4 text-center z-10 relative">
                             {st.id === 27 ? (
                               <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
                             ) : st.type === StickerType.SPECIAL ? (
@@ -310,7 +283,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                         )}
 
                         {/* Clean bottom ribbon display block style */}
-                        <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans">
+                        <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans shrink-0">
                           <h4 className="font-sans font-black text-[10px] sm:text-[10.5px] text-[#FFCD00] truncate leading-tight">
                             {st.name}
                           </h4>
