@@ -86,8 +86,8 @@ const UPCOMING_MATCHES: Match[] = [
 ];
 
 export default function MatchBets({ wallet, onWalletChange, collection, onCollectionChange, lang }: MatchBetsProps) {
-  // Default to Switzerland since Canada ended 1:1
-  const [selectedMatch, setSelectedMatch] = useState<Match>(UPCOMING_MATCHES[1]);
+  // Default to Qatar since Canada and Switzerland ended
+  const [selectedMatch, setSelectedMatch] = useState<Match>(UPCOMING_MATCHES[2]);
 
   const [wagerType, setWagerType] = useState<"SOL" | "STICKER">("SOL");
   const [predOutcome, setPredOutcome] = useState<"WIN" | "DRAW" | "LOSS">("WIN");
@@ -374,12 +374,13 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
           <div className="space-y-3">
             {UPCOMING_MATCHES.map((match) => {
               const isSelected = selectedMatch.id === match.id;
-              // Canada match is over, disable it
-              if (match.id === "match-wc26-canada") {
+              // Ended matches, disable them
+              if (match.id === "match-wc26-canada" || match.id === "match-wc26-switzerland") {
+                const result = match.id === "match-wc26-canada" ? "1:1" : "1:4";
                 return (
                   <div key={match.id} className="w-full p-4 rounded-2xl text-left border bg-gray-100 border-gray-300 opacity-60 flex items-center justify-between">
                     <div className="space-y-2 flex-1">
-                      <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">ENDED (1:1)</span>
+                      <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">ENDED ({result})</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xl">🇧🇦</span>
                         <span className="font-sans font-black text-gray-700">BIH</span>

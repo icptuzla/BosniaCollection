@@ -6,8 +6,8 @@ import logoImage from "./zmajevi logo.webp";
 import { Language, UI_TRANSLATIONS, PLAYER_TRANSLATIONS } from "../data/translations";
 
 // Booster pack images
-import bagOfStickersImg from "./Bagofstickers.png";
-import boosterPackImg from "./BoosterPack.png";
+import bagOfStickersImg from "./Bagofstickers.webp";
+import boosterPackImg from "./BoosterPack.webp";
 import wc2026BoosterImg from "./WC2026_BOOSTER.webp";
 
 // Solana & Metaplex Umi imports
@@ -519,43 +519,38 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                     ←
                   </button>
 
-                  {/* Pack Sticker Display */}
+                  {/* Pack Sticker Display — matches album card style */}
                   <div
                     onClick={() => onViewSticker(revealedStickers[currentIndex])}
-                    style={{
-                      backgroundImage: getPlayerImage(revealedStickers[currentIndex]) ? `url(${getPlayerImage(revealedStickers[currentIndex])})` : undefined,
-                      backgroundSize: revealedStickers[currentIndex].type === StickerType.SPECIAL ? "contain" : "cover",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                    }}
-                    className={`relative w-56 sm:w-64 h-72 sm:h-80 rounded-2xl border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col justify-end cursor-pointer hover:scale-105 hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(revealedStickers[currentIndex]) ? "bg-gradient-to-b from-[#124285] to-[#002F6C]" : "bg-white"
+                    className={`relative w-56 sm:w-64 rounded-2xl border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col text-left cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(revealedStickers[currentIndex]) ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"
                       }`}
                   >
-                    {/* Shimmer physical sticker overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent pointer-events-none z-10" />
+                    {/* If we have an image, show it using an img tag to respect its natural aspect ratio */}
+                    {getPlayerImage(revealedStickers[currentIndex]) && (
+                      <div className="relative w-full bg-white flex flex-col justify-end">
+                        <img src={getPlayerImage(revealedStickers[currentIndex])!} alt={revealedStickers[currentIndex].name} className="w-full h-auto object-contain block" />
+                      </div>
+                    )}
 
-                    {/* Default content if no playerImg is loaded */}
+                    {/* Default emblem placeholder if no player image could be loaded */}
                     {!getPlayerImage(revealedStickers[currentIndex]) && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
+                      <div className="flex-1 flex flex-col items-center justify-center p-4 text-center z-10 relative">
                         {revealedStickers[currentIndex].id === 27 ? (
-                          <img src={logoImage} alt="Zmajevi Gold Badge" className="w-20 h-20 sm:w-24 sm:h-24 object-contain filter drop-shadow-[0_0_12px_rgba(255,205,0,0.85)]" referrerPolicy="no-referrer" />
+                          <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
                         ) : revealedStickers[currentIndex].type === StickerType.SPECIAL ? (
-                          <Star className="h-12 w-12 sm:h-14 sm:w-14 text-[#FFCD00] drop-shadow-[0_0_10px_rgba(255,205,0,0.8)] animate-pulse" />
+                          <Star className="h-8 w-8 text-[#FFCD00] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
                         ) : (
-                          <div className="space-y-1">
-                            <span className="text-xl sm:text-2xl">⚽</span>
-                            <div className="text-lg sm:text-xl font-sans font-black text-[#FFCD00] tracking-wide">BIH</div>
-                          </div>
+                          <span className="text-xl">⚽</span>
                         )}
                       </div>
                     )}
 
-                    {/* Bottom Slate Overlay containing name, club & position */}
-                    <div className="p-2 sm:p-3 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-lg relative z-20 font-sans">
-                      <h4 className="font-sans font-black text-[10px] sm:text-xs text-[#FFCD00] truncate leading-tight">
+                    {/* Clean bottom ribbon display block style — same as album */}
+                    <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans shrink-0">
+                      <h4 className="font-sans font-black text-[10px] sm:text-[10.5px] text-[#FFCD00] truncate leading-tight">
                         {revealedStickers[currentIndex].name}
                       </h4>
-                      <p className="text-[8.5px] sm:text-[10px] text-white/95 font-bold block mt-0.5 uppercase tracking-wide truncate">
+                      <p className="text-[8px] sm:text-[8.5px] text-white/95 font-bold block mt-0.5 uppercase tracking-wide truncate">
                         {PLAYER_TRANSLATIONS[revealedStickers[currentIndex].id]?.role[lang] || revealedStickers[currentIndex].role} • {revealedStickers[currentIndex].club}
                       </p>
                     </div>

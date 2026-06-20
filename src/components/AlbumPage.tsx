@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { BookOpen, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, Star, ChevronLeft, ChevronRight, Award } from "lucide-react";
 import { Sticker, StickerType, UserSticker } from "../types";
 import { STICKERS } from "../data/players";
 import logoImage from "./zmajevi logo.webp";
+import albumCoverImg from "./Album.webp";
 import { Language, UI_TRANSLATIONS, PLAYER_TRANSLATIONS } from "../data/translations";
 
 // Import all uploaded player photos in WebP format
@@ -89,9 +90,12 @@ interface AlbumPageProps {
   onViewSticker: (sticker: Sticker) => void;
   pastedCount: number;
   lang: Language;
+  walletConnected?: boolean;
+  hasClaimedReward?: boolean;
+  onClaimReward?: () => void;
 }
 
-export default function AlbumPage({ collection, onViewSticker, pastedCount, lang }: AlbumPageProps) {
+export default function AlbumPage({ collection, onViewSticker, pastedCount, lang, walletConnected, hasClaimedReward, onClaimReward }: AlbumPageProps) {
   // - Page 0: Album Cover
   // - Page 1: Starters Part I (Slots 1-6)
   // - Page 2: Starters Part II (Slots 7-11)
@@ -166,35 +170,35 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
       <div className="relative w-full max-w-4xl min-h-[580px] rounded-lg bg-[#fffef8] border-l-8 md:border-l-[12px] border-[#002F6C] shadow-2xl border-t border-b border-r border-[#d1cfc5] overflow-hidden p-4 md:p-8 text-gray-800 flex flex-col justify-between">
 
         {/* ================= COVER PAGE ================= */}
-{currentPage === 0 && (
-  <div className="relative w-full flex justify-center items-center overflow-hidden bg-[#fffef8] aspect-[3/4.2]">
-    {/* Background image */}
-    <img
-      src="/src/components/Album.png"
-      alt="Bosnia WC2026 Football Album Cover"
-      className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl"
-    />
+        {currentPage === 0 && (
+          <div className="relative w-full flex justify-center items-center overflow-hidden bg-[#fffef8] aspect-[3/4.2]">
+            {/* Background image */}
+            <img
+              src={albumCoverImg}
+              alt="Bosnia WC2026 Football Album Cover"
+              className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl"
+            />
 
-    {/* Slide animation container */}
-    <div
-      className={`absolute inset-0 transition-transform duration-700 ease-in-out translate-y-0`}
-    >
-      {/* Button at bottom */}
-      <div className="absolute bottom-10 left-0 right-0 flex justify-center">
-        <button
-          id="album-flip-open-btn"
-          onClick={() => {
-            handleNextPage();
-          }}
-          className="py-3 px-8 rounded-lg bg-[#002F6C] hover:bg-[#0c3f82] text-white font-sans font-bold uppercase text-xs tracking-wider transition shadow-sm flex items-center space-x-2 cursor-pointer"
-        >
-          <span>{t.flipOpenButton}</span>
-          <ChevronRight className="h-4 w-4 text-white" />
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            {/* Slide animation container */}
+            <div
+              className={`absolute inset-0 transition-transform duration-700 ease-in-out translate-y-0`}
+            >
+              {/* Button at bottom */}
+              <div className="absolute bottom-10 left-0 right-0 flex justify-center">
+                <button
+                  id="album-flip-open-btn"
+                  onClick={() => {
+                    handleNextPage();
+                  }}
+                  className="py-3 px-8 rounded-lg bg-[#002F6C] hover:bg-[#0c3f82] text-white font-sans font-bold uppercase text-xs tracking-wider transition shadow-sm flex items-center space-x-2 cursor-pointer"
+                >
+                  <span>{t.flipOpenButton}</span>
+                  <ChevronRight className="h-4 w-4 text-white" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* ================= INDIVIDUAL STANDARD PAGES ================= */}
         {currentPage > 0 && (
           <div className="w-full flex-1 flex flex-col justify-between z-20">
@@ -367,6 +371,67 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
         )}
 
       </div>
+
+      {/* 100% Completion Reward Modal */}
+      {pastedCount === totalPossible && !hasClaimedReward && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm">
+          <div className="bg-[#fffef8] border-4 border-[#FFCD00] rounded-3xl p-6 md:p-8 max-w-lg w-full text-center space-y-6 shadow-[0_0_40px_rgba(255,205,0,0.6)] text-gray-800 animate-fade-in relative overflow-hidden">
+
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+              <div className="absolute top-[-50px] left-[-50px] w-32 h-32 bg-[#00f0ff] opacity-20 blur-3xl rounded-full mix-blend-multiply animate-pulse" />
+              <div className="absolute bottom-[-50px] right-[-50px] w-32 h-32 bg-[#FFCD00] opacity-20 blur-3xl rounded-full mix-blend-multiply animate-pulse" />
+            </div>
+
+            <div className="w-24 h-24 bg-[#FFCD00] rounded-full flex items-center justify-center overflow-hidden shrink-0 mx-auto shadow-[0_0_20px_rgba(255,205,0,0.8)] relative z-10 border-4 border-white">
+              <Star className="h-12 w-12 text-[#002F6C] animate-pulse" fill="#002F6C" />
+            </div>
+
+            <div className="space-y-2 relative z-10">
+              <span className="text-[11px] font-sans font-black text-amber-500 tracking-[0.2em] uppercase block">
+                {lang === "BS" ? "Kolekcija Završena" : "Collection Complete"}
+              </span>
+              <h2 className="text-3xl font-sans font-black tracking-tight text-[#002F6C] uppercase leading-none">
+                {lang === "BS" ? "Čestitamo!" : "Congratulations!"}
+              </h2>
+            </div>
+
+            <div className="text-gray-700 text-sm leading-relaxed space-y-3 font-serif relative z-10">
+              <p>
+                {lang === "BS" ? "Sakupili ste i zalijepili svih 29 sličica u svoj album! Kao nagradu za ovaj nevjerovatan trud, otključali ste specijalnu nagradu." : "You have collected and pasted all 29 stickers into your album! As a reward for this incredible dedication, you've unlocked a special prize."}
+              </p>
+
+              <div className="bg-gradient-to-r from-[#002F6C] to-[#124285] rounded-xl p-4 text-white text-left flex items-center gap-4 border border-[#FFCD00] shadow-md mt-4">
+                <div className="bg-[#FFCD00] p-2 rounded-lg text-[#002F6C] shrink-0">
+                  <Award className="h-8 w-8" />
+                </div>
+                <div>
+                  <span className="block text-[10px] font-sans font-bold text-amber-300 uppercase tracking-widest leading-none mb-1">
+                    {lang === "BS" ? "Vaša Nagrada" : "Your Reward"}
+                  </span>
+                  <span className="block text-xl font-mono font-black">2.026 SOL</span>
+                  <span className="block text-xs font-sans text-gray-200 mt-0.5">
+                    + {lang === "BS" ? "Zlatni Metaplex Certifikat" : "Golden Metaplex Certificate"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={onClaimReward}
+              className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-950 font-black tracking-widest text-sm transition shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer font-sans uppercase relative z-10 mt-6"
+            >
+              {lang === "BS" ? "Preuzmi Nagradu" : "Claim Reward"}
+            </button>
+
+            {!walletConnected && (
+              <p className="text-[10px] font-sans text-rose-600 font-bold uppercase relative z-10">
+                {lang === "BS" ? "Povežite novčanik prije preuzimanja!" : "Connect wallet before claiming!"}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -38,6 +38,9 @@ export default function App() {
   const [selectedSticker, setSelectedSticker] = useState<Sticker | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [sandboxMode, setSandboxMode] = useState(false);
+  const [hasClaimedReward, setHasClaimedReward] = useState<boolean>(() => {
+    return localStorage.getItem("bosnia_wc26_reward_claimed") === "true";
+  });
 
   // --- INITIAL SEEDING ---
   useEffect(() => {
@@ -205,6 +208,33 @@ export default function App() {
   // Helper selectors
   const pastedCount = collection.filter(c => c.pasted).length;
   const pouchList = collection.filter(c => c.count > 0 && !c.pasted);
+
+  const handleClaimReward = () => {
+    if (!wallet.connected) {
+      alert(lang === "BS" ? "Povežite virtuelni novčanik da preuzmete nagradu!" : "Please connect your wallet to claim the reward!");
+      return;
+    }
+    setWallet(prev => ({ ...prev, balance: prev.balance + 2.026 }));
+    setHasClaimedReward(true);
+    localStorage.setItem("bosnia_wc26_reward_claimed", "true");
+    
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2); // E5
+      osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.4); // G5
+      osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.6); // C6
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.5);
+    } catch (_) { }
+  };
 
   return (
     <div className="min-h-screen album-container text-[#1a1a1a] selection:bg-[#FFCD00] selection:text-[#002F6C] pb-16 font-sans">
@@ -458,6 +488,9 @@ export default function App() {
                 onViewSticker={setSelectedSticker}
                 pastedCount={pastedCount}
                 lang={lang}
+                walletConnected={wallet.connected}
+                hasClaimedReward={hasClaimedReward}
+                onClaimReward={handleClaimReward}
               />
             )}
 

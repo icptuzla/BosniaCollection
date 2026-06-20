@@ -15,6 +15,13 @@ export default defineConfig(() => {
     build: {
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          // Suppress sourcemap warnings from third-party packages
+          if (warning.code === 'SOURCEMAP_ERROR' || warning.message?.includes('points to missing source files')) {
+            return;
+          }
+          defaultHandler(warning);
+        },
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
@@ -33,7 +40,7 @@ export default defineConfig(() => {
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      // Do not modifyâ€”file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
