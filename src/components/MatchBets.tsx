@@ -209,69 +209,63 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     if (wagerType === "STICKER") setBetStickerId(-1);
   };
 
-  const startSimulation = (bet: Bet) => {
+  const checkRealMatchResult = async (bet: Bet) => {
     if (simulatingBetId) return;
 
     setSimProgress(0);
     setSimulatingBetId(bet.id);
     setSimFinalResult(null);
+    setSimLog(["🔍 Connecting to v3.football.api-sports.io via Redis..."]);
 
     const targetMatch = UPCOMING_MATCHES.find(m => m.id === bet.matchId);
     if (!targetMatch) return;
 
-    // We force the actual result to be somewhat random but likely to match user's bet sometimes for testing
-    let currentHomeGoals = 0;
-    let currentAwayGoals = 0;
-    let actualScorerId = targetMatch.squadIds[Math.floor(Math.random() * targetMatch.squadIds.length)];
+    try {
+      setSimLog(prev => [...prev, "📡 Fetching real match data..."]);
+      const res = await fetch('/api/get-matches');
+      
+      if (!res.ok) {
+        throw new Error("Failed to connect to API endpoint");
+      }
+      
+      const data = await res.json();
+      setSimLog(prev => [...prev, "✅ Data received! Processing actual results..."]);
 
-    const interval = setInterval(() => {
-      setSimProgress(prev => {
-        const next = prev + 1;
-        let logText = "";
+      // In a fully real scenario, you'd match by date or opponent.
+      // For this implementation, we will look for a match against the opponent.
+      const realMatch = data.find((fixture: any) => 
+        fixture.teams.home.name.includes(targetMatch.opponent) || 
+        fixture.teams.away.name.includes(targetMatch.opponent)
+      );
 
-        if (next === 1) {
-          logText = `⏱️ 1' Kickoff! Match begins at ${targetMatch.stadium}.`;
-          setSimLog([logText]);
-        } else if (next === 2) {
-          logText = `⏱️ 22' Tense midfield battle...`;
-          setSimLog(prevLogs => [...prevLogs, logText]);
-        } else if (next === 3) {
-          if (Math.random() > 0.3) {
-            currentHomeGoals += 1;
-            const scorer = STICKERS.find(s => s.id === actualScorerId);
-            logText = `⚽ 41' Goal!!! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}! ${scorer?.name} scores!`;
-          } else {
-            currentAwayGoals += 1;
-            logText = `⚽ 38' Goal for ${targetMatch.opponent}! ${targetMatch.opponent} ${currentAwayGoals} - ${currentHomeGoals} BIH.`;
-          }
-          setSimLog(prevLogs => [...prevLogs, logText]);
-        } else if (next === 4) {
-          logText = `⏱️ 45+2' Half-time.`;
-          setSimLog(prevLogs => [...prevLogs, logText]);
-        } else if (next === 5) {
-          logText = `⏱️ 67' Heavy pressure from both sides.`;
-          setSimLog(prevLogs => [...prevLogs, logText]);
-        } else if (next === 6) {
-          if (Math.random() > 0.5) {
-            currentHomeGoals += 1;
-            logText = `⚽ 81' GOAAAL!!! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}!`;
-          } else if (Math.random() > 0.6) {
-            currentAwayGoals += 1;
-            logText = `⚽ 85' Goal for ${targetMatch.opponent}! BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}.`;
-          } else {
-            logText = `⏱️ 88' Tense final minutes!`;
-          }
-          setSimLog(prevLogs => [...prevLogs, logText]);
-        } else if (next === 7) {
-          logText = `🏁 90' Full-time! Final score: BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}.`;
-          setSimLog(prevLogs => [...prevLogs, logText]);
-          setSimFinalResult({ home: currentHomeGoals, away: currentAwayGoals, scorerId: actualScorerId });
-          clearInterval(interval);
-        }
+      let currentHomeGoals = 0;
+      let currentAwayGoals = 0;
 
-        return next;
-      });
-    }, 1200);
+      if (realMatch && realMatch.fixture.status.short === "FT") {
+        // Real Match Finished
+        const isBosniaHome = realMatch.teams.home.id === 18;
+        currentHomeGoals = isBosniaHome ? realMatch.goals.home : realMatch.goals.away;
+        currentAwayGoals = isBosniaHome ? realMatch.goals.away : realMatch.goals.home;
+        setSimLog(prev => [...prev, `🏁 Full-time real result: BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}`]);
+      } else {
+        // Fallback: If the real match hasn't happened or API rate limit, use random realistic outcome for demo
+        setSimLog(prev => [...prev, `⚠️ Real match pending or not found. Simulating possible outcome...`]);
+        currentHomeGoals = Math.floor(Math.random() * 3);
+        currentAwayGoals = Math.floor(Math.random() * 3);
+        setSimLog(prev => [...prev, `🏁 Simulated Full-time result: BIH ${currentHomeGoals} - ${currentAwayGoals} ${targetMatch.opponent}`]);
+      }
+
+      // Pick a random scorer from squad to simulate the scorer since API-Sports requires a separate endpoint for events
+      const actualScorerId = targetMatch.squadIds[Math.floor(Math.random() * targetMatch.squadIds.length)];
+
+      setSimProgress(7); // Mark as complete
+      setSimFinalResult({ home: currentHomeGoals, away: currentAwayGoals, scorerId: actualScorerId });
+
+    } catch (error) {
+      console.error(error);
+      setSimLog(prev => [...prev, "❌ Error fetching real match data. Please check API Key and Redis."]);
+      setSimulatingBetId(null);
+    }
   };
 
   const claimBetReward = (bet: Bet, index: number) => {
@@ -627,7 +621,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                   <div className="shrink-0 flex items-center space-x-4 font-sans">
                     {bet.status === "ACTIVE" && !isSimulating && (
                       <button
-                        onClick={() => startSimulation(bet)}
+                        onClick={() => checkRealMatchResult(bet)}
                         disabled={simulatingBetId !== null}
                         className={`py-2 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition shadow-sm flex items-center space-x-1.5 cursor-pointer ${simulatingBetId !== null
                             ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
@@ -635,7 +629,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                           }`}
                       >
                         <Play className="h-3.5 w-3.5 fill-current" />
-                        <span>Simulate Match Result</span>
+                        <span>Check Real Match Result</span>
                       </button>
                     )}
 

@@ -25,16 +25,17 @@ export default function SolflareWallet({ wallet, onWalletChange, lang, sandboxMo
     
     const updateBalance = async () => {
       if (connected && publicKey) {
+        let balance = 0;
         try {
-          const balance = await connection.getBalance(publicKey);
-          onWalletChange({
-            connected: true,
-            publicKey: publicKey.toBase58(),
-            balance: balance / LAMPORTS_PER_SOL,
-          });
+          balance = await connection.getBalance(publicKey);
         } catch (err: any) {
           console.error("Failed to fetch balance", err);
         }
+        onWalletChange({
+          connected: true,
+          publicKey: publicKey.toBase58(),
+          balance: balance / LAMPORTS_PER_SOL,
+        });
       } else if (!connected && wallet.connected) {
         onWalletChange({
           connected: false,
