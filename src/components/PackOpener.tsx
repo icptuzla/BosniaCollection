@@ -48,7 +48,7 @@ import mahmicImg from "./players/mahmic.webp";
 import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
-import goldenCrestImg from "./special_collection/GoldenCrest.png";
+import goldenCrestImg from "./special_collection/GoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";

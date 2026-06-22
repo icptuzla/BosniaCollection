@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     }
 
     // Fetch fixtures for Bosnia & Herzegovina (Team ID: 18)
-    const response = await fetch('https://v3.football.api-sports.io/fixtures?team=18&season=2024', {
+    const response = await fetch('https://v3.football.api-sports.io/fixtures?team=18&season=2026', {
       headers: {
         'x-apisports-key': apiKey
       }

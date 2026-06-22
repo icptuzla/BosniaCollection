@@ -591,7 +591,7 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "Holographic Rarity ★★★★★",
     type: StickerType.SPECIAL,
     imageTheme: "from-amber-400 via-yellow-600 to-blue-900 animate-pulse bg-[length:200%_200%]",
-    imageFile: "GoldenCrest.png"
+    imageFile: "GoldenCrest.webp"
   },
   {
     id: 27,

@@ -36,7 +36,8 @@ import mahmicImg from "./players/mahmic.webp";
 import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
-import goldenCrestImg from "./special_collection/GoldenCrest.png";
+import goldenCrestImg from "./special_collection/GoldenCrest.webp";
+import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
@@ -72,7 +73,7 @@ const playerImageMap: Record<string, string> = {
   "lukic.webp": lukicImg,
 
   // Special collection
-  "GoldenCrest.png": goldenCrestImg,
+  "GoldenCrest.webp": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
   "2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,
@@ -372,60 +373,117 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
 
       </div>
 
-      {/* 100% Completion Reward Modal */}
+      {/* 100% Completion Reward Modal — Epic NFT Mint */}
       {pastedCount === totalPossible && !hasClaimedReward && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm">
-          <div className="bg-[#fffef8] border-4 border-[#FFCD00] rounded-3xl p-6 md:p-8 max-w-lg w-full text-center space-y-6 shadow-[0_0_40px_rgba(255,205,0,0.6)] text-gray-800 animate-fade-in relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-950/95 backdrop-blur-md overflow-y-auto">
+          <div className="bg-gradient-to-br from-[#010b1f] via-[#021430] to-[#000812] border-2 border-[#FFCD00] rounded-3xl p-6 md:p-8 max-w-xl w-full text-center shadow-[0_0_60px_rgba(255,205,0,0.5),0_0_120px_rgba(0,240,255,0.2)] text-white animate-fade-in relative overflow-hidden">
 
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-              <div className="absolute top-[-50px] left-[-50px] w-32 h-32 bg-[#00f0ff] opacity-20 blur-3xl rounded-full mix-blend-multiply animate-pulse" />
-              <div className="absolute bottom-[-50px] right-[-50px] w-32 h-32 bg-[#FFCD00] opacity-20 blur-3xl rounded-full mix-blend-multiply animate-pulse" />
+            {/* Ambient glow blobs */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+              <div className="absolute -top-16 -left-16 w-48 h-48 bg-[#FFCD00] opacity-10 blur-3xl rounded-full animate-pulse" />
+              <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-[#00f0ff] opacity-10 blur-3xl rounded-full animate-pulse" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-amber-500 opacity-5 blur-3xl rounded-full" />
             </div>
 
-            <div className="w-24 h-24 bg-[#FFCD00] rounded-full flex items-center justify-center overflow-hidden shrink-0 mx-auto shadow-[0_0_20px_rgba(255,205,0,0.8)] relative z-10 border-4 border-white">
-              <Star className="h-12 w-12 text-[#002F6C] animate-pulse" fill="#002F6C" />
-            </div>
-
-            <div className="space-y-2 relative z-10">
-              <span className="text-[11px] font-sans font-black text-amber-500 tracking-[0.2em] uppercase block">
-                {lang === "BS" ? "Kolekcija Završena" : "Collection Complete"}
+            {/* Header badge */}
+            <div className="relative z-10 mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFCD00] text-[#002F6C] rounded-full text-[10px] font-sans font-black uppercase tracking-widest shadow-lg">
+                <Star className="h-3 w-3" fill="currentColor" />
+                {lang === "BS" ? "KOLEKCIJA POTPUNA — EPSKA NAGRADA" : "COLLECTION COMPLETE — EPIC NFT REWARD"}
               </span>
-              <h2 className="text-3xl font-sans font-black tracking-tight text-[#002F6C] uppercase leading-none">
-                {lang === "BS" ? "Čestitamo!" : "Congratulations!"}
-              </h2>
             </div>
 
-            <div className="text-gray-700 text-sm leading-relaxed space-y-3 font-serif relative z-10">
-              <p>
-                {lang === "BS" ? "Sakupili ste i zalijepili svih 29 sličica u svoj album! Kao nagradu za ovaj nevjerovatan trud, otključali ste specijalnu nagradu." : "You have collected and pasted all 29 stickers into your album! As a reward for this incredible dedication, you've unlocked a special prize."}
-              </p>
-
-              <div className="bg-gradient-to-r from-[#002F6C] to-[#124285] rounded-xl p-4 text-white text-left flex items-center gap-4 border border-[#FFCD00] shadow-md mt-4">
-                <div className="bg-[#FFCD00] p-2 rounded-lg text-[#002F6C] shrink-0">
-                  <Award className="h-8 w-8" />
+            {/* Epic NFT Card Display */}
+            <div className="relative z-10 mx-auto w-full max-w-[280px] mb-5">
+              <div className="relative rounded-2xl overflow-hidden border-2 border-[#FFCD00] shadow-[0_0_30px_rgba(255,205,0,0.6),0_0_60px_rgba(255,205,0,0.2)] group">
+                {/* Holographic shimmer overlay */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#FFCD00]/10 via-transparent to-[#00f0ff]/10 group-hover:from-[#00f0ff]/15 group-hover:to-[#FFCD00]/15 transition-all duration-700 z-10 pointer-events-none rounded-2xl" />
+                <img
+                  src={rewardGoldenCrestImg}
+                  alt="Golden Crest Reward NFT"
+                  className="w-full h-auto block object-contain"
+                />
+                {/* EPIC badge overlay */}
+                <div className="absolute top-2 right-2 bg-[#FFCD00] text-[#002F6C] text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full z-20 shadow-md">
+                  ★ EPIC
                 </div>
-                <div>
-                  <span className="block text-[10px] font-sans font-bold text-amber-300 uppercase tracking-widest leading-none mb-1">
-                    {lang === "BS" ? "Vaša Nagrada" : "Your Reward"}
-                  </span>
-                  <span className="block text-xl font-mono font-black">2.026 SOL</span>
-                  <span className="block text-xs font-sans text-gray-200 mt-0.5">
-                    + {lang === "BS" ? "Zlatni Metaplex Certifikat" : "Golden Metaplex Certificate"}
-                  </span>
-                </div>
+              </div>
+              {/* IPFS provenance line */}
+              <div className="mt-2 flex items-center justify-center gap-1.5">
+                <span className="text-[9px] text-[#00f0ff] font-mono font-bold uppercase tracking-wider opacity-80">IPFS</span>
+                <span className="text-[9px] font-mono text-gray-400 truncate max-w-[200px]">
+                  QmeLB1ty...gLSo2
+                </span>
               </div>
             </div>
 
-            <button
-              onClick={onClaimReward}
-              className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-950 font-black tracking-widest text-sm transition shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer font-sans uppercase relative z-10 mt-6"
-            >
-              {lang === "BS" ? "Preuzmi Nagradu" : "Claim Reward"}
-            </button>
+            {/* Title */}
+            <div className="relative z-10 space-y-1 mb-4">
+              <h2 className="text-2xl md:text-3xl font-sans font-black tracking-tight text-[#FFCD00] uppercase leading-none">
+                {lang === "BS" ? "Čestitamo, Kolekcionaru!" : "Congratulations, Collector!"}
+              </h2>
+              <p className="text-xs text-gray-300 font-serif leading-relaxed max-w-sm mx-auto">
+                {lang === "BS"
+                  ? "Zalijepili ste svih 29 sličica! Zaradili ste ovaj rijetki Zlatni Grb NFT koji je trajan i unosan na Solana blockchainu."
+                  : "You pasted all 29 stickers! You've earned this rare Golden Crest NFT — permanently recorded on the Solana blockchain via Metaplex."}
+              </p>
+            </div>
+
+            {/* Reward breakdown */}
+            <div className="relative z-10 bg-white/5 border border-white/10 rounded-2xl p-4 mb-5 text-left space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-300 font-sans font-semibold">{lang === "BS" ? "SOL Nagrada" : "SOL Reward"}</span>
+                <span className="text-[#14F195] font-mono font-black text-base">2.026 SOL</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-300 font-sans font-semibold">{lang === "BS" ? "NFT Certifikat" : "NFT Certificate"}</span>
+                <span className="text-[#FFCD00] font-sans font-black text-xs">★ Golden Crest (Epic)</span>
+              </div>
+              <div className="flex items-start justify-between text-sm border-t border-white/10 pt-3">
+                <span className="text-gray-400 font-sans text-xs">Metaplex CID</span>
+                <a
+                  href="https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00f0ff] font-mono text-[10px] hover:underline truncate max-w-[180px] text-right"
+                >
+                  QmeLB1tybz6ya...LSo2 ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="relative z-10 space-y-3">
+              {/* Primary: Mint NFT to Solflare */}
+              <button
+                onClick={() => {
+                  onClaimReward?.();
+                  window.open(
+                    `https://solflare.com/mint?network=mainnet&uri=${encodeURIComponent("https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp")}&name=${encodeURIComponent("Bosnia WC2026 — Golden Crest")}`,
+                    "_blank"
+                  );
+                }}
+                className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-[#FFCD00] via-amber-400 to-[#FFCD00] hover:brightness-110 text-[#002F6C] font-black tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(255,205,0,0.5)] hover:shadow-[0_0_30px_rgba(255,205,0,0.8)] hover:-translate-y-0.5 cursor-pointer font-sans uppercase flex items-center justify-center gap-2 group"
+              >
+                <Award className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                {lang === "BS" ? "Mintaj NFT u Solflare" : "Mint NFT to Solflare Wallet"}
+              </button>
+
+              {/* Secondary: View on IPFS */}
+              <a
+                href="https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-6 rounded-xl border border-[#00f0ff]/40 text-[#00f0ff] font-bold text-xs uppercase tracking-wider hover:bg-[#00f0ff]/10 transition cursor-pointer font-sans flex items-center justify-center gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                {lang === "BS" ? "Pregledaj na IPFS" : "View on IPFS"}
+              </a>
+            </div>
 
             {!walletConnected && (
-              <p className="text-[10px] font-sans text-rose-600 font-bold uppercase relative z-10">
-                {lang === "BS" ? "Povežite novčanik prije preuzimanja!" : "Connect wallet before claiming!"}
+              <p className="text-[10px] font-sans text-rose-400 font-bold uppercase relative z-10 mt-3">
+                {lang === "BS" ? "Povežite Solflare novčanik prije preuzimanja!" : "Connect your Solflare wallet before minting!"}
               </p>
             )}
           </div>
