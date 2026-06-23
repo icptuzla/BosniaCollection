@@ -6,6 +6,11 @@ import logoImage from "./zmajevi logo.webp";
 import albumCoverImg from "./Album.webp";
 import { Language, UI_TRANSLATIONS, PLAYER_TRANSLATIONS } from "../data/translations";
 
+import { useWallet as useSolanaWallet, useConnection } from "@solana/wallet-adapter-react";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { generateSigner } from "@metaplex-foundation/umi";
+import { create } from "@metaplex-foundation/mpl-core";
 // Import all uploaded player photos in WebP format
 import dzekoImg from "./players/Pi_dzeko.webp";
 import demirovicImg from "./players/Pi_Demirovic.webp";
@@ -105,8 +110,46 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
   // - Page 5: Player 24, Separator, Special Collection (Slots 25-28)
 
   const [currentPage, setCurrentPage] = useState(0);
+  const [isMinting, setIsMinting] = useState(false);
 
   const t = UI_TRANSLATIONS[lang];
+
+  const solanaWallet = useSolanaWallet();
+  const { connection } = useConnection();
+  const umi = React.useMemo(() => {
+    const u = createUmi(connection.rpcEndpoint);
+    if (solanaWallet.wallet) {
+      try {
+        u.use(walletAdapterIdentity(solanaWallet));
+      } catch (e) {
+        console.warn("Wallet adapter not initialized:", e);
+      }
+    }
+    return u;
+  }, [connection, solanaWallet]);
+
+  const handleMintReward = async () => {
+    if (!walletConnected || !solanaWallet.publicKey) {
+      alert(lang === "BS" ? "Povežite novčanik!" : "Please connect your wallet!");
+      return;
+    }
+    setIsMinting(true);
+    try {
+      const assetSigner = generateSigner(umi);
+      await create(umi, {
+        asset: assetSigner,
+        name: "Bosnia WC2026 — Golden Crest",
+        uri: "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp",
+      }).sendAndConfirm(umi);
+
+      alert(lang === "BS" ? "Uspješno! Provjerite Solflare kolekcionarstvo." : "Success! Check your Solflare collectibles.");
+      onClaimReward?.();
+    } catch (e: any) {
+      console.error(e);
+      alert((lang === "BS" ? "Greška prilikom mintanja: " : "Mint failed: ") + e.message);
+    }
+    setIsMinting(false);
+  };
 
   const getPageStickers = (pageNum: number): Sticker[] => {
     switch (pageNum) {
@@ -456,17 +499,14 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
             <div className="relative z-10 space-y-3">
               {/* Primary: Mint NFT to Solflare */}
               <button
-                onClick={() => {
-                  onClaimReward?.();
-                  window.open(
-                    `https://solflare.com/mint?network=mainnet&uri=${encodeURIComponent("https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp")}&name=${encodeURIComponent("Bosnia WC2026 — Golden Crest")}`,
-                    "_blank"
-                  );
-                }}
-                className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-[#FFCD00] via-amber-400 to-[#FFCD00] hover:brightness-110 text-[#002F6C] font-black tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(255,205,0,0.5)] hover:shadow-[0_0_30px_rgba(255,205,0,0.8)] hover:-translate-y-0.5 cursor-pointer font-sans uppercase flex items-center justify-center gap-2 group"
+                onClick={handleMintReward}
+                disabled={isMinting}
+                className={`w-full py-4 px-6 rounded-xl bg-gradient-to-r from-[#FFCD00] via-amber-400 to-[#FFCD00] hover:brightness-110 text-[#002F6C] font-black tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(255,205,0,0.5)] hover:shadow-[0_0_30px_rgba(255,205,0,0.8)] hover:-translate-y-0.5 cursor-pointer font-sans uppercase flex items-center justify-center gap-2 group ${isMinting ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <Award className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                {lang === "BS" ? "Mintaj NFT u Solflare" : "Mint NFT to Solflare Wallet"}
+                {isMinting 
+                  ? (lang === "BS" ? "Mintanje..." : "Minting...") 
+                  : (lang === "BS" ? "Mintaj NFT u Solflare" : "Mint NFT to Solflare Wallet")}
               </button>
 
               {/* Secondary: View on IPFS */}
