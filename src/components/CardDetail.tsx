@@ -47,7 +47,13 @@ import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
-const playerImageMap: Record<string, string> = {
+// IPFS config — shared CID for all card assets
+const IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
+const IPFS_BASE = `https://${IPFS_CID}.ipfs.dweb.link/components`;
+const IPFS_TIMEOUT_MS = 100_000;
+
+// Local fallback map (Vite bundled imports)
+const LOCAL_IMAGE_MAP: Record<string, string> = {
   "Pi_dzeko.webp": dzekoImg,
   "Pi_Demirovic.webp": demirovicImg,
   "Pi_dedic.webp": dedicImg,
@@ -74,23 +80,40 @@ const playerImageMap: Record<string, string> = {
   "husejinbasic.webp": husejinbasicImg,
   "mahmic.webp": mahmicImg,
   "lukic.webp": lukicImg,
-
-  // Special collection
   "GoldenCrest.webp": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
   "2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,
 };
 
-const getPlayerImage = (sticker: Sticker) => {
+// Session-level IPFS reachability cache
+let _ipfsReachable: boolean | null = null;
+let _ipfsPromise: Promise<boolean> | null = null;
+function getIpfsStatus(): Promise<boolean> {
+  if (_ipfsReachable !== null) return Promise.resolve(_ipfsReachable);
+  if (_ipfsPromise) return _ipfsPromise;
+  _ipfsPromise = new Promise<boolean>((resolve) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => { ctrl.abort(); _ipfsReachable = false; resolve(false); }, IPFS_TIMEOUT_MS);
+    fetch(`${IPFS_BASE}/special_collection/GoldenCrest.webp`, { method: "HEAD", signal: ctrl.signal, cache: "no-store" })
+      .then(() => { clearTimeout(timer); _ipfsReachable = true; resolve(true); })
+      .catch(() => { clearTimeout(timer); _ipfsReachable = false; resolve(false); });
+  });
+  return _ipfsPromise;
+}
+
+function buildIpfsUrl(folder: string, fileName: string): string {
+  return `${IPFS_BASE}/${folder}/${fileName}`;
+}
+
+function getPlayerImage(sticker: Sticker, ipfsOk: boolean): string | null {
   if (!sticker.imageFile) return null;
   const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
   let fileName = sticker.imageFile;
-  if (fileName === "GoldenCrest.webp") {
-    fileName = "GoldenCrest.png";
-  }
-  return `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
-};
+  if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
+  if (ipfsOk) return buildIpfsUrl(folder, fileName);
+  return LOCAL_IMAGE_MAP[sticker.imageFile] ?? null;
+}
 
 interface CardDetailProps {
   sticker: Sticker;
@@ -109,10 +132,16 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
   const [scale, setScale] = useState(1);
   const [flipped, setFlipped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [ipfsOk, setIpfsOk] = useState<boolean>(true); // optimistic default
 
   const [isMinting, setIsMinting] = useState(false);
   const solanaWallet = useSolanaWallet();
   const { connection } = useConnection();
+
+  // Probe IPFS on mount; fallback to local if unreachable in 100s
+  useEffect(() => {
+    getIpfsStatus().then(ok => setIpfsOk(ok));
+  }, []);
 
   const umi = React.useMemo(() => {
     const u = createUmi(connection.rpcEndpoint);
@@ -128,6 +157,12 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   const isMinted = mintedStickers.includes(sticker.id);
 
+  // Compute IPFS URI for this card
+  const cardFolder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+  const cardFileName = sticker.imageFile === "GoldenCrest.webp" ? "GoldenCrest.png" : sticker.imageFile;
+  const cardIpfsCid = `${IPFS_CID}/components/${cardFolder}/${cardFileName}`;
+  const cardIpfsUrl = buildIpfsUrl(cardFolder, cardFileName);
+
   const handleMintSticker = async () => {
     if (!walletConnected || !solanaWallet.publicKey) {
       alert(lang === "BS" ? "Povežite novčanik!" : "Please connect your wallet!");
@@ -136,25 +171,17 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
     setIsMinting(true);
     try {
       if (sandboxMode) {
-        // Simulate Sandbox minting
         await new Promise(resolve => setTimeout(resolve, 1200));
         onMintSticker(sticker.id);
         alert(lang === "BS" ? "Uspješno! (Sandbox simulacija)" : "Success! (Sandbox simulation)");
       } else {
-        const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
-        let fileName = sticker.imageFile;
-        if (fileName === "GoldenCrest.webp") {
-          fileName = "GoldenCrest.png";
-        }
-        const tokenUri = `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
-
+        // Always use IPFS URI for on-chain metadata
         const assetSigner = generateSigner(umi);
         await create(umi, {
           asset: assetSigner,
           name: `BiH WC26 — ${sticker.name}`,
-          uri: tokenUri,
+          uri: cardIpfsUrl,
         }).sendAndConfirm(umi);
-
         onMintSticker(sticker.id);
         alert(lang === "BS" ? "Uspješno! Sličica je spremljena u Vaš novčanik." : "Success! Card minted to your wallet.");
       }
@@ -252,7 +279,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   const hasStickerPouch = userSticker && userSticker.count > 0;
   const isPasted = userSticker && userSticker.pasted;
-  const playerImg = getPlayerImage(sticker);
+  const playerImg = getPlayerImage(sticker, ipfsOk);
 
   // Localized sticker biography
   const bio = PLAYER_TRANSLATIONS[sticker.id]?.biography[lang] || sticker.biography;
@@ -391,6 +418,11 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 <div className="text-right">
                   <span className="text-xs font-mono font-bold text-gray-300 block uppercase leading-none">MINT ID:</span>
                   <span className="text-[#00f0ff] font-mono text-sm font-black tracking-wider block mt-1">#BIH-WC26-{sticker.id.toString().padStart(3, "0")}</span>
+                  <a href={`https://${cardIpfsCid}`} target="_blank" rel="noopener noreferrer"
+                    className="text-[8px] font-mono text-[#14F195]/70 hover:text-[#14F195] block mt-0.5 truncate max-w-[160px] transition"
+                    title={`IPFS: ${cardIpfsCid}`}>
+                    ⛓ {cardIpfsCid.slice(0, 22)}…
+                  </a>
                 </div>
               </div>
 

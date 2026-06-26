@@ -13,7 +13,7 @@ export default defineConfig(() => {
       },
     },
     build: {
-      chunkSizeWarningLimit: 1500,
+      chunkSizeWarningLimit: 2000,
       rollupOptions: {
         onwarn(warning, defaultHandler) {
           // Suppress sourcemap warnings from third-party packages
@@ -23,11 +23,23 @@ export default defineConfig(() => {
           defaultHandler(warning);
         },
         output: {
+          // Split large node_modules into focused dynamic chunks
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              return 'vendor';
+              if (id.includes('@solana') || id.includes('@metaplex') || id.includes('@noble')) {
+                return 'chunk-solana';
+              }
+              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+                return 'chunk-react';
+              }
+              if (id.includes('lucide')) {
+                return 'chunk-icons';
+              }
+              return 'chunk-vendor';
             }
-          }
+          },
+          // Each dynamic import chunk must be at least 10 kB (avoids tiny splits)
+          experimentalMinChunkSize: 10_000,
         }
       }
     },

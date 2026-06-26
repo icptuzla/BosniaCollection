@@ -1,8 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { Play, Calendar, Clock, MapPin, Award, Lock, Trophy, Sparkles, CheckCircle2, AlertTriangle, Coins } from "lucide-react";
-import { Sticker, UserSticker, WalletState } from "../types";
+import { Play, Calendar, Clock, Award, Lock, Trophy, Sparkles, CheckCircle2, AlertTriangle, Coins, Wifi, WifiOff } from "lucide-react";
+import { Sticker, StickerType, UserSticker, WalletState } from "../types";
 import { STICKERS } from "../data/players";
 import { Language, UI_TRANSLATIONS } from "../data/translations";
+
+// IPFS gateway and local fallback config
+const IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
+const IPFS_GATEWAY = `https://${IPFS_CID}.ipfs.dweb.link/components`;
+const IPFS_TIMEOUT_MS = 100_000; // 100 seconds
+
+// Track IPFS reachability globally (cached for session)
+let ipfsReachable: boolean | null = null;
+let ipfsCheckPromise: Promise<boolean> | null = null;
+
+async function checkIpfsReachability(): Promise<boolean> {
+  if (ipfsReachable !== null) return ipfsReachable;
+  if (ipfsCheckPromise) return ipfsCheckPromise;
+  ipfsCheckPromise = new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => {
+      ipfsReachable = false;
+      resolve(false);
+    }, IPFS_TIMEOUT_MS);
+    fetch(`${IPFS_GATEWAY}/special_collection/GoldenCrest.webp`, { method: "HEAD", cache: "no-store" })
+      .then(() => { clearTimeout(timer); ipfsReachable = true; resolve(true); })
+      .catch(() => { clearTimeout(timer); ipfsReachable = false; resolve(false); });
+  });
+  return ipfsCheckPromise;
+}
+
+function getCardImageUrl(imageFile: string, folder: string): string {
+  return `${IPFS_GATEWAY}/${folder}/${imageFile}`;
+}
 
 interface MatchBetsProps {
   wallet: WalletState;
@@ -43,6 +71,37 @@ interface Bet {
   createdAt: number;
 }
 
+// Matches where the result is known — keyed by match id
+const ENDED_RESULTS: Record<string, {
+  score: string;
+  bihGoals: number;
+  oppGoals: number;
+  scorerIds: number[];
+  scorerNames: string[];
+}> = {
+  "match-wc26-canada": {
+    score: "1:1",
+    bihGoals: 1,
+    oppGoals: 1,
+    scorerIds: [9],
+    scorerNames: ["Bajraktarević"]
+  },
+  "match-wc26-switzerland": {
+    score: "1:4",
+    bihGoals: 1,
+    oppGoals: 4,
+    scorerIds: [11],
+    scorerNames: ["Džeko"]
+  },
+  "match-wc26-qatar": {
+    score: "3:1",
+    bihGoals: 3,
+    oppGoals: 1,
+    scorerIds: [8, 11, 16],
+    scorerNames: ["Alajbegović", "Džeko", "Mahmić"]
+  }
+};
+
 const UPCOMING_MATCHES: Match[] = [
   {
     id: "match-wc26-canada",
@@ -82,12 +141,26 @@ const UPCOMING_MATCHES: Match[] = [
     stageBS: "Grupna faza - 3. Kolo",
     defaultOdds: "Qatar (3.60) | Draw (3.25) | Bosnia (2.00)",
     squadIds: [16, 22, 2, 3, 17, 6, 7, 18, 8, 21, 10],
+  },
+  {
+    id: "match-wc26-usa-playoff",
+    opponent: "USA",
+    opponentFlag: "🇺🇸",
+    opponentCrestTheme: "from-blue-700 via-red-600 to-white",
+    timestamp: "July 2, 2026 - 21:00 CEST (Bosnian Time)",
+    stadium: "SoFi Stadium",
+    city: "Los Angeles, USA",
+    stage: "Round of 16 — Playoff",
+    stageBS: "Osmina finala — Doigravanje",
+    defaultOdds: "USA (2.20) | Draw (3.30) | Bosnia (3.10)",
+    squadIds: [1, 2, 3, 5, 6, 7, 8, 10, 11, 17, 22],
   }
 ];
 
 export default function MatchBets({ wallet, onWalletChange, collection, onCollectionChange, lang }: MatchBetsProps) {
-  // Default to Qatar since Canada and Switzerland ended
-  const [selectedMatch, setSelectedMatch] = useState<Match>(UPCOMING_MATCHES[2]);
+  // Default to USA playoff (latest open match)
+  const [selectedMatch, setSelectedMatch] = useState<Match>(UPCOMING_MATCHES[3]);
+  const [ipfsStatus, setIpfsStatus] = useState<"checking" | "online" | "offline">("checking");
 
   const [wagerType, setWagerType] = useState<"SOL" | "STICKER">("SOL");
   const [predOutcome, setPredOutcome] = useState<"WIN" | "DRAW" | "LOSS">("WIN");
@@ -113,11 +186,23 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     if (savedBets) {
       setBets(JSON.parse(savedBets));
     }
+    // Check IPFS reachability with 100s timeout
+    checkIpfsReachability().then(ok => setIpfsStatus(ok ? "online" : "offline"));
   }, []);
 
   const saveBetsList = (newBets: Bet[]) => {
     setBets(newBets);
     localStorage.setItem("bosnia_wc26_match_bets_v2", JSON.stringify(newBets));
+  };
+
+  // Returns image URL — IPFS if online, local vite module URL as fallback
+  const resolveCardImage = (imageFile: string, isSpecial: boolean): string => {
+    const folder = isSpecial ? "special_collection" : "players";
+    if (ipfsStatus !== "offline") {
+      return getCardImageUrl(imageFile, folder);
+    }
+    // Fallback: use Vite local asset via dynamic import path (served by dev server)
+    return `/src/components/${folder}/${imageFile}`;
   };
 
   const bettableStickers = collection.filter(c => c.count > 0 && !c.pasted).map(c => {
@@ -223,18 +308,18 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
     try {
       setSimLog(prev => [...prev, "📡 Fetching real match data..."]);
       const res = await fetch('/api/get-matches');
-      
+
       if (!res.ok) {
         throw new Error("Failed to connect to API endpoint");
       }
-      
+
       const data = await res.json();
       setSimLog(prev => [...prev, "✅ Data received! Processing actual results..."]);
 
       // In a fully real scenario, you'd match by date or opponent.
       // For this implementation, we will look for a match against the opponent.
-      const realMatch = data.find((fixture: any) => 
-        fixture.teams.home.name.includes(targetMatch.opponent) || 
+      const realMatch = data.find((fixture: any) =>
+        fixture.teams.home.name.includes(targetMatch.opponent) ||
         fixture.teams.away.name.includes(targetMatch.opponent)
       );
 
@@ -362,25 +447,53 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
         <div className="lg:col-span-5 space-y-4">
           <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider flex items-center space-x-1.5 leading-none">
             <Calendar className="h-4 w-4" />
-            <span>Select Group Match</span>
+            <span>Select Match</span>
           </h3>
+
+          {/* IPFS status indicator */}
+          <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border ${ipfsStatus === "checking" ? "bg-amber-50 border-amber-200 text-amber-700" :
+            ipfsStatus === "online" ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
+              "bg-rose-50 border-rose-200 text-rose-700"
+            }`}>
+            {ipfsStatus === "offline" ? <WifiOff className="h-3 w-3" /> : <Wifi className="h-3 w-3" />}
+            <span>
+              {ipfsStatus === "checking" ? "Checking IPFS…" :
+                ipfsStatus === "online" ? `IPFS Online · CID: ${IPFS_CID.slice(0, 12)}…` :
+                  "IPFS Offline · Using Local Backup"}
+            </span>
+          </div>
 
           <div className="space-y-3">
             {UPCOMING_MATCHES.map((match) => {
               const isSelected = selectedMatch.id === match.id;
-              // Ended matches, disable them
-              if (match.id === "match-wc26-canada" || match.id === "match-wc26-switzerland") {
-                const result = match.id === "match-wc26-canada" ? "1:1" : "1:4";
+              const ended = ENDED_RESULTS[match.id];
+              if (ended) {
                 return (
-                  <div key={match.id} className="w-full p-4 rounded-2xl text-left border bg-gray-100 border-gray-300 opacity-60 flex items-center justify-between">
-                    <div className="space-y-2 flex-1">
-                      <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">ENDED ({result})</span>
+                  <div key={match.id} className="w-full p-4 rounded-2xl text-left border bg-gray-100 border-gray-300 opacity-70 flex items-center justify-between">
+                    <div className="space-y-1.5 flex-1">
+                      <span className="text-[9px] font-sans font-extrabold text-emerald-600 uppercase tracking-widest block leading-none">✓ ENDED ({ended.score}) — {ended.scorerNames.join(", ")}</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-xl">🇧🇦</span>
                         <span className="font-sans font-black text-gray-700">BIH</span>
                         <span className="text-xs font-mono text-gray-400">vs</span>
                         <span className="text-xl">{match.opponentFlag}</span>
                         <span className="font-sans font-black text-gray-800">{match.opponent}</span>
+                      </div>
+                      {/* IPFS CIDs for scorer cards */}
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {ended.scorerIds.map(sid => {
+                          const s = STICKERS.find(st => st.id === sid);
+                          if (!s) return null;
+                          const folder = s.type === 1 ? "special_collection" : "players";
+                          const cid = `${IPFS_CID}/components/${folder}/${s.imageFile}`;
+                          return (
+                            <a key={sid} href={`https://${IPFS_CID}.ipfs.dweb.link/components/${folder}/${s.imageFile}`} target="_blank" rel="noopener noreferrer"
+                              className="text-[8px] font-mono bg-blue-50 border border-blue-200 text-blue-700 px-1.5 py-0.5 rounded hover:bg-blue-100 transition truncate max-w-[140px]"
+                              title={cid}>
+                              ⛓ {s.name.split(" ").slice(-1)[0]} · {cid.slice(0, 20)}…
+                            </a>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -394,12 +507,21 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                     setSuccessMsg(null);
                     setErrorMsg(null);
                   }}
-                  className={`w-full p-4 rounded-2xl text-left border transition relative flex items-center justify-between group cursor-pointer ${isSelected
+                  className={`w-full p-4 rounded-2xl text-left border transition relative flex items-center justify-between group cursor-pointer ${match.id === "match-wc26-usa-playoff"
+                    ? isSelected
+                      ? "bg-gradient-to-r from-blue-50 to-red-50 border-[#002F6C] shadow-md ring-2 ring-[#002F6C]/20"
+                      : "bg-gradient-to-r from-blue-50/50 to-red-50/50 hover:from-blue-50 hover:to-red-50 border-blue-300 hover:border-blue-500"
+                    : isSelected
                       ? "bg-white border-[#002F6C] shadow-md ring-2 ring-[#002F6C]/10"
                       : "bg-[#fcfbf7] hover:bg-white border-gray-300 hover:border-gray-500"
                     }`}
                 >
                   <div className="space-y-2 flex-1">
+                    {match.id === "match-wc26-usa-playoff" && (
+                      <span className="inline-flex items-center space-x-1 text-[9px] font-black text-red-600 uppercase tracking-widest bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                        <Trophy className="h-2.5 w-2.5" /><span>PLAYOFF — KO</span>
+                      </span>
+                    )}
                     <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">
                       {lang === "BS" ? match.stageBS : match.stage}
                     </span>
@@ -416,9 +538,27 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                         <span>{match.timestamp.split(" - ")[0]}</span>
                       </span>
                     </div>
+                    {/* Squad IPFS CIDs */}
+                    {isSelected && (
+                      <div className="flex flex-wrap gap-1 mt-1.5 border-t border-gray-200 pt-1.5">
+                        {match.squadIds.slice(0, 4).map(sid => {
+                          const s = STICKERS.find(st => st.id === sid);
+                          if (!s) return null;
+                          const folder = s.type === StickerType.SPECIAL ? "special_collection" : "players";
+                          return (
+                            <a key={sid} href={`https://${IPFS_CID}.ipfs.dweb.link/components/${folder}/${s.imageFile}`} target="_blank" rel="noopener noreferrer"
+                              className="text-[8px] font-mono bg-[#002F6C]/5 border border-[#002F6C]/20 text-[#002F6C] px-1 py-0.5 rounded hover:bg-[#002F6C]/10 transition truncate max-w-[120px]"
+                              title={`IPFS: ${IPFS_CID}/components/${folder}/${s.imageFile}`}>
+                              ⛓ {s.name.split(" ").slice(-1)[0]}
+                            </a>
+                          );
+                        })}
+                        <span className="text-[8px] text-gray-400 self-center">+{match.squadIds.length - 4} more</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm ${isSelected ? "bg-[#002F6C] text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm shrink-0 ml-2 ${isSelected ? "bg-[#002F6C] text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
                     }`}>
                     <Play className="h-3.5 w-3.5 fill-current" />
                   </div>
@@ -582,10 +722,10 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                   <div className="space-y-2 flex-grow text-left">
                     <div className="flex items-center space-x-2.5">
                       <span className={`text-[9px] font-sans px-2.5 py-0.5 rounded-full font-black uppercase border tracking-wider leading-none ${bet.status === "ACTIVE"
-                          ? "bg-amber-100 border-amber-300 text-amber-800"
-                          : bet.status === "WON"
-                            ? "bg-emerald-100 border-emerald-300 text-emerald-800"
-                            : "bg-red-50 border-red-200 text-red-700"
+                        ? "bg-amber-100 border-amber-300 text-amber-800"
+                        : bet.status === "WON"
+                          ? "bg-emerald-100 border-emerald-300 text-emerald-800"
+                          : "bg-red-50 border-red-200 text-red-700"
                         }`}>
                         {bet.status} SLIP
                       </span>
@@ -624,8 +764,8 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                         onClick={() => checkRealMatchResult(bet)}
                         disabled={simulatingBetId !== null}
                         className={`py-2 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition shadow-sm flex items-center space-x-1.5 cursor-pointer ${simulatingBetId !== null
-                            ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                            : "bg-[#002F6C]/10 border border-[#002F6C]/20 text-[#002F6C] hover:bg-[#002F6C] hover:text-white"
+                          ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                          : "bg-[#002F6C]/10 border border-[#002F6C]/20 text-[#002F6C] hover:bg-[#002F6C] hover:text-white"
                           }`}
                       >
                         <Play className="h-3.5 w-3.5 fill-current" />
