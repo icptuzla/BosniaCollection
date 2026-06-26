@@ -102,13 +102,28 @@ function getIpfsStatus(): Promise<boolean> {
   return _ipfsPromise;
 }
 
+// Files that actually live in the special_collection/ IPFS folder.
+// NOTE: a sticker can have StickerType.SPECIAL for display/rarity purposes
+// while its image is still in the players/ folder (e.g. Muharemović, Alajbegović).
+const SPECIAL_COLLECTION_FILES = new Set([
+  "GoldenCrest.webp",
+  "GoldenCrest.png",
+  "stadionzenica.webp",
+  "2014.webp",
+  "bhfanaticos.webp",
+]);
+
+function getIpfsFolder(imageFile: string): string {
+  return SPECIAL_COLLECTION_FILES.has(imageFile) ? "special_collection" : "players";
+}
+
 function buildIpfsUrl(folder: string, fileName: string): string {
   return `${IPFS_BASE}/${folder}/${fileName}`;
 }
 
 function getPlayerImage(sticker: Sticker, ipfsOk: boolean): string | null {
   if (!sticker.imageFile) return null;
-  const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+  const folder = getIpfsFolder(sticker.imageFile);
   let fileName = sticker.imageFile;
   if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
   if (ipfsOk) return buildIpfsUrl(folder, fileName);
@@ -157,9 +172,9 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   const isMinted = mintedStickers.includes(sticker.id);
 
-  // Compute IPFS URI for this card
-  const cardFolder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+  // Compute IPFS URI for this card — use filename-based folder, NOT sticker type
   const cardFileName = sticker.imageFile === "GoldenCrest.webp" ? "GoldenCrest.png" : sticker.imageFile;
+  const cardFolder = getIpfsFolder(cardFileName);
   const cardIpfsCid = `${IPFS_CID}/components/${cardFolder}/${cardFileName}`;
   const cardIpfsUrl = buildIpfsUrl(cardFolder, cardFileName);
 

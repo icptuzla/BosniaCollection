@@ -44,6 +44,16 @@ export default defineConfig(() => {
       }
     },
     optimizeDeps: {
+      exclude: [
+        'vite-plugin-node-polyfills/shims/global',
+        'vite-plugin-node-polyfills/shims/buffer',
+        'workbox-cacheable-response',
+        'workbox-expiration',
+        'workbox-precaching',
+        'workbox-range-requests',
+        'workbox-routing',
+        'workbox-strategies',
+      ],
       esbuildOptions: {
         loader: {
           '.js': 'jsx'
