@@ -17,6 +17,7 @@ We will maintain a list of already minted sticker IDs in `App.tsx` state:
 - **Key**: `bosnia_wc26_minted_stickers`
 - **Type**: `number[]` (containing player sticker IDs 1 to 29)
 - **Persisted**: LocalStorage synchronization on change.
+IFPS: [Zmajevi](https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link)
 
 ### 3.2 Component Hierarchy & Props
 ```

@@ -42,7 +42,7 @@ import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
 import goldenCrestImg from "./special_collection/GoldenCrest.webp";
-import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
+const rewardGoldenCrestImg = "https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/special_collection/GoldenCrest.png";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
@@ -85,10 +85,13 @@ const playerImageMap: Record<string, string> = {
 };
 
 const getPlayerImage = (sticker: Sticker) => {
-  if (sticker.imageFile && playerImageMap[sticker.imageFile]) {
-    return playerImageMap[sticker.imageFile];
+  if (!sticker.imageFile) return null;
+  const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+  let fileName = sticker.imageFile;
+  if (fileName === "GoldenCrest.webp") {
+    fileName = "GoldenCrest.png";
   }
-  return null;
+  return `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
 };
 
 interface AlbumPageProps {
@@ -146,7 +149,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
         await create(umi, {
           asset: assetSigner,
           name: "Bosnia WC2026 — Golden Crest",
-          uri: "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp",
+          uri: "https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/special_collection/GoldenCrest.png",
         }).sendAndConfirm(umi);
 
         alert(lang === "BS" ? "Uspješno! Provjerite Solflare kolekcionarstvo." : "Success! Check your Solflare collectibles.");
@@ -464,7 +467,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
               <div className="mt-2 flex items-center justify-center gap-1.5">
                 <span className="text-[9px] text-[#00f0ff] font-mono font-bold uppercase tracking-wider opacity-80">IPFS</span>
                 <span className="text-[9px] font-mono text-gray-400 truncate max-w-[200px]">
-                  QmeLB1ty...gLSo2
+                  bafybeig...4tumy
                 </span>
               </div>
             </div>

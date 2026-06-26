@@ -83,10 +83,13 @@ const playerImageMap: Record<string, string> = {
 };
 
 const getPlayerImage = (sticker: Sticker) => {
-  if (sticker.imageFile && playerImageMap[sticker.imageFile]) {
-    return playerImageMap[sticker.imageFile];
+  if (!sticker.imageFile) return null;
+  const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+  let fileName = sticker.imageFile;
+  if (fileName === "GoldenCrest.webp") {
+    fileName = "GoldenCrest.png";
   }
-  return null;
+  return `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
 };
 
 interface CardDetailProps {
@@ -138,11 +141,18 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
         onMintSticker(sticker.id);
         alert(lang === "BS" ? "Uspješno! (Sandbox simulacija)" : "Success! (Sandbox simulation)");
       } else {
+        const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+        let fileName = sticker.imageFile;
+        if (fileName === "GoldenCrest.webp") {
+          fileName = "GoldenCrest.png";
+        }
+        const tokenUri = `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
+
         const assetSigner = generateSigner(umi);
         await create(umi, {
           asset: assetSigner,
           name: `BiH WC26 — ${sticker.name}`,
-          uri: `https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=${sticker.imageFile}`,
+          uri: tokenUri,
         }).sendAndConfirm(umi);
 
         onMintSticker(sticker.id);
@@ -391,7 +401,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                   <span>{lang === "BS" ? "BIOGRAFIJA I HISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
                 </h4>
                 <p className="text-[13.5px] text-white leading-relaxed font-sans font-medium pr-2 antialiased">
-                  "{bio ? bio : sticker.biography}"
+                  "{bio}"
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-white/15 text-[13px] font-sans text-gray-200 font-semibold">

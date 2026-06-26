@@ -89,10 +89,13 @@ const playerImageMap: Record<string, string> = {
 };
 
 const getPlayerImage = (sticker: Sticker) => {
-  if (sticker.imageFile && playerImageMap[sticker.imageFile]) {
-    return playerImageMap[sticker.imageFile];
+  if (!sticker.imageFile) return null;
+  const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+  let fileName = sticker.imageFile;
+  if (fileName === "GoldenCrest.webp") {
+    fileName = "GoldenCrest.png";
   }
-  return null;
+  return `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
 };
 
 interface PackOpenerProps {
