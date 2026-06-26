@@ -41,6 +41,22 @@ export default function App() {
   const [hasClaimedReward, setHasClaimedReward] = useState<boolean>(() => {
     return localStorage.getItem("bosnia_wc26_reward_claimed") === "true";
   });
+  const [mintedStickers, setMintedStickers] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem("bosnia_wc26_minted_stickers");
+      return saved ? JSON.parse(saved) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+
+  const handleRegisterMint = (id: number) => {
+    setMintedStickers(prev => {
+      const updated = prev.includes(id) ? prev : [...prev, id];
+      localStorage.setItem("bosnia_wc26_minted_stickers", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   // --- INITIAL SEEDING ---
   useEffect(() => {
@@ -491,6 +507,7 @@ export default function App() {
                 walletConnected={wallet.connected}
                 hasClaimedReward={hasClaimedReward}
                 onClaimReward={handleClaimReward}
+                sandboxMode={sandboxMode}
               />
             )}
 
@@ -546,6 +563,9 @@ export default function App() {
           onPaste={handlePasteStickerInAlbum}
           walletConnected={wallet.connected}
           lang={lang}
+          mintedStickers={mintedStickers}
+          onMintSticker={handleRegisterMint}
+          sandboxMode={sandboxMode}
         />
       )}
 

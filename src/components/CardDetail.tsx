@@ -4,6 +4,13 @@ import { Sticker, UserSticker, StickerType } from "../types";
 import { Language, PLAYER_TRANSLATIONS } from "../data/translations";
 import logoImage from "./zmajevi logo.webp";
 
+// Solana & Metaplex Umi imports
+import { useWallet as useSolanaWallet, useConnection } from "@solana/wallet-adapter-react";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { generateSigner } from "@metaplex-foundation/umi";
+import { create } from "@metaplex-foundation/mpl-core";
+
 // Import all uploaded player photos in WebP format
 import dzekoImg from "./players/Pi_dzeko.webp";
 import demirovicImg from "./players/Pi_Demirovic.webp";
@@ -89,13 +96,65 @@ interface CardDetailProps {
   onPaste?: (id: number) => void;
   walletConnected: boolean;
   lang: Language;
+  mintedStickers: number[];
+  onMintSticker: (id: number) => void;
+  sandboxMode: boolean;
 }
 
-export default function CardDetail({ sticker, userSticker, onClose, onPaste, walletConnected, lang }: CardDetailProps) {
+export default function CardDetail({ sticker, userSticker, onClose, onPaste, walletConnected, lang, mintedStickers, onMintSticker, sandboxMode }: CardDetailProps) {
   const [foilStyle, setFoilStyle] = useState({ rotateX: 0, rotateY: 0, shineX: 50, shineY: 50 });
   const [scale, setScale] = useState(1);
   const [flipped, setFlipped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const [isMinting, setIsMinting] = useState(false);
+  const solanaWallet = useSolanaWallet();
+  const { connection } = useConnection();
+
+  const umi = React.useMemo(() => {
+    const u = createUmi(connection.rpcEndpoint);
+    if (solanaWallet.wallet) {
+      try {
+        u.use(walletAdapterIdentity(solanaWallet));
+      } catch (e) {
+        console.warn("Wallet adapter not initialized:", e);
+      }
+    }
+    return u;
+  }, [connection, solanaWallet]);
+
+  const isMinted = mintedStickers.includes(sticker.id);
+
+  const handleMintSticker = async () => {
+    if (!walletConnected || !solanaWallet.publicKey) {
+      alert(lang === "BS" ? "Povežite novčanik!" : "Please connect your wallet!");
+      return;
+    }
+    setIsMinting(true);
+    try {
+      if (sandboxMode) {
+        // Simulate Sandbox minting
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        onMintSticker(sticker.id);
+        alert(lang === "BS" ? "Uspješno! (Sandbox simulacija)" : "Success! (Sandbox simulation)");
+      } else {
+        const assetSigner = generateSigner(umi);
+        await create(umi, {
+          asset: assetSigner,
+          name: `BiH WC26 — ${sticker.name}`,
+          uri: `https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=${sticker.imageFile}`,
+        }).sendAndConfirm(umi);
+
+        onMintSticker(sticker.id);
+        alert(lang === "BS" ? "Uspješno! Sličica je spremljena u Vaš novčanik." : "Success! Card minted to your wallet.");
+      }
+    } catch (e: any) {
+      console.error("Minting error:", e);
+      alert((lang === "BS" ? "Greška prilikom mintanja: " : "Mint failed: ") + (e.message || e.toString()));
+    } finally {
+      setIsMinting(false);
+    }
+  };
 
   // Dynamically scale card and controls to fit small smartphone screens perfectly
   useEffect(() => {
@@ -393,6 +452,30 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 </div>
 
                 <div className="flex items-center space-x-3.5">
+                  {(hasStickerPouch || isPasted) && (
+                    isMinted ? (
+                      <span className="py-2 px-4.5 rounded-xl bg-emerald-950/40 text-[#14F195] border border-[#14F195]/40 text-xs font-bold uppercase tracking-wider leading-none shrink-0">
+                        {lang === "BS" ? "✓ Mintano" : "✓ Minted"}
+                      </span>
+                    ) : (
+                      <button
+                        id="btn-mint-sticker-action"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Avoid card flip
+                          handleMintSticker();
+                        }}
+                        disabled={isMinting}
+                        className={`py-2 px-4 rounded-xl font-sans font-black text-xs uppercase tracking-wider transition shrink-0 cursor-pointer ${
+                          isMinting
+                            ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                            : "bg-[#002F6C] hover:bg-[#FFCD00] text-white hover:text-[#002F6C] border border-[#00f0ff]/50 shadow-[0_0_12px_rgba(0,240,255,0.35)]"
+                        }`}
+                      >
+                        {isMinting ? (lang === "BS" ? "Mintanje..." : "Minting...") : (lang === "BS" ? "Mintaj NFT" : "Mint NFT")}
+                      </button>
+                    )
+                  )}
+
                   {hasStickerPouch && !isPasted && onPaste && (
                     <button
                       id="btn-paste-sticker-action"

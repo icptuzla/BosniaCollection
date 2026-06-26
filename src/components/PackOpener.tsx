@@ -82,7 +82,7 @@ const playerImageMap: Record<string, string> = {
   "lukic.webp": lukicImg,
 
   // Special collection
-  "GoldenCrest.png": goldenCrestImg,
+  "GoldenCrest.webp": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
   "2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,

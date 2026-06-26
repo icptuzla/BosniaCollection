@@ -99,9 +99,10 @@ interface AlbumPageProps {
   walletConnected?: boolean;
   hasClaimedReward?: boolean;
   onClaimReward?: () => void;
+  sandboxMode: boolean;
 }
 
-export default function AlbumPage({ collection, onViewSticker, pastedCount, lang, walletConnected, hasClaimedReward, onClaimReward }: AlbumPageProps) {
+export default function AlbumPage({ collection, onViewSticker, pastedCount, lang, walletConnected, hasClaimedReward, onClaimReward, sandboxMode }: AlbumPageProps) {
   // - Page 0: Album Cover
   // - Page 1: Starters Part I (Slots 1-6)
   // - Page 2: Starters Part II (Slots 7-11)
@@ -135,20 +136,28 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
     }
     setIsMinting(true);
     try {
-      const assetSigner = generateSigner(umi);
-      await create(umi, {
-        asset: assetSigner,
-        name: "Bosnia WC2026 — Golden Crest",
-        uri: "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp",
-      }).sendAndConfirm(umi);
+      if (sandboxMode) {
+        // Simulate Sandbox minting for the Reward
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        alert(lang === "BS" ? "Uspješno! (Sandbox simulacija nagrade)" : "Success! (Sandbox reward simulation)");
+        onClaimReward?.();
+      } else {
+        const assetSigner = generateSigner(umi);
+        await create(umi, {
+          asset: assetSigner,
+          name: "Bosnia WC2026 — Golden Crest",
+          uri: "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp",
+        }).sendAndConfirm(umi);
 
-      alert(lang === "BS" ? "Uspješno! Provjerite Solflare kolekcionarstvo." : "Success! Check your Solflare collectibles.");
-      onClaimReward?.();
+        alert(lang === "BS" ? "Uspješno! Provjerite Solflare kolekcionarstvo." : "Success! Check your Solflare collectibles.");
+        onClaimReward?.();
+      }
     } catch (e: any) {
       console.error(e);
-      alert((lang === "BS" ? "Greška prilikom mintanja: " : "Mint failed: ") + e.message);
+      alert((lang === "BS" ? "Greška prilikom mintanja: " : "Mint failed: ") + (e.message || e.toString()));
+    } finally {
+      setIsMinting(false);
     }
-    setIsMinting(false);
   };
 
   const getPageStickers = (pageNum: number): Sticker[] => {
