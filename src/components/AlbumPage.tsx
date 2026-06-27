@@ -42,7 +42,7 @@ import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
 import goldenCrestImg from "./special_collection/GoldenCrest.webp";
-const rewardGoldenCrestImg = "https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/special_collection/GoldenCrest.png";
+import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
@@ -84,14 +84,19 @@ const playerImageMap: Record<string, string> = {
   "bhfanaticos.webp": bhfImg,
 };
 
-const getPlayerImage = (sticker: Sticker) => {
-  if (!sticker.imageFile) return null;
-  const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+// Files that live in special_collection/ on IPFS — all others are in players/
+const SPECIAL_COLLECTION_FILES = new Set([
+  "GoldenCrest.webp", "GoldenCrest.png", "stadionzenica.webp", "2014.webp", "bhfanaticos.webp",
+]);
+
+const getPlayerImage = (sticker: Sticker): { ipfs: string; local: string | null } => {
+  if (!sticker.imageFile) return { ipfs: "", local: null };
+  const folder = SPECIAL_COLLECTION_FILES.has(sticker.imageFile) ? "special_collection" : "players";
   let fileName = sticker.imageFile;
-  if (fileName === "GoldenCrest.webp") {
-    fileName = "GoldenCrest.png";
-  }
-  return `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
+  if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
+  const ipfs = `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
+  const local = playerImageMap[sticker.imageFile] ?? null;
+  return { ipfs, local };
 };
 
 interface AlbumPageProps {
@@ -318,40 +323,42 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                       </div>
                     ) : (
                       /* Real pasted sticker card */
-                      <div
-                        className={`w-full border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(st) ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"
-                          }`}
-                      >
-                        {/* If we have an image, show it using an img tag to respect its natural aspect ratio */}
-                        {getPlayerImage(st) && (
-                          <div className="relative w-full bg-white flex flex-col justify-end">
-                            <img src={getPlayerImage(st)!} alt={st.name} className="w-full h-auto object-contain block" />
-                          </div>
-                        )}
-
-                        {/* Default emblem placeholder if no player image could be loaded */}
-                        {!getPlayerImage(st) && (
-                          <div className="flex-1 flex flex-col items-center justify-center p-4 text-center z-10 relative">
-                            {st.id === 27 ? (
-                              <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
-                            ) : st.type === StickerType.SPECIAL ? (
-                              <Star className="h-8 w-8 text-[#FFCD00] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
-                            ) : (
-                              <span className="text-xl">⚽</span>
+                      (() => {
+                        const { ipfs, local } = getPlayerImage(st);
+                        return (
+                          <div
+                            className={`w-full border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!ipfs && !local ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"}`}
+                          >
+                            {(ipfs || local) && (
+                              <div className="relative w-full bg-white flex flex-col justify-end">
+                                <img
+                                  src={ipfs}
+                                  alt={st.name}
+                                  className="w-full h-auto object-contain block"
+                                  onError={(e) => {
+                                    if (local) (e.currentTarget as HTMLImageElement).src = local;
+                                  }}
+                                />
+                              </div>
                             )}
+                            {!ipfs && !local && (
+                              <div className="flex-1 flex flex-col items-center justify-center p-4 text-center z-10 relative">
+                                {st.id === 27 ? (
+                                  <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
+                                ) : st.type === StickerType.SPECIAL ? (
+                                  <Star className="h-8 w-8 text-[#FFCD00] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
+                                ) : (
+                                  <span className="text-xl">⚽</span>
+                                )}
+                              </div>
+                            )}
+                            <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans shrink-0">
+                              <h4 className="font-sans font-black text-[10px] sm:text-[10.5px] text-[#FFCD00] truncate leading-tight">{st.name}</h4>
+                              <p className="text-[8px] sm:text-[8.5px] text-white/95 font-bold block mt-0.5 uppercase tracking-wide truncate">{displayRole} • {st.club}</p>
+                            </div>
                           </div>
-                        )}
-
-                        {/* Clean bottom ribbon display block style */}
-                        <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans shrink-0">
-                          <h4 className="font-sans font-black text-[10px] sm:text-[10.5px] text-[#FFCD00] truncate leading-tight">
-                            {st.name}
-                          </h4>
-                          <p className="text-[8px] sm:text-[8.5px] text-white/95 font-bold block mt-0.5 uppercase tracking-wide truncate">
-                            {displayRole} • {st.club}
-                          </p>
-                        </div>
-                      </div>
+                        );
+                      })()
                     )}
                   </div>
                 );

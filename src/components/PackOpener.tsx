@@ -88,14 +88,19 @@ const playerImageMap: Record<string, string> = {
   "bhfanaticos.webp": bhfImg,
 };
 
-const getPlayerImage = (sticker: Sticker) => {
-  if (!sticker.imageFile) return null;
-  const folder = sticker.type === StickerType.SPECIAL ? "special_collection" : "players";
+// Files that live in special_collection/ on IPFS — all others are in players/
+const SPECIAL_COLLECTION_FILES = new Set([
+  "GoldenCrest.webp", "GoldenCrest.png", "stadionzenica.webp", "2014.webp", "bhfanaticos.webp",
+]);
+
+const getPlayerImage = (sticker: Sticker): { ipfs: string; local: string | null } => {
+  if (!sticker.imageFile) return { ipfs: "", local: null };
+  const folder = SPECIAL_COLLECTION_FILES.has(sticker.imageFile) ? "special_collection" : "players";
   let fileName = sticker.imageFile;
-  if (fileName === "GoldenCrest.webp") {
-    fileName = "GoldenCrest.png";
-  }
-  return `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
+  if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
+  const ipfs = `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
+  const local = playerImageMap[sticker.imageFile] ?? null;
+  return { ipfs, local };
 };
 
 interface PackOpenerProps {
@@ -525,28 +530,40 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                   {/* Pack Sticker Display — matches album card style */}
                   <div
                     onClick={() => onViewSticker(revealedStickers[currentIndex])}
-                    className={`relative w-56 sm:w-64 rounded-2xl border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col text-left cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(revealedStickers[currentIndex]) ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"
-                      }`}
+                    className={`relative w-56 sm:w-64 rounded-2xl border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col text-left cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${
+                      !getPlayerImage(revealedStickers[currentIndex]).ipfs && !getPlayerImage(revealedStickers[currentIndex]).local ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"
+                    }`}
                   >
                     {/* If we have an image, show it using an img tag to respect its natural aspect ratio */}
-                    {getPlayerImage(revealedStickers[currentIndex]) && (
-                      <div className="relative w-full bg-white flex flex-col justify-end">
-                        <img src={getPlayerImage(revealedStickers[currentIndex])!} alt={revealedStickers[currentIndex].name} className="w-full h-auto object-contain block" />
-                      </div>
-                    )}
+                    {(() => {
+                      const { ipfs, local } = getPlayerImage(revealedStickers[currentIndex]);
+                      return (ipfs || local) ? (
+                        <div className="relative w-full bg-white flex flex-col justify-end">
+                          <img
+                            src={ipfs}
+                            alt={revealedStickers[currentIndex].name}
+                            className="w-full h-auto object-contain block"
+                            onError={(e) => { if (local) (e.currentTarget as HTMLImageElement).src = local; }}
+                          />
+                        </div>
+                      ) : null;
+                    })()}
 
                     {/* Default emblem placeholder if no player image could be loaded */}
-                    {!getPlayerImage(revealedStickers[currentIndex]) && (
-                      <div className="flex-1 flex flex-col items-center justify-center p-4 text-center z-10 relative">
-                        {revealedStickers[currentIndex].id === 27 ? (
-                          <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
-                        ) : revealedStickers[currentIndex].type === StickerType.SPECIAL ? (
-                          <Star className="h-8 w-8 text-[#FFCD00] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
-                        ) : (
-                          <span className="text-xl">⚽</span>
-                        )}
-                      </div>
-                    )}
+                    {(() => {
+                      const { ipfs, local } = getPlayerImage(revealedStickers[currentIndex]);
+                      return !ipfs && !local ? (
+                        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center z-10 relative">
+                          {revealedStickers[currentIndex].id === 27 ? (
+                            <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
+                          ) : revealedStickers[currentIndex].type === StickerType.SPECIAL ? (
+                            <Star className="h-8 w-8 text-[#FFCD00] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
+                          ) : (
+                            <span className="text-xl">⚽</span>
+                          )}
+                        </div>
+                      ) : null;
+                    })()}
 
                     {/* Clean bottom ribbon display block style — same as album */}
                     <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans shrink-0">

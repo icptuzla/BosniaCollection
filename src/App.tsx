@@ -11,7 +11,7 @@ import AlbumPage from "./components/AlbumPage";
 import PackOpener from "./components/PackOpener";
 import TradeMarket from "./components/TradeMarket";
 import CardDetail from "./components/CardDetail";
-import MatchBets from "./components/MatchBets";
+
 import HistoryPage from "./components/HistoryPage";
 
 export default function App() {
@@ -26,7 +26,7 @@ export default function App() {
     localStorage.setItem("zmajevi_lang_pref", newLang);
   };
 
-  const [activeTab, setActiveTab] = useState<"album" | "pouch" | "packs" | "trades" | "bets" | "history">("album");
+  const [activeTab, setActiveTab] = useState<"album" | "pouch" | "packs" | "trades" | "history">("album");
   const [wallet, setWallet] = useState<WalletState>({
     connected: false,
     publicKey: null,
@@ -473,16 +473,7 @@ export default function App() {
               <span>{UI_TRANSLATIONS[lang].tabTrades}</span>
             </button>
 
-            <button
-              id="tab-open-prediction-arena"
-              onClick={() => setActiveTab("bets")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
-                activeTab === "bets" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
-            >
-              <Trophy className="h-4.5 w-4.5" />
-              <span>{UI_TRANSLATIONS[lang].tabPredictions}</span>
-            </button>
+
 
             <button
               id="tab-open-history"
@@ -536,15 +527,7 @@ export default function App() {
               />
             )}
 
-            {activeTab === "bets" && (
-              <MatchBets
-                wallet={wallet}
-                onWalletChange={setWallet}
-                collection={collection}
-                onCollectionChange={saveCollection}
-                lang={lang}
-              />
-            )}
+
 
             {activeTab === "history" && (
               <HistoryPage lang={lang} />
