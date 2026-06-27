@@ -484,7 +484,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                         {ended.scorerIds.map(sid => {
                           const s = STICKERS.find(st => st.id === sid);
                           if (!s) return null;
-                          const folder = s.type === 1 ? "special_collection" : "players";
+                          const folder = s.type === StickerType.SPECIAL ? "special_collection" : "players";
                           const cid = `${IPFS_CID}/components/${folder}/${s.imageFile}`;
                           return (
                             <a key={sid} href={`https://${IPFS_CID}.ipfs.dweb.link/components/${folder}/${s.imageFile}`} target="_blank" rel="noopener noreferrer"
