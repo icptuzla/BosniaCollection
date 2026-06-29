@@ -15,7 +15,7 @@ body {
 }
 
 .album-container {
-  background: linear-gradient(135deg, #FFF9D4 0%, #FFCD00 50%, #E69D00 100%) !important;
+  background: linear-gradient(135deg, #e9e5ca 0%, #f0db1c 50%, #f5df19 100%) !important;
   background-attachment: fixed !important;
   position: relative;
   z-index: 0;
@@ -45,13 +45,25 @@ body {
 }
 
 @keyframes spin-slow {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes bounce-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .animate-spin-slow {
@@ -71,4 +83,3 @@ body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
