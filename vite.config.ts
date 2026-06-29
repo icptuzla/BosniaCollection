@@ -7,6 +7,10 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), nodePolyfills()],
+    define: {
+      // Ensure Node.js globals are available in Vercel production builds
+      'global': 'globalThis',
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
