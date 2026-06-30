@@ -42,10 +42,11 @@ import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
 import goldenCrestImg from "./special_collection/GoldenCrest.webp";
-import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
+import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
+
 
 const playerImageMap: Record<string, string> = {
   "Pi_dzeko.webp": dzekoImg,
@@ -86,7 +87,7 @@ const playerImageMap: Record<string, string> = {
 
 // Files that live in special_collection/ on IPFS — all others are in players/
 const SPECIAL_COLLECTION_FILES = new Set([
-  "GoldenCrest.webp", "GoldenCrest.png", "stadionzenica.webp", "2014.webp", "bhfanaticos.webp",
+  "GoldenCrest.webp", "stadionzenica.webp", "2014.webp", "bhfanaticos.webp",
 ]);
 
 const getPlayerImage = (sticker: Sticker): { ipfs: string; local: string | null } => {
@@ -523,8 +524,8 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                 className={`w-full py-4 px-6 rounded-xl bg-gradient-to-r from-[#FFCD00] via-amber-400 to-[#FFCD00] hover:brightness-110 text-[#002F6C] font-black tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(255,205,0,0.5)] hover:shadow-[0_0_30px_rgba(255,205,0,0.8)] hover:-translate-y-0.5 cursor-pointer font-sans uppercase flex items-center justify-center gap-2 group ${isMinting ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <Award className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                {isMinting 
-                  ? (lang === "BS" ? "Mintanje..." : "Minting...") 
+                {isMinting
+                  ? (lang === "BS" ? "Mintanje..." : "Minting...")
                   : (lang === "BS" ? "Mintaj NFT u Solflare" : "Mint NFT to Solflare Wallet")}
               </button>
 

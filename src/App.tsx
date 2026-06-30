@@ -4,7 +4,7 @@ import { Sticker, UserSticker, TradeOffer, WalletState, StickerType } from "./ty
 import { STICKERS } from "./data/players";
 import logoImage from "./components/zmajevi logo.webp";
 import { UI_TRANSLATIONS, Language } from "./data/translations";
-
+import { SpeedInsights } from "@vercel/speed-insights/react"
 // Import custom sub-components
 import SolflareWallet from "./components/SolflareWallet";
 import AlbumPage from "./components/AlbumPage";
@@ -158,7 +158,7 @@ export default function App() {
 
       saveCollection(updated);
       setSelectedSticker(null); // Close detail view upon mounting success
-      
+
       // Flash a little custom feedback
       alert(`Success! Mounted ${STICKERS.find(s => s.id === id)?.name} onto page slot successfully.`);
     }
@@ -233,7 +233,7 @@ export default function App() {
     setWallet(prev => ({ ...prev, balance: prev.balance + 2.026 }));
     setHasClaimedReward(true);
     localStorage.setItem("bosnia_wc26_reward_claimed", "true");
-    
+
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
@@ -254,13 +254,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen album-container text-[#1a1a1a] selection:bg-[#FFCD00] selection:text-[#002F6C] pb-16 font-sans">
-      
+
       {/* Immersive Stadium Top Ambient Ribbon */}
       <div className="bg-gradient-to-r from-[#002F6C] via-[#FFCD00] to-[#002F6C] h-2 w-full shadow-md shrink-0" />
 
       {/* Main Navbar */}
       <header className="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-col md:flex-row items-center justify-between border-b border-gray-300 gap-4 mb-6">
-        
+
         {/* Logo / Mascot brand */}
         <div className="flex items-center space-x-4 text-left">
           <div className="w-14 h-14 bg-[#002F6C] rounded-full border-2 border-[#00f0ff] shadow-[0_0_12px_rgba(0,240,255,0.7)] flex items-center justify-center overflow-hidden shrink-0">
@@ -278,28 +278,26 @@ export default function App() {
 
         {/* Dynamic Sound Synthesizer & Solflare stats */}
         <div className="flex flex-wrap items-center gap-3 select-none justify-end w-full md:w-auto">
-          
+
           {/* Language Switcher Pill */}
           <div className="flex bg-white/80 border border-gray-300 rounded-lg p-0.5 shadow-sm shrink-0">
             <button
               id="lang-switch-bs"
               onClick={() => handleLangChange("BS")}
-              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
-                lang === "BS"
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${lang === "BS"
                   ? "bg-[#002F6C] text-white shadow"
                   : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
-              }`}
+                }`}
             >
               🇧🇦 BS
             </button>
             <button
               id="lang-switch-en"
               onClick={() => handleLangChange("EN")}
-              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
-                lang === "EN"
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${lang === "EN"
                   ? "bg-[#002F6C] text-white shadow"
                   : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
-              }`}
+                }`}
             >
               🇬🇧 EN
             </button>
@@ -324,13 +322,13 @@ export default function App() {
 
       {/* Main Core Layout */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
+
         {/* Left Drawer Block - Solana Wallet Connection Area */}
         <div className="lg:col-span-1 space-y-6">
-          <SolflareWallet 
-            wallet={wallet} 
-            onWalletChange={setWallet} 
-            lang={lang} 
+          <SolflareWallet
+            wallet={wallet}
+            onWalletChange={setWallet}
+            lang={lang}
             sandboxMode={sandboxMode}
             onToggleSandbox={() => {
               if (sandboxMode) {
@@ -342,7 +340,7 @@ export default function App() {
               }
             }}
           />
-          
+
           {/* Virtual pouch dashboard */}
           <div className="bg-white border border-gray-300/80 p-5 rounded-2xl text-left shadow-sm">
             <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider mb-3 flex items-center space-x-1.5 border-b border-gray-200 pb-2">
@@ -399,7 +397,7 @@ export default function App() {
                 )}
               </div>
             </div>
-            
+
             <div className="mt-2 pt-2 border-t border-gray-200">
               <span className="text-[10px] font-sans font-bold text-[#002F6C] uppercase mb-1.5 flex items-center justify-between">
                 <span>{lang === "BS" ? "Duplikati" : "Extras"}</span>
@@ -437,15 +435,14 @@ export default function App() {
 
         {/* Center / Right Multi-View Workspace (Pages, Shop, Trade) */}
         <div className="lg:col-span-3 space-y-6">
-          
+
           {/* Dynamic Switch Tabs */}
           <div className="flex flex-nowrap overflow-x-auto scrollbar-hide snap-x gap-1.5 bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button
               id="tab-open-album-book"
               onClick={() => setActiveTab("album")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
-                activeTab === "album" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${activeTab === "album" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                }`}
             >
               <BookOpen className="h-4.5 w-4.5" />
               <span>{UI_TRANSLATIONS[lang].tabAlbum}</span>
@@ -454,9 +451,8 @@ export default function App() {
             <button
               id="tab-open-pack-opener"
               onClick={() => setActiveTab("packs")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
-                activeTab === "packs" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${activeTab === "packs" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                }`}
             >
               <ShoppingBag className="h-4.5 w-4.5" />
               <span>{UI_TRANSLATIONS[lang].tabPacks}</span>
@@ -465,9 +461,8 @@ export default function App() {
             <button
               id="tab-open-trade-market"
               onClick={() => setActiveTab("trades")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[130px] ${
-                activeTab === "trades" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[130px] ${activeTab === "trades" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                }`}
             >
               <ArrowLeftRight className="h-4.5 w-4.5" />
               <span>{UI_TRANSLATIONS[lang].tabTrades}</span>
@@ -478,9 +473,8 @@ export default function App() {
             <button
               id="tab-open-history"
               onClick={() => setActiveTab("history")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-1.5 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
-                activeTab === "history" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-[#002F6C]"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-1.5 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${activeTab === "history" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-[#002F6C]"
+                }`}
             >
               <Trophy className="h-4.5 w-4.5 text-[#FFCD00]" />
               <span>{UI_TRANSLATIONS[lang].tabHistory}</span>
