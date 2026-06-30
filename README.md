@@ -26,62 +26,6 @@ The codebase is built entirely with **React** and **TypeScript**, styled with **
 * `TradeMarket`: Implements filtering, structural posting schemas, and structural escrow deduction logic for peer-to-peer token transfers.
 * `CardDetail`: A multi-state modal ($600\text{px} \times 700\text{px}$) highlighting asset statistics, duplicate counts, and interaction pathways (Paste / Mint).
 
----
-
-## 📦 Local Setup & Installation
-
-Follow these steps to set up the development environment locally:
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/nft-album-bih.git
-cd nft-album-bih
-
-```
-
-### 2. Install Dependencies
-
-Make sure you have Node.js installed, then install the required npm packages:
-
-```bash
-npm install
-
-```
-
-### 3. Verification of Core Icons
-
-This project leverages `lucide-react` for responsive imagery. Ensure your dependencies include it:
-
-```bash
-npm install lucide-react @vercel/speed-insights
-
-```
-
-### 4. Run the Development Server
-
-```bash
-npm run dev
-
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser to view the application.
-
----
-
-## 💾 Local Storage Schema
-
-The app stores user progress locally so states persist through page reloads. The following keys are automatically instantiated in `localStorage`:
-
-| Key | Description |
-| --- | --- |
-| `zmajevi_lang_pref` | Saves the language state configuration (`BS` or `EN`). |
-| `bosnia_sticker_collection_wc26` | Array tracking owned stickers, total inventory count, and album placement boolean. |
-| `bosnia_sticker_trades_wc26` | Active trade offers available inside the open marketplace lobby. |
-| `bosnia_wc26_reward_claimed` | Tracks if the completionist reward of $2.026\text{ SOL}$ has been drawn. |
-| `bosnia_wc26_minted_stickers` | Keeps a register of item IDs that have successfully triggered structural contract minting simulation. |
-
----
 
 ## ⚽ Default Starter Kit Seeding
 
