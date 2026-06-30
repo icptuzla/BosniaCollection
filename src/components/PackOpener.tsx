@@ -28,8 +28,8 @@ import hadziahmetovicImg from "./players/amir-hadziahmetovic.webp";
 import alajbegovicImg from "./players/kenan-alajbegovic.webp";
 import bazdarImg from "./players/samed-bazdar.webp";
 import radeljicImg from "./players/stjepan-radeljic.webp";
-import gigovicImg from "./players/Gigovic.webp";
-import muharemovicImg from "./players/Muharemovic.webp";
+import gigovicImg from "./players/gigovic.webp";
+import muharemovicImg from "./players/muharemovic.webp";
 import basicImg from "./players/ivan-basic.webp";
 import amirImg from "./players/amir-hadziahmetovic.webp";
 import mujakicImg from "./players/mujakic.webp";
@@ -53,6 +53,12 @@ import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
+const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
+const BACKUP_IPFS_CID = "bafybeias3nraryezim72augovtpuful6iuriemqux5qrnyw5gl3buh5aua";
+const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
+const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link/components`;
+const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
+
 const playerImageMap: Record<string, string> = {
   "Pi_dzeko.webp": dzekoImg,
   "Pi_Demirovic.webp": demirovicImg,
@@ -64,8 +70,8 @@ const playerImageMap: Record<string, string> = {
   "kenan-alajbegovic.webp": alajbegovicImg,
   "samed-bazdar.webp": bazdarImg,
   "stjepan-radeljic.webp": radeljicImg,
-  "Gigovic.webp": gigovicImg,
-  "Muharemovic.webp": muharemovicImg,
+  "gigovic.webp": gigovicImg,
+  "muharemovic.webp": muharemovicImg,
   "ivan-basic.webp": basicImg,
   "mujakic.webp": mujakicImg,
   "nikola-vasilj.webp": vasiljImg,
@@ -95,10 +101,11 @@ const SPECIAL_COLLECTION_FILES = new Set([
 
 const getPlayerImage = (sticker: Sticker): { ipfs: string; local: string | null } => {
   if (!sticker.imageFile) return { ipfs: "", local: null };
+  if (sticker.imageFile === "Pi_dedic.webp") return { ipfs: DEDIC_IPFS_URL, local: dedicImg };
   const folder = SPECIAL_COLLECTION_FILES.has(sticker.imageFile) ? "special_collection" : "players";
   let fileName = sticker.imageFile;
   if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
-  const ipfs = `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
+  const ipfs = `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
   const local = playerImageMap[sticker.imageFile] ?? null;
   return { ipfs, local };
 };

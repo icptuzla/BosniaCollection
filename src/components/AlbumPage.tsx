@@ -47,6 +47,13 @@ import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
 
+const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
+const BACKUP_IPFS_CID = "bafybeias3nraryezim72augovtpuful6iuriemqux5qrnyw5gl3buh5aua";
+const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
+const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link/components`;
+const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
+const REWARD_GOLDEN_CREST_URL = "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp";
+
 
 const playerImageMap: Record<string, string> = {
   "Pi_dzeko.webp": dzekoImg,
@@ -92,10 +99,11 @@ const SPECIAL_COLLECTION_FILES = new Set([
 
 const getPlayerImage = (sticker: Sticker): { ipfs: string; local: string | null } => {
   if (!sticker.imageFile) return { ipfs: "", local: null };
+  if (sticker.imageFile === "Pi_dedic.webp") return { ipfs: DEDIC_IPFS_URL, local: dedicImg };
   const folder = SPECIAL_COLLECTION_FILES.has(sticker.imageFile) ? "special_collection" : "players";
   let fileName = sticker.imageFile;
   if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
-  const ipfs = `https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/${folder}/${fileName}`;
+  const ipfs = `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
   const local = playerImageMap[sticker.imageFile] ?? null;
   return { ipfs, local };
 };
@@ -155,7 +163,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
         await create(umi, {
           asset: assetSigner,
           name: "Bosnia WC2026 — Golden Crest",
-          uri: "https://bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy.ipfs.dweb.link/components/special_collection/GoldenCrest.png",
+          uri: REWARD_GOLDEN_CREST_URL,
         }).sendAndConfirm(umi);
 
         alert(lang === "BS" ? "Uspješno! Provjerite Solflare kolekcionarstvo." : "Success! Check your Solflare collectibles.");
@@ -505,7 +513,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
               <div className="flex items-start justify-between text-sm border-t border-white/10 pt-3">
                 <span className="text-gray-400 font-sans text-xs">Metaplex CID</span>
                 <a
-                  href="https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp"
+                  href={REWARD_GOLDEN_CREST_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#00f0ff] font-mono text-[10px] hover:underline truncate max-w-[180px] text-right"
@@ -531,7 +539,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
 
               {/* Secondary: View on IPFS */}
               <a
-                href="https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp"
+                href={REWARD_GOLDEN_CREST_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-2.5 px-6 rounded-xl border border-[#00f0ff]/40 text-[#00f0ff] font-bold text-xs uppercase tracking-wider hover:bg-[#00f0ff]/10 transition cursor-pointer font-sans flex items-center justify-center gap-2"

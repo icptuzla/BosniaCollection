@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Calendar, Zap, Activity } from "lucide-react";
+import { X, Zap, Activity } from "lucide-react";
 import { Sticker, UserSticker, StickerType } from "../types";
 import { Language, PLAYER_TRANSLATIONS } from "../data/translations";
 import logoImage from "./zmajevi logo.webp";
@@ -22,10 +22,9 @@ import hadziahmetovicImg from "./players/amir-hadziahmetovic.webp";
 import alajbegovicImg from "./players/kenan-alajbegovic.webp";
 import bazdarImg from "./players/samed-bazdar.webp";
 import radeljicImg from "./players/stjepan-radeljic.webp";
-import gigovicImg from "./players/Gigovic.webp";
-import muharemovicImg from "./players/Muharemovic.webp";
+import gigovicImg from "./players/gigovic.webp";
+import muharemovicImg from "./players/muharemovic.webp";
 import basicImg from "./players/ivan-basic.webp";
-import amirImg from "./players/amir-hadziahmetovic.webp";
 import mujakicImg from "./players/mujakic.webp";
 
 import vasiljImg from "./players/nikola-vasilj.webp";
@@ -47,9 +46,12 @@ import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
-// IPFS config — shared CID for all card assets
-const IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
-const IPFS_BASE = `https://${IPFS_CID}.ipfs.dweb.link/components`;
+// IPFS config — primary folder plus backup folder CID
+const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
+const BACKUP_IPFS_CID = "bafybeias3nraryezim72augovtpuful6iuriemqux5qrnyw5gl3buh5aua";
+const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
+const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link/components`;
+const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
 const IPFS_TIMEOUT_MS = 100_000;
 
 // Local fallback map (Vite bundled imports)
@@ -64,8 +66,8 @@ const LOCAL_IMAGE_MAP: Record<string, string> = {
   "kenan-alajbegovic.webp": alajbegovicImg,
   "samed-bazdar.webp": bazdarImg,
   "stjepan-radeljic.webp": radeljicImg,
-  "Gigovic.webp": gigovicImg,
-  "Muharemovic.webp": muharemovicImg,
+  "gigovic.webp": gigovicImg,
+  "muharemovic.webp": muharemovicImg,
   "ivan-basic.webp": basicImg,
   "mujakic.webp": mujakicImg,
   "nikola-vasilj.webp": vasiljImg,
@@ -95,7 +97,7 @@ function getIpfsStatus(): Promise<boolean> {
   _ipfsPromise = new Promise<boolean>((resolve) => {
     const ctrl = new AbortController();
     const timer = setTimeout(() => { ctrl.abort(); _ipfsReachable = false; resolve(false); }, IPFS_TIMEOUT_MS);
-    fetch(`${IPFS_BASE}/special_collection/GoldenCrest.webp`, { method: "HEAD", signal: ctrl.signal, cache: "no-store" })
+    fetch(`${PRIMARY_IPFS_BASE}/special_collection/GoldenCrest.webp`, { method: "HEAD", signal: ctrl.signal, cache: "no-store" })
       .then(() => { clearTimeout(timer); _ipfsReachable = true; resolve(true); })
       .catch(() => { clearTimeout(timer); _ipfsReachable = false; resolve(false); });
   });
@@ -118,16 +120,21 @@ function getIpfsFolder(imageFile: string): string {
 }
 
 function buildIpfsUrl(folder: string, fileName: string): string {
-  return `${IPFS_BASE}/${folder}/${fileName}`;
+  return `${PRIMARY_IPFS_BASE}/${folder}/${fileName}`;
+}
+
+function buildBackupIpfsUrl(folder: string, fileName: string): string {
+  return `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
 }
 
 function getPlayerImage(sticker: Sticker, ipfsOk: boolean): string | null {
   if (!sticker.imageFile) return null;
+  if (!ipfsOk) return LOCAL_IMAGE_MAP[sticker.imageFile] ?? null;
+  if (sticker.imageFile === "Pi_dedic.webp") return DEDIC_IPFS_URL;
   const folder = getIpfsFolder(sticker.imageFile);
   let fileName = sticker.imageFile;
   if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
-  if (ipfsOk) return buildIpfsUrl(folder, fileName);
-  return LOCAL_IMAGE_MAP[sticker.imageFile] ?? null;
+  return buildIpfsUrl(folder, fileName);
 }
 
 interface CardDetailProps {
@@ -175,11 +182,15 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
   // Compute IPFS URI for this card — use filename-based folder, NOT sticker type
   const cardFileName = sticker.imageFile === "GoldenCrest.webp" ? "GoldenCrest.png" : sticker.imageFile;
   const cardFolder = getIpfsFolder(cardFileName);
-  const cardIpfsCid = `${IPFS_CID}/components/${cardFolder}/${cardFileName}`;
-  const cardIpfsUrl = buildIpfsUrl(cardFolder, cardFileName);
+  const cardIpfsUrl = sticker.imageFile === "Pi_dedic.webp"
+    ? DEDIC_IPFS_URL
+    : (ipfsOk ? buildIpfsUrl(cardFolder, cardFileName) : buildBackupIpfsUrl(cardFolder, cardFileName));
+  const cardIpfsLabel = sticker.imageFile === "Pi_dedic.webp"
+    ? "QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn"
+    : `${(ipfsOk ? PRIMARY_IPFS_CID : BACKUP_IPFS_CID)}/components/${cardFolder}/${cardFileName}`;
 
   const handleMintSticker = async () => {
-    if (!walletConnected || !solanaWallet.publicKey) {
+    if (!walletConnected || (!sandboxMode && !solanaWallet.publicKey)) {
       alert(lang === "BS" ? "Povežite novčanik!" : "Please connect your wallet!");
       return;
     }
@@ -420,7 +431,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
               <div className="flex justify-between items-start border-b border-[#00f0ff]/30 pb-3.5 z-20 font-sans">
                 <div className="flex items-center space-x-3.5 text-left">
                   <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shrink-0">
-                    <img src={logoImage} alt="BIH FA Crest" className="h-8.5 w-8.5 object-contain" />
+                    <img src={logoImage} alt="BIH FA Crest" className="h-[2.125rem] w-[2.125rem] object-contain" />
                   </div>
                   <div>
                     <span className="text-[11px] tracking-[0.18em] text-[#FFCD00] font-extrabold uppercase block leading-none">{lang === "BS" ? "SPECIFIKACIJA KOLEKCIONARA" : "COLLECTOR SPEC SHEET"}</span>
@@ -433,10 +444,10 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 <div className="text-right">
                   <span className="text-xs font-mono font-bold text-gray-300 block uppercase leading-none">MINT ID:</span>
                   <span className="text-[#00f0ff] font-mono text-sm font-black tracking-wider block mt-1">#BIH-WC26-{sticker.id.toString().padStart(3, "0")}</span>
-                  <a href={`https://${cardIpfsCid}`} target="_blank" rel="noopener noreferrer"
+                  <a href={cardIpfsUrl} target="_blank" rel="noopener noreferrer"
                     className="text-[8px] font-mono text-[#14F195]/70 hover:text-[#14F195] block mt-0.5 truncate max-w-[160px] transition"
-                    title={`IPFS: ${cardIpfsCid}`}>
-                    ⛓ {cardIpfsCid.slice(0, 22)}…
+                    title={`IPFS: ${cardIpfsLabel}`}>
+                    ⛓ {cardIpfsLabel.slice(0, 22)}…
                   </a>
                 </div>
               </div>
@@ -444,7 +455,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
               {/* Biography Section */}
               <div className="bg-white/10 border border-white/20 p-5 rounded-2xl text-left z-20 space-y-3 shadow-inner">
                 <h4 className="text-xs uppercase text-[#FFCD00] font-black tracking-widest flex items-center space-x-2 font-sans">
-                  <Activity className="h-4.5 w-4.5 text-[#00f0ff]" />
+                  <Activity className="h-[1.125rem] w-[1.125rem] text-[#00f0ff]" />
                   <span>{lang === "BS" ? "BIOGRAFIJA I HISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
                 </h4>
                 <p className="text-[13.5px] text-white leading-relaxed font-sans font-medium pr-2 antialiased">
@@ -511,7 +522,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 <div className="flex items-center space-x-3.5">
                   {(hasStickerPouch || isPasted) && (
                     isMinted ? (
-                      <span className="py-2 px-4.5 rounded-xl bg-emerald-950/40 text-[#14F195] border border-[#14F195]/40 text-xs font-bold uppercase tracking-wider leading-none shrink-0">
+                      <span className="py-2 px-[1.125rem] rounded-xl bg-emerald-950/40 text-[#14F195] border border-[#14F195]/40 text-xs font-bold uppercase tracking-wider leading-none shrink-0">
                         {lang === "BS" ? "✓ Mintano" : "✓ Minted"}
                       </span>
                     ) : (
@@ -543,7 +554,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                     </button>
                   )}
                   {isPasted ? (
-                    <span className="py-2 px-4.5 rounded-xl bg-white/10 text-gray-350 border border-white/20 text-xs font-bold uppercase tracking-wider leading-none">
+                    <span className="py-2 px-[1.125rem] rounded-xl bg-white/10 text-gray-300 border border-white/20 text-xs font-bold uppercase tracking-wider leading-none">
                       {lang === "BS" ? "✓ Zalijepljeno" : "✓ Pasted"}
                     </span>
                   ) : !hasStickerPouch ? (

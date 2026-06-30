@@ -3,9 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
+    "dev": "vite --configLoader native --port=3000 --host=0.0.0.0",
+    "build": "vite build --configLoader native",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"
@@ -21,11 +24,12 @@
     "@metaplex-foundation/umi-signer-wallet-adapters": "^1.5.1",
     "@reown/appkit": "^1.8.21",
     "@reown/appkit-controllers": "^1.8.20",
+    "@solana/kit": "^7.0.0",
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-keystone": "^0.1.19",
     "@solana/wallet-adapter-react": "^0.15.39",
     "@solana/wallet-adapter-react-ui": "^0.9.39",
-    "@solana/wallet-adapter-wallets": "^0.16.1",
+    "@solana/wallet-adapter-solflare": "^0.6.33",
     "@solana/web3.js": "^1.98.4",
     "@tailwindcss/vite": "^4.1.14",
     "@upstash/redis": "^1.38.0",
@@ -41,8 +45,6 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "rollup": "^4.62.2",
-    "rustup": "^1.0.10",
-    "solana": "^3.0.0",
     "vercel": "^54.18.4",
     "vitest": "^4.1.8"
   },
