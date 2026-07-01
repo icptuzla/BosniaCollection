@@ -69,7 +69,7 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "FC26 Rating: 84",
     type: StickerType.SPECIAL,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "Muharemovic.webp"
+    imageFile: "muharemovic.webp"
   },
   {
     id: 4,
@@ -161,7 +161,7 @@ export const STICKERS: Sticker[] = [
     gameRatingRef: "FC26 Rating: 72",
     type: StickerType.STANDARD,
     imageTheme: "from-blue-600 via-zinc-800 to-indigo-950",
-    imageFile: "Gigovic.webp"
+    imageFile: "gigovic.webp"
 
   },
   {

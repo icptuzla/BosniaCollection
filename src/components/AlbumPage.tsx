@@ -48,9 +48,9 @@ import bhfImg from "./special_collection/bhfanaticos.webp";
 import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
 
 const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
-const BACKUP_IPFS_CID = "bafybeias3nraryezim72augovtpuful6iuriemqux5qrnyw5gl3buh5aua";
+const BACKUP_IPFS_CID = "bafybeifroga62o5l3jrirtwhrxgo4t6tkwixgs3mmuxdsnsxfajli565yq";
 const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
-const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link/components`;
+const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link`;
 const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
 const REWARD_GOLDEN_CREST_URL = "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp";
 
@@ -66,11 +66,9 @@ const playerImageMap: Record<string, string> = {
   "kenan-alajbegovic.webp": alajbegovicImg,
   "samed-bazdar.webp": bazdarImg,
   "stjepan-radeljic.webp": radeljicImg,
-  "Gigovic.webp": gigovicImg,
-  "Muharemovic.webp": muharemovicImg,
+  "gigovic.webp": gigovicImg,
+  "muharemovic.webp": muharemovicImg,
   "ivan-basic.webp": basicImg,
-
-
   "mujakic.webp": mujakicImg,
   "nikola-vasilj.webp": vasiljImg,
   "sead-kolasinac.webp": kolasinacImg,
@@ -341,11 +339,13 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                             {(ipfs || local) && (
                               <div className="relative w-full bg-white flex flex-col justify-end">
                                 <img
-                                  src={ipfs}
+                                  src={local || ipfs}
                                   alt={st.name}
                                   className="w-full h-auto object-contain block"
                                   onError={(e) => {
-                                    if (local) (e.currentTarget as HTMLImageElement).src = local;
+                                    if (local && (e.currentTarget as HTMLImageElement).src !== ipfs) {
+                                      (e.currentTarget as HTMLImageElement).src = ipfs;
+                                    }
                                   }}
                                 />
                               </div>

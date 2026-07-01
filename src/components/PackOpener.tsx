@@ -54,9 +54,9 @@ import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
 const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
-const BACKUP_IPFS_CID = "bafybeias3nraryezim72augovtpuful6iuriemqux5qrnyw5gl3buh5aua";
+const BACKUP_IPFS_CID = "bafybeifroga62o5l3jrirtwhrxgo4t6tkwixgs3mmuxdsnsxfajli565yq";
 const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
-const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link/components`;
+const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link`;
 const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
 
 const playerImageMap: Record<string, string> = {
@@ -547,10 +547,14 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                       return (ipfs || local) ? (
                         <div className="relative w-full bg-white flex flex-col justify-end">
                           <img
-                            src={ipfs}
+                            src={local || ipfs}
                             alt={revealedStickers[currentIndex].name}
                             className="w-full h-auto object-contain block"
-                            onError={(e) => { if (local) (e.currentTarget as HTMLImageElement).src = local; }}
+                            onError={(e) => { 
+                              if (local && (e.currentTarget as HTMLImageElement).src !== ipfs) {
+                                (e.currentTarget as HTMLImageElement).src = ipfs; 
+                              }
+                            }}
                           />
                         </div>
                       ) : null;

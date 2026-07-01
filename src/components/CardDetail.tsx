@@ -48,9 +48,9 @@ import bhfImg from "./special_collection/bhfanaticos.webp";
 
 // IPFS config — primary folder plus backup folder CID
 const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
-const BACKUP_IPFS_CID = "bafybeias3nraryezim72augovtpuful6iuriemqux5qrnyw5gl3buh5aua";
+const BACKUP_IPFS_CID = "bafybeifroga62o5l3jrirtwhrxgo4t6tkwixgs3mmuxdsnsxfajli565yq";
 const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
-const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link/components`;
+const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link`;
 const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
 const IPFS_TIMEOUT_MS = 100_000;
 
@@ -120,21 +120,22 @@ function getIpfsFolder(imageFile: string): string {
 }
 
 function buildIpfsUrl(folder: string, fileName: string): string {
-  return `${PRIMARY_IPFS_BASE}/${folder}/${fileName}`;
+  return `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
 }
 
 function buildBackupIpfsUrl(folder: string, fileName: string): string {
   return `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
 }
 
-function getPlayerImage(sticker: Sticker, ipfsOk: boolean): string | null {
-  if (!sticker.imageFile) return null;
-  if (!ipfsOk) return LOCAL_IMAGE_MAP[sticker.imageFile] ?? null;
-  if (sticker.imageFile === "Pi_dedic.webp") return DEDIC_IPFS_URL;
+function getPlayerImage(sticker: Sticker, ipfsOk: boolean): { ipfs: string; local: string | null } {
+  if (!sticker.imageFile) return { ipfs: "", local: null };
   const folder = getIpfsFolder(sticker.imageFile);
   let fileName = sticker.imageFile;
   if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
-  return buildIpfsUrl(folder, fileName);
+  
+  const ipfs = sticker.imageFile === "Pi_dedic.webp" ? DEDIC_IPFS_URL : buildIpfsUrl(folder, fileName);
+  const local = LOCAL_IMAGE_MAP[sticker.imageFile] ?? null;
+  return { ipfs, local };
 }
 
 interface CardDetailProps {
@@ -305,7 +306,8 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   const hasStickerPouch = userSticker && userSticker.count > 0;
   const isPasted = userSticker && userSticker.pasted;
-  const playerImg = getPlayerImage(sticker, ipfsOk);
+  const { local: playerLocal, ipfs: playerIpfs } = getPlayerImage(sticker, ipfsOk);
+  const playerImgToUse = playerLocal || playerIpfs;
 
   // Localized sticker biography
   const bio = PLAYER_TRANSLATIONS[sticker.id]?.biography[lang] || sticker.biography;
@@ -363,14 +365,14 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
             {/* ======================================================== */}
             <div
               style={{
-                backgroundImage: playerImg ? `url(${playerImg})` : undefined,
+                backgroundImage: playerImgToUse ? `url(${playerImgToUse})` : undefined,
                 backgroundSize: sticker.type === StickerType.SPECIAL ? "contain" : "cover",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
                 backfaceVisibility: "hidden",
                 transform: "rotateY(0deg)",
               }}
-              className={`absolute inset-0 flex flex-col justify-end p-6 rounded-[22px] overflow-hidden transition-all duration-300 ${!playerImg ? "bg-gradient-to-br from-[#002f6c] via-[#091e3b] to-[#011026]" : "bg-white"
+              className={`absolute inset-0 flex flex-col justify-end p-6 rounded-[22px] overflow-hidden transition-all duration-300 ${!playerImgToUse ? "bg-gradient-to-br from-[#002f6c] via-[#091e3b] to-[#011026]" : "bg-white"
                 } ${flipped ? "opacity-0 pointer-events-none z-0" : "opacity-100 z-10"}`}
             >
               {/* Micro hologram fiber pattern */}
@@ -384,7 +386,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 className="absolute inset-0 pointer-events-none z-10 mix-blend-overlay"
               />
 
-              {!playerImg && (
+              {!playerImgToUse && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 text-white space-y-4">
                   <div className="w-32 h-32 bg-slate-950/40 border border-white/20 rounded-full flex items-center justify-center shadow-lg">
                     {sticker.id === 27 ? (
