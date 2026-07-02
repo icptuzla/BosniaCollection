@@ -41,7 +41,6 @@ export default defineConfig(() => ({
             return 'chunk-vendor';
           }
         },
-        experimentalMinChunkSize: 10_000,
       },
     },
   },
@@ -56,11 +55,6 @@ export default defineConfig(() => ({
       'workbox-routing',
       'workbox-strategies',
     ],
-    esbuildOptions: {
-      loader: {
-        '.js': 'jsx',
-      },
-    },
   },
   server: {
     hmr: process.env.DISABLE_HMR !== 'true',
