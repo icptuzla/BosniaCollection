@@ -23,7 +23,7 @@ import alajbegovicImg from "./players/kenan-alajbegovic.webp";
 import bazdarImg from "./players/samed-bazdar.webp";
 import radeljicImg from "./players/stjepan-radeljic.webp";
 import gigovicImg from "./players/Gigovic.webp";
-import muharemovicImg from "./players/Muharemovic.webp";
+import muharemovicImg from "./players/muharemovic.webp";
 import basicImg from "./players/ivan-basic.webp";
 import mujakicImg from "./players/mujakic.webp";
 
