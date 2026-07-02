@@ -1,0 +1,17 @@
+# Bosnia WC2026 Web3 Sticker Album
+
+## Overview
+Bosnia WC2026 Web3 Sticker Album is a decentralized application (dApp) built on the Solana blockchain. It allows users to collect, trade, and view digital stickers of the Bosnian national football team for the 2026 World Cup.
+
+## Features
+- Collect digital stickers of Bosnian players as NFTs on the Solana blockchain.
+- Connect Solana wallets like Phantom or Solflare to view and manage collections.
+- Earn rewards and claim exclusive items for completing the album.
+
+## Technologies
+- Frontend: React, Vite, Tailwind CSS
+- Blockchain: Solana, Metaplex
+- Deployment: Vercel
+
+## URLs
+- **Main App**: https://bosnia-collection.vercel.app
