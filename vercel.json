@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "url": "bosnian-collection.vercel.app",
+      "url": "bosnia-collection.vercel.app",
       "source": "/(.*)",
       "destination": "/index.html"
     }
