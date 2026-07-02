@@ -1,12 +1,10 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
-      "url": "bosnia-collection.vercel.app",
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite"
+  ]
 }
