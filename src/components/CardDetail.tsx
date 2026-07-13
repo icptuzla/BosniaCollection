@@ -46,11 +46,10 @@ import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
-// IPFS config — primary folder plus backup folder CID
+// IPFS config — primary Pinata gateway plus public dweb fallback.
 const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
-const BACKUP_IPFS_CID = "bafybeifroga62o5l3jrirtwhrxgo4t6tkwixgs3mmuxdsnsxfajli565yq";
-const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
-const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link`;
+const PRIMARY_IPFS_BASE = `https://black-known-amphibian-995.mypinata.cloud/ipfs/${PRIMARY_IPFS_CID}/components`;
+const BACKUP_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
 const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
 const IPFS_TIMEOUT_MS = 100_000;
 
@@ -97,7 +96,7 @@ function getIpfsStatus(): Promise<boolean> {
   _ipfsPromise = new Promise<boolean>((resolve) => {
     const ctrl = new AbortController();
     const timer = setTimeout(() => { ctrl.abort(); _ipfsReachable = false; resolve(false); }, IPFS_TIMEOUT_MS);
-    fetch(`${PRIMARY_IPFS_BASE}/special_collection/GoldenCrest.webp`, { method: "HEAD", signal: ctrl.signal, cache: "no-store" })
+    fetch(`${PRIMARY_IPFS_BASE}/special_collection/GoldenCrest.png`, { method: "HEAD", signal: ctrl.signal, cache: "no-store" })
       .then(() => { clearTimeout(timer); _ipfsReachable = true; resolve(true); })
       .catch(() => { clearTimeout(timer); _ipfsReachable = false; resolve(false); });
   });
@@ -120,11 +119,17 @@ function getIpfsFolder(imageFile: string): string {
 }
 
 function buildIpfsUrl(folder: string, fileName: string): string {
-  return `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
+  return `${PRIMARY_IPFS_BASE}/${folder}/${fileName}`;
 }
 
 function buildBackupIpfsUrl(folder: string, fileName: string): string {
   return `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
+}
+
+function getStickerMetadataUrl(stickerId: number): string {
+  const configuredBase = import.meta.env.VITE_NFT_METADATA_BASE_URL;
+  const base = configuredBase || `${window.location.origin}/metadata`;
+  return `${base.replace(/\/$/, "")}/${stickerId}.json`;
 }
 
 function getPlayerImage(sticker: Sticker, ipfsOk: boolean): { ipfs: string; local: string | null } {
@@ -182,13 +187,14 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   // Compute IPFS URI for this card — use filename-based folder, NOT sticker type
   const cardFileName = sticker.imageFile === "GoldenCrest.webp" ? "GoldenCrest.png" : sticker.imageFile;
-  const cardFolder = getIpfsFolder(cardFileName);
+  const cardFolder = getIpfsFolder("WC2026 Album Bosnia");
   const cardIpfsUrl = sticker.imageFile === "Pi_dedic.webp"
     ? DEDIC_IPFS_URL
-    : (ipfsOk ? buildIpfsUrl(cardFolder, cardFileName) : buildBackupIpfsUrl(cardFolder, cardFileName));
+    : (ipfsOk ? buildIpfsUrl(cardFolder, "WC2026 Album Bosnia") : buildBackupIpfsUrl(cardFolder, "WC2026 Album Bosnia"));
   const cardIpfsLabel = sticker.imageFile === "Pi_dedic.webp"
     ? "QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn"
-    : `${(ipfsOk ? PRIMARY_IPFS_CID : BACKUP_IPFS_CID)}/components/${cardFolder}/${cardFileName}`;
+    : `${PRIMARY_IPFS_CID}/components/${cardFolder}/${cardFileName}`;
+  const cardMetadataUrl = getStickerMetadataUrl(sticker.id);
 
   const handleMintSticker = async () => {
     if (!walletConnected || (!sandboxMode && !solanaWallet.publicKey)) {
@@ -202,12 +208,11 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
         onMintSticker(sticker.id);
         alert(lang === "BS" ? "Uspješno! (Sandbox simulacija)" : "Success! (Sandbox simulation)");
       } else {
-        // Always use IPFS URI for on-chain metadata
         const assetSigner = generateSigner(umi);
         await create(umi, {
           asset: assetSigner,
           name: `BiH WC26 — ${sticker.name}`,
-          uri: cardIpfsUrl,
+          uri: cardMetadataUrl,
         }).sendAndConfirm(umi);
         onMintSticker(sticker.id);
         alert(lang === "BS" ? "Uspješno! Sličica je spremljena u Vaš novčanik." : "Success! Card minted to your wallet.");

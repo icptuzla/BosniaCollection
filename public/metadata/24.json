@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Amir Hadžiahmetović",
+  "symbol": "BIHWC26",
+  "description": "Technical defensive midfielder with excellent vision. A key piece of the central engine room.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/amir-hadziahmetovic.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "12"
+    },
+    {
+      "trait_type": "Role",
+      "value": "CDM"
+    },
+    {
+      "trait_type": "Club",
+      "value": "Beşiktaş"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 76"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "76"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "71"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "65"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "78"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "75"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "72"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "70"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/amir-hadziahmetovic.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}
