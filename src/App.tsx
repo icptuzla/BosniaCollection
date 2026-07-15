@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BookOpen, Sparkles, Coins, ShoppingBag, ArrowLeftRight, Volume2, VolumeX, Award, HelpCircle, BadgeCheck, CheckCircle2, Star, Trophy } from "lucide-react";
 import { Sticker, UserSticker, TradeOffer, WalletState, StickerType } from "./types";
 import { STICKERS } from "./data/players";
-import logoImage from "./components/zmajevi logo.webp";
+import logoImage from "./components/favicon.png";
 import { UI_TRANSLATIONS, Language } from "./data/translations";
 import { SpeedInsights } from "@vercel/speed-insights/react"
 // Import custom sub-components
@@ -11,9 +11,9 @@ import AlbumPage from "./components/AlbumPage";
 import PackOpener from "./components/PackOpener";
 import TradeMarket from "./components/TradeMarket";
 import CardDetail from "./components/CardDetail";
+import AIHelpDeskWidget from "./components/AIHelpDeskWidget/AIHelpDeskWidget";
 
 import HistoryPage from "./components/HistoryPage";
-import AIHelpDeskWidget from "./components/AIHelpDeskWidget/AIHelpDeskWidget";
 
 export default function App() {
   // --- STATE SYSTEM ---
@@ -597,8 +597,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      <AIHelpDeskWidget lang={lang} />
 
     </div>
   );

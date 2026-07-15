@@ -1,7 +1,8 @@
-import "dotenv/config";
 import express from "express";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 /**
@@ -12,17 +13,14 @@ app.use(express.json());
  *
  * Do NOT hardcode the key in client-side or in this file committed to git.
  */
-const GEMINI_API_KEY =
-  process.env.GEMINI_API_KEY ||
-  process.env.GOOGLE_API_KEY ||
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 if (!GEMINI_API_KEY) {
-  console.error("Missing Gemini API key. Set GEMINI_API_KEY, GOOGLE_API_KEY, or GOOGLE_GENERATIVE_AI_API_KEY in .env.");
+  console.error("Missing GEMINI_API_KEY in environment variables.");
   process.exit(1);
 }
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const MODEL = "gemini-2.5-flash"; // choose if available in your account
 
 app.post("/api/ai", async (req, res) => {
   try {
@@ -139,7 +137,6 @@ If the user asks for anything that requires exact on-screen labels the user shou
 
     if (!r.ok) {
       const text = await r.text().catch(() => "");
-      console.error(`Gemini API error (${r.status}):`, text);
       return res.status(500).json({ error: "Gemini API error", details: text });
     }
 
@@ -156,7 +153,7 @@ If the user asks for anything that requires exact on-screen labels the user shou
   }
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`AI server running on http://localhost:${PORT}`);
 });
