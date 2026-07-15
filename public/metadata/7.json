@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Armin Gigović",
+  "symbol": "BIHWC26",
+  "description": "A tactical dynamic midfielder playing in Germany. Combines robust physical presence with elegant pass mechanics, working tirelessly in counter-pressing mechanics representing Bosnia's modern core.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/gigovic.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "08"
+    },
+    {
+      "trait_type": "Role",
+      "value": "CM"
+    },
+    {
+      "trait_type": "Club",
+      "value": "Young Boys"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 72"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "72"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "71"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "59"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "69"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "71"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "68"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "72"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/gigovic.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}

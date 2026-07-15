@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Denis Huseinbašić",
+  "symbol": "BIHWC26",
+  "description": "An exceptionally versatile intelligence engine dominating the midfield play for Köln. His box-to-box endurance, timing inside deep runs, and physical ball-recovery make him an absolute lock-in.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/husejinbasic.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "28"
+    },
+    {
+      "trait_type": "Role",
+      "value": "CM"
+    },
+    {
+      "trait_type": "Club",
+      "value": "1. FC Köln"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 74"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "74"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "74"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "68"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "72"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "74"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "67"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "71"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/husejinbasic.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}

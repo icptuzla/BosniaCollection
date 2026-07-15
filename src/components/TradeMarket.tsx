@@ -7,7 +7,7 @@ import { Language } from "../data/translations";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
-import { transactionBuilder, publicKey, sol } from "@metaplex-foundation/umi";
+import { transactionBuilder, publicKey, sol, keypairIdentity, generateSigner } from "@metaplex-foundation/umi";
 import { transferSol } from "@metaplex-foundation/mpl-toolbox";
 
 interface TradeMarketProps {
@@ -19,6 +19,7 @@ interface TradeMarketProps {
   tradeOffers: TradeOffer[];
   onRemoveTradeOffer: (id: string) => void;
   lang: Language;
+  sandboxMode?: boolean;
 }
 
 export default function TradeMarket({
@@ -30,17 +31,29 @@ export default function TradeMarket({
   tradeOffers,
   onRemoveTradeOffer,
   lang,
+  sandboxMode,
 }: TradeMarketProps) {
   const solanaWallet = useWallet();
   const { connection } = useConnection();
 
   const umi = useMemo(() => {
     const u = createUmi(connection.rpcEndpoint);
-    if (solanaWallet.wallet) {
-      u.use(walletAdapterIdentity(solanaWallet));
+    if (sandboxMode) {
+      try {
+        const kp = generateSigner(u);
+        u.use(keypairIdentity(kp));
+      } catch (e) {
+        console.warn("Failed to create sandbox signer for UMI:", e);
+      }
+    } else if (!sandboxMode && solanaWallet.wallet) {
+      try {
+        u.use(walletAdapterIdentity(solanaWallet));
+      } catch (e) {
+        console.warn("Wallet adapter not initialized:", e);
+      }
     }
     return u;
-  }, [connection, solanaWallet]);
+  }, [connection, solanaWallet, sandboxMode]);
 
   const [selectedOfferStickerId, setSelectedOfferStickerId] = useState<number>(-1);
   const [selectedWantStickerId, setSelectedWantStickerId] = useState<number>(-1);
@@ -62,8 +75,8 @@ export default function TradeMarket({
     setErrorText(null);
     setSuccessText(null);
 
-    if (!wallet.connected || !solanaWallet.publicKey) {
-      setErrorText("You must connect your Solflare or Sandbox wallet before listing a trade offer!");
+    if (!wallet.connected || (!sandboxMode && !solanaWallet.publicKey)) {
+      setErrorText("You must connect your Solflare wallet before listing a trade offer!");
       return;
     }
 
@@ -97,23 +110,27 @@ export default function TradeMarket({
     setIsProcessing(true);
 
     try {
-      // 1. Simulate Maker signing their portion of the transaction (Partial Signature)
-      // We do a minimal transfer to System Program to prove wallet ownership and intent
-      let tx = transactionBuilder().add(transferSol(umi, {
-        source: umi.identity,
-        destination: publicKey("11111111111111111111111111111111"), 
-        amount: sol(0.00001)
-      }));
-      
-      const result = await tx.sendAndConfirm(umi);
-      console.log("Maker intent signed. Tx:", result.signature);
+      if (!sandboxMode) {
+        // 1. Simulate Maker signing their portion of the transaction (Partial Signature)
+        // We do a minimal transfer to System Program to prove wallet ownership and intent
+        let tx = transactionBuilder().add(transferSol(umi, {
+          source: umi.identity,
+          destination: umi.identity.publicKey,
+          amount: sol(0.00001)
+        }));
+
+        const result = await tx.sendAndConfirm(umi);
+        console.log("Maker intent signed. Tx:", result.signature);
+      } else {
+        await new Promise(r => setTimeout(r, 600));
+      }
 
       // Create trade offer
       const tradeId = "tx-trd-" + Math.random().toString(36).substr(2, 9);
       const newOffer: TradeOffer = {
         id: tradeId,
-        ownerAddress: solanaWallet.publicKey.toBase58(),
-        ownerName: "My Wallet (" + solanaWallet.publicKey.toBase58().substring(0, 5) + ")",
+        ownerAddress: sandboxMode ? "SANDBOX...WALLET" : solanaWallet.publicKey!.toBase58(),
+        ownerName: sandboxMode ? "Sandbox User" : "My Wallet (" + solanaWallet.publicKey!.toBase58().substring(0, 5) + ")",
         offeredStickerId: selectedOfferStickerId,
         requestedStickerId: sellingForSol ? -1 : selectedWantStickerId,
         solPrice: sellingForSol ? Number(solValue.toFixed(2)) : undefined,
@@ -122,9 +139,9 @@ export default function TradeMarket({
       };
 
       onSelfTradePosted(newOffer);
-      
+
       // Deduct count of dummy pending block locally
-      onTradeCompleted(selectedOfferStickerId, -1, undefined); 
+      onTradeCompleted(selectedOfferStickerId, -1, undefined);
 
       setSuccessText(`✓ Trade offer #${tradeId.toUpperCase()} listed successfully! Partial Signature verified on Devnet.`);
       setSelectedOfferStickerId(-1);
@@ -142,12 +159,13 @@ export default function TradeMarket({
     setErrorText(null);
     setSuccessText(null);
 
-    if (!wallet.connected || !solanaWallet.publicKey) {
+    if (!wallet.connected || (!sandboxMode && !solanaWallet.publicKey)) {
       setErrorText("Connect your web3 Solana / Solflare wallet card first!");
       return;
     }
 
-    if (offer.ownerAddress === solanaWallet.publicKey.toBase58()) {
+    const currentAddress = sandboxMode ? "SANDBOX...WALLET" : solanaWallet.publicKey!.toBase58();
+    if (offer.ownerAddress === currentAddress) {
       setErrorText("You cannot accept your own trade listings!");
       return;
     }
@@ -172,32 +190,38 @@ export default function TradeMarket({
     setIsProcessing(true);
 
     try {
-      // Construct the counter-signature transaction
-      if (offer.solPrice) {
-        // True P2P: Taker transfers SOL directly to Maker
-        let tx = transactionBuilder().add(transferSol(umi, {
-          source: umi.identity,
-          destination: publicKey(offer.ownerAddress),
-          amount: sol(offer.solPrice)
-        }));
-        
-        const result = await tx.sendAndConfirm(umi);
-        console.log("Taker P2P SOL transfer signed. Tx:", result.signature);
+      if (!sandboxMode) {
+        // Construct the counter-signature transaction
+        if (offer.solPrice) {
+          // True P2P: Taker transfers SOL directly to Maker
+          let tx = transactionBuilder().add(transferSol(umi, {
+            source: umi.identity,
+            destination: publicKey(offer.ownerAddress),
+            amount: sol(offer.solPrice)
+          }));
 
+          const result = await tx.sendAndConfirm(umi);
+          console.log("Taker P2P SOL transfer signed. Tx:", result.signature);
+        } else {
+          // Taker signs an intent to swap the asset (simulate)
+          let tx = transactionBuilder().add(transferSol(umi, {
+            source: umi.identity,
+            destination: publicKey(offer.ownerAddress),
+            amount: sol(0.00001) // minimal network verification
+          }));
+          const result = await tx.sendAndConfirm(umi);
+          console.log("Taker swap intent signed. Tx:", result.signature);
+        }
+      } else {
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      if (offer.solPrice) {
         // Update local wallet balance visually
         onWalletChange({
           ...wallet,
           balance: Number((wallet.balance - offer.solPrice).toFixed(2)),
         });
-      } else {
-        // Taker signs an intent to swap the asset (simulate)
-        let tx = transactionBuilder().add(transferSol(umi, {
-          source: umi.identity,
-          destination: publicKey(offer.ownerAddress), 
-          amount: sol(0.00001) // minimal network verification
-        }));
-        const result = await tx.sendAndConfirm(umi);
-        console.log("Taker swap intent signed. Tx:", result.signature);
       }
 
       // Execute trade locally
@@ -209,7 +233,7 @@ export default function TradeMarket({
 
       // Remove offer from global listings as completed
       onRemoveTradeOffer(offer.id);
-      
+
       // Synthesize transaction success sound
       try {
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -225,7 +249,7 @@ export default function TradeMarket({
         gainNode.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.4);
-      } catch (_) {}
+      } catch (_) { }
 
       setSuccessText(`✓ Trade completed! Received ${getStickerById(offer.offeredStickerId)?.name}. Blockchain synced.`);
     } catch (err: any) {
@@ -238,7 +262,7 @@ export default function TradeMarket({
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
-      
+
       {/* Visual Header */}
       <div className="text-center">
         <h2 className="text-2xl font-sans font-black text-[#002F6C] uppercase tracking-tighter leading-none">
@@ -250,7 +274,7 @@ export default function TradeMarket({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* ================= POST A NEW TRADE (Left Column) ================= */}
         <div className="lg:col-span-1 bg-white border border-gray-300 p-5 rounded-2xl shadow-sm text-left text-gray-800">
           <h3 className="text-md font-sans font-extrabold text-[#002F6C] mb-4 flex items-center space-x-2">
@@ -293,18 +317,16 @@ export default function TradeMarket({
                 <button
                   type="button"
                   onClick={() => setSellingForSol(false)}
-                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${
-                    !sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
-                  }`}
+                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${!sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
+                    }`}
                 >
                   Swap for Card
                 </button>
                 <button
                   type="button"
                   onClick={() => setSellingForSol(true)}
-                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${
-                    sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
-                  }`}
+                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
+                    }`}
                 >
                   Sell for SOL
                 </button>
@@ -360,7 +382,7 @@ export default function TradeMarket({
               ) : null}
               <span>Broadcast Trade to Ledger</span>
             </button>
-            
+
             {!wallet.connected && (
               <p className="text-[10px] font-sans font-bold text-rose-500 text-center">
                 * Please connect a Solana / Solflare wallet to broadcast.
@@ -401,16 +423,16 @@ export default function TradeMarket({
                 {tradeOffers.map((offer) => {
                   const offerSticker = getStickerById(offer.offeredStickerId);
                   const wantSticker = offer.requestedStickerId !== -1 ? getStickerById(offer.requestedStickerId) : null;
-                  const isMine = offer.ownerAddress === solanaWallet.publicKey?.toBase58();
+                  const currentAddress = sandboxMode ? "SANDBOX...WALLET" : solanaWallet.publicKey?.toBase58();
+                  const isMine = offer.ownerAddress === currentAddress;
 
                   return (
                     <div
                       key={offer.id}
-                      className={`p-3.5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 transition duration-200 ${
-                        isMine
+                      className={`p-3.5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 transition duration-200 ${isMine
                           ? "bg-[#002F6C]/5 border-[#002F6C]/30"
                           : "bg-white border-gray-300 hover:border-gray-400 shadow-sm"
-                      }`}
+                        }`}
                     >
                       {/* Left: Swapping details */}
                       <div className="flex items-center space-x-4">
@@ -422,7 +444,7 @@ export default function TradeMarket({
                           <div className="flex flex-wrap items-center gap-1.5 mb-1.5 text-gray-800">
                             <span className="font-extrabold text-[#002F6C]">[{offerSticker?.number}] {offerSticker?.name}</span>
                             <span className="text-gray-400 font-serif italic text-[11px]">for</span>
-                            
+
                             {wantSticker ? (
                               <span className="font-extrabold text-[#002F6C]/90">[{wantSticker.number}] {wantSticker.name}</span>
                             ) : (

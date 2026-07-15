@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Samed Baždar",
+  "symbol": "BIHWC26",
+  "description": "A gifted attacker whose technical intelligence and quick goal instincts have positioned him as one of the most promising young talents in his generation.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/samed-bazdar.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "9"
+    },
+    {
+      "trait_type": "Role",
+      "value": "Forward"
+    },
+    {
+      "trait_type": "Club",
+      "value": "Real Zaragoza"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 70"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "70"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "70"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "83"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "79"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "82"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "42"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "80"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/samed-bazdar.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}

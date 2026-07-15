@@ -1,8 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Calendar, Zap, Activity } from "lucide-react";
-import { Sticker, UserSticker } from "../types";
-import { Language } from "../data/translations";
+import { X, Zap, Activity } from "lucide-react";
+import { Sticker, UserSticker, StickerType } from "../types";
+import { Language, PLAYER_TRANSLATIONS } from "../data/translations";
 import logoImage from "./zmajevi logo.webp";
+
+// Solana & Metaplex Umi imports
+import { useWallet as useSolanaWallet, useConnection } from "@solana/wallet-adapter-react";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { generateSigner } from "@metaplex-foundation/umi";
+import { create } from "@metaplex-foundation/mpl-core";
 
 // Import all uploaded player photos in WebP format
 import dzekoImg from "./players/Pi_dzeko.webp";
@@ -16,9 +23,8 @@ import alajbegovicImg from "./players/kenan-alajbegovic.webp";
 import bazdarImg from "./players/samed-bazdar.webp";
 import radeljicImg from "./players/stjepan-radeljic.webp";
 import gigovicImg from "./players/Gigovic.webp";
-import muharemovicImg from "./players/Muharemovic.webp";
+import muharemovicImg from "./players/muharemovic.webp";
 import basicImg from "./players/ivan-basic.webp";
-import amirImg from "./players/amir-hadziahmetovic.webp";
 import mujakicImg from "./players/mujakic.webp";
 
 import vasiljImg from "./players/nikola-vasilj.webp";
@@ -35,12 +41,20 @@ import mahmicImg from "./players/mahmic.webp";
 import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
-import grbImg from "./special_collection/grb.png";
+import goldenCrestImg from "./special_collection/GoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
-const playerImageMap: Record<string, string> = {
+// IPFS config — primary Pinata gateway plus public dweb fallback.
+const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
+const PRIMARY_IPFS_BASE = `https://black-known-amphibian-995.mypinata.cloud/ipfs/${PRIMARY_IPFS_CID}/components`;
+const BACKUP_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
+const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
+const IPFS_TIMEOUT_MS = 100_000;
+
+// Local fallback map (Vite bundled imports)
+const LOCAL_IMAGE_MAP: Record<string, string> = {
   "Pi_dzeko.webp": dzekoImg,
   "Pi_Demirovic.webp": demirovicImg,
   "Pi_dedic.webp": dedicImg,
@@ -51,8 +65,8 @@ const playerImageMap: Record<string, string> = {
   "kenan-alajbegovic.webp": alajbegovicImg,
   "samed-bazdar.webp": bazdarImg,
   "stjepan-radeljic.webp": radeljicImg,
-  "Gigovic.webp": gigovicImg,
-  "Muharemovic.webp": muharemovicImg,
+  "gigovic.webp": gigovicImg,
+  "muharemovic.webp": muharemovicImg,
   "ivan-basic.webp": basicImg,
   "mujakic.webp": mujakicImg,
   "nikola-vasilj.webp": vasiljImg,
@@ -67,20 +81,67 @@ const playerImageMap: Record<string, string> = {
   "husejinbasic.webp": husejinbasicImg,
   "mahmic.webp": mahmicImg,
   "lukic.webp": lukicImg,
-
-  // Special collection
-  "grb.png": grbImg,
+  "GoldenCrest.webp": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
   "2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,
 };
 
-const getPlayerImage = (sticker: Sticker) => {
-  if (sticker.imageFile && playerImageMap[sticker.imageFile]) {
-    return playerImageMap[sticker.imageFile];
-  }
-  return null;
-};
+// Session-level IPFS reachability cache
+let _ipfsReachable: boolean | null = null;
+let _ipfsPromise: Promise<boolean> | null = null;
+function getIpfsStatus(): Promise<boolean> {
+  if (_ipfsReachable !== null) return Promise.resolve(_ipfsReachable);
+  if (_ipfsPromise) return _ipfsPromise;
+  _ipfsPromise = new Promise<boolean>((resolve) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => { ctrl.abort(); _ipfsReachable = false; resolve(false); }, IPFS_TIMEOUT_MS);
+    fetch(`${PRIMARY_IPFS_BASE}/special_collection/GoldenCrest.png`, { method: "HEAD", signal: ctrl.signal, cache: "no-store" })
+      .then(() => { clearTimeout(timer); _ipfsReachable = true; resolve(true); })
+      .catch(() => { clearTimeout(timer); _ipfsReachable = false; resolve(false); });
+  });
+  return _ipfsPromise;
+}
+
+// Files that actually live in the special_collection/ IPFS folder.
+// NOTE: a sticker can have StickerType.SPECIAL for display/rarity purposes
+// while its image is still in the players/ folder (e.g. Muharemović, Alajbegović).
+const SPECIAL_COLLECTION_FILES = new Set([
+  "GoldenCrest.webp",
+  "GoldenCrest.png",
+  "stadionzenica.webp",
+  "2014.webp",
+  "bhfanaticos.webp",
+]);
+
+function getIpfsFolder(imageFile: string): string {
+  return SPECIAL_COLLECTION_FILES.has(imageFile) ? "special_collection" : "players";
+}
+
+function buildIpfsUrl(folder: string, fileName: string): string {
+  return `${PRIMARY_IPFS_BASE}/${folder}/${fileName}`;
+}
+
+function buildBackupIpfsUrl(folder: string, fileName: string): string {
+  return `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
+}
+
+function getStickerMetadataUrl(stickerId: number): string {
+  const configuredBase = import.meta.env.VITE_NFT_METADATA_BASE_URL;
+  const base = configuredBase || `${window.location.origin}/metadata`;
+  return `${base.replace(/\/$/, "")}/${stickerId}.json`;
+}
+
+function getPlayerImage(sticker: Sticker, ipfsOk: boolean): { ipfs: string; local: string | null } {
+  if (!sticker.imageFile) return { ipfs: "", local: null };
+  const folder = getIpfsFolder(sticker.imageFile);
+  let fileName = sticker.imageFile;
+  if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
+  
+  const ipfs = sticker.imageFile === "Pi_dedic.webp" ? DEDIC_IPFS_URL : buildIpfsUrl(folder, fileName);
+  const local = LOCAL_IMAGE_MAP[sticker.imageFile] ?? null;
+  return { ipfs, local };
+}
 
 interface CardDetailProps {
   sticker: Sticker;
@@ -89,13 +150,80 @@ interface CardDetailProps {
   onPaste?: (id: number) => void;
   walletConnected: boolean;
   lang: Language;
+  mintedStickers: number[];
+  onMintSticker: (id: number) => void;
+  sandboxMode: boolean;
 }
 
-export default function CardDetail({ sticker, userSticker, onClose, onPaste, walletConnected, lang }: CardDetailProps) {
+export default function CardDetail({ sticker, userSticker, onClose, onPaste, walletConnected, lang, mintedStickers, onMintSticker, sandboxMode }: CardDetailProps) {
   const [foilStyle, setFoilStyle] = useState({ rotateX: 0, rotateY: 0, shineX: 50, shineY: 50 });
   const [scale, setScale] = useState(1);
   const [flipped, setFlipped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [ipfsOk, setIpfsOk] = useState<boolean>(true); // optimistic default
+
+  const [isMinting, setIsMinting] = useState(false);
+  const solanaWallet = useSolanaWallet();
+  const { connection } = useConnection();
+
+  // Probe IPFS on mount; fallback to local if unreachable in 100s
+  useEffect(() => {
+    getIpfsStatus().then(ok => setIpfsOk(ok));
+  }, []);
+
+  const umi = React.useMemo(() => {
+    const u = createUmi(connection.rpcEndpoint);
+    if (solanaWallet.wallet) {
+      try {
+        u.use(walletAdapterIdentity(solanaWallet));
+      } catch (e) {
+        console.warn("Wallet adapter not initialized:", e);
+      }
+    }
+    return u;
+  }, [connection, solanaWallet]);
+
+  const isMinted = mintedStickers.includes(sticker.id);
+
+  // Compute IPFS URI for this card — use filename-based folder, NOT sticker type
+  const cardFileName = sticker.imageFile === "GoldenCrest.webp" ? "GoldenCrest.png" : sticker.imageFile;
+  const cardFolder = getIpfsFolder("WC2026 Album Bosnia");
+  const cardIpfsUrl = sticker.imageFile === "Pi_dedic.webp"
+    ? DEDIC_IPFS_URL
+    : (ipfsOk ? buildIpfsUrl(cardFolder, "WC2026 Album Bosnia") : buildBackupIpfsUrl(cardFolder, "WC2026 Album Bosnia"));
+  const cardIpfsLabel = sticker.imageFile === "Pi_dedic.webp"
+    ? "QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn"
+    : `${PRIMARY_IPFS_CID}/components/${cardFolder}/${cardFileName}`;
+  const cardMetadataUrl = getStickerMetadataUrl(sticker.id);
+
+  const handleMintSticker = async () => {
+    if (!walletConnected || (!sandboxMode && !solanaWallet.publicKey)) {
+      alert(lang === "BS" ? "Povežite novčanik!" : "Please connect your wallet!");
+      return;
+    }
+    setIsMinting(true);
+    try {
+      if (sandboxMode) {
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        onMintSticker(sticker.id);
+        alert(lang === "BS" ? "Uspješno! (Sandbox simulacija)" : "Success! (Sandbox simulation)");
+      } else {
+        const assetSigner = generateSigner(umi);
+        await create(umi, {
+          asset: assetSigner,
+          name: `BiH WC26 — ${sticker.name}`,
+          uri: cardMetadataUrl,
+        }).sendAndConfirm(umi);
+        onMintSticker(sticker.id);
+        alert(lang === "BS" ? "Uspješno! Sličica je spremljena u Vaš novčanik." : "Success! Card minted to your wallet.");
+      }
+    } catch (e: any) {
+      console.error("Minting error:", e);
+      alert((lang === "BS" ? "Greška prilikom mintanja: " : "Mint failed: ") + (e.message || e.toString()));
+    } finally {
+      setIsMinting(false);
+    }
+  };
 
   // Dynamically scale card and controls to fit small smartphone screens perfectly
   useEffect(() => {
@@ -183,10 +311,11 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   const hasStickerPouch = userSticker && userSticker.count > 0;
   const isPasted = userSticker && userSticker.pasted;
-  const playerImg = getPlayerImage(sticker);
+  const { local: playerLocal, ipfs: playerIpfs } = getPlayerImage(sticker, ipfsOk);
+  const playerImgToUse = playerLocal || playerIpfs;
 
   // Localized sticker biography
-  const bio = lang === "BS" && sticker.biographyBS ? sticker.biographyBS : sticker.biography;
+  const bio = PLAYER_TRANSLATIONS[sticker.id]?.biography[lang] || sticker.biography;
 
   return (
     <div id="card-detail-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm overflow-hidden select-none">
@@ -241,13 +370,14 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
             {/* ======================================================== */}
             <div
               style={{
-                backgroundImage: playerImg ? `url(${playerImg})` : undefined,
-                backgroundSize: "cover",
+                backgroundImage: playerImgToUse ? `url(${playerImgToUse})` : undefined,
+                backgroundSize: sticker.type === StickerType.SPECIAL ? "contain" : "cover",
+                backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
                 backfaceVisibility: "hidden",
                 transform: "rotateY(0deg)",
               }}
-              className={`absolute inset-0 flex flex-col justify-end p-6 rounded-[22px] overflow-hidden transition-all duration-300 ${!playerImg ? "bg-gradient-to-br from-[#002f6c] via-[#091e3b] to-[#011026]" : "bg-white"
+              className={`absolute inset-0 flex flex-col justify-end p-6 rounded-[22px] overflow-hidden transition-all duration-300 ${!playerImgToUse ? "bg-gradient-to-br from-[#002f6c] via-[#091e3b] to-[#011026]" : "bg-white"
                 } ${flipped ? "opacity-0 pointer-events-none z-0" : "opacity-100 z-10"}`}
             >
               {/* Micro hologram fiber pattern */}
@@ -261,7 +391,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 className="absolute inset-0 pointer-events-none z-10 mix-blend-overlay"
               />
 
-              {!playerImg && (
+              {!playerImgToUse && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 text-white space-y-4">
                   <div className="w-32 h-32 bg-slate-950/40 border border-white/20 rounded-full flex items-center justify-center shadow-lg">
                     {sticker.id === 27 ? (
@@ -308,7 +438,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
               <div className="flex justify-between items-start border-b border-[#00f0ff]/30 pb-3.5 z-20 font-sans">
                 <div className="flex items-center space-x-3.5 text-left">
                   <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shrink-0">
-                    <img src={logoImage} alt="BIH FA Crest" className="h-8.5 w-8.5 object-contain" />
+                    <img src={logoImage} alt="BIH FA Crest" className="h-[2.125rem] w-[2.125rem] object-contain" />
                   </div>
                   <div>
                     <span className="text-[11px] tracking-[0.18em] text-[#FFCD00] font-extrabold uppercase block leading-none">{lang === "BS" ? "SPECIFIKACIJA KOLEKCIONARA" : "COLLECTOR SPEC SHEET"}</span>
@@ -321,17 +451,22 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 <div className="text-right">
                   <span className="text-xs font-mono font-bold text-gray-300 block uppercase leading-none">MINT ID:</span>
                   <span className="text-[#00f0ff] font-mono text-sm font-black tracking-wider block mt-1">#BIH-WC26-{sticker.id.toString().padStart(3, "0")}</span>
+                  <a href={cardIpfsUrl} target="_blank" rel="noopener noreferrer"
+                    className="text-[8px] font-mono text-[#14F195]/70 hover:text-[#14F195] block mt-0.5 truncate max-w-[160px] transition"
+                    title={`IPFS: ${cardIpfsLabel}`}>
+                    ⛓ {cardIpfsLabel.slice(0, 22)}…
+                  </a>
                 </div>
               </div>
 
               {/* Biography Section */}
               <div className="bg-white/10 border border-white/20 p-5 rounded-2xl text-left z-20 space-y-3 shadow-inner">
                 <h4 className="text-xs uppercase text-[#FFCD00] font-black tracking-widest flex items-center space-x-2 font-sans">
-                  <Activity className="h-4.5 w-4.5 text-[#00f0ff]" />
-                  <span>{lang === "BS" ? "BIOGRAFIJA I ISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
+                  <Activity className="h-[1.125rem] w-[1.125rem] text-[#00f0ff]" />
+                  <span>{lang === "BS" ? "BIOGRAFIJA I HISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
                 </h4>
                 <p className="text-[13.5px] text-white leading-relaxed font-sans font-medium pr-2 antialiased">
-                  "{bio ? bio : sticker.biography}"
+                  "{bio}"
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-white/15 text-[13px] font-sans text-gray-200 font-semibold">
@@ -392,6 +527,30 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 </div>
 
                 <div className="flex items-center space-x-3.5">
+                  {(hasStickerPouch || isPasted) && (
+                    isMinted ? (
+                      <span className="py-2 px-[1.125rem] rounded-xl bg-emerald-950/40 text-[#14F195] border border-[#14F195]/40 text-xs font-bold uppercase tracking-wider leading-none shrink-0">
+                        {lang === "BS" ? "✓ Mintano" : "✓ Minted"}
+                      </span>
+                    ) : (
+                      <button
+                        id="btn-mint-sticker-action"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Avoid card flip
+                          handleMintSticker();
+                        }}
+                        disabled={isMinting}
+                        className={`py-2 px-4 rounded-xl font-sans font-black text-xs uppercase tracking-wider transition shrink-0 cursor-pointer ${
+                          isMinting
+                            ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                            : "bg-[#002F6C] hover:bg-[#FFCD00] text-white hover:text-[#002F6C] border border-[#00f0ff]/50 shadow-[0_0_12px_rgba(0,240,255,0.35)]"
+                        }`}
+                      >
+                        {isMinting ? (lang === "BS" ? "Mintanje..." : "Minting...") : (lang === "BS" ? "Mintaj NFT" : "Mint NFT")}
+                      </button>
+                    )
+                  )}
+
                   {hasStickerPouch && !isPasted && onPaste && (
                     <button
                       id="btn-paste-sticker-action"
@@ -402,7 +561,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                     </button>
                   )}
                   {isPasted ? (
-                    <span className="py-2 px-4.5 rounded-xl bg-white/10 text-gray-350 border border-white/20 text-xs font-bold uppercase tracking-wider leading-none">
+                    <span className="py-2 px-[1.125rem] rounded-xl bg-white/10 text-gray-300 border border-white/20 text-xs font-bold uppercase tracking-wider leading-none">
                       {lang === "BS" ? "✓ Zalijepljeno" : "✓ Pasted"}
                     </span>
                   ) : !hasStickerPouch ? (

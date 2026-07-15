@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Haris Tabaković",
+  "symbol": "BIHWC26",
+  "description": "A clinical traditional target-man who was the top goalscorer in Germany's 2. Bundesliga before his move to TSG Hoffenheim. Invaluable target structure inside long-ball aerial schemes.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/haris.tabakovicpng.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "23"
+    },
+    {
+      "trait_type": "Role",
+      "value": "ST"
+    },
+    {
+      "trait_type": "Club",
+      "value": "Borussia Monchengladbach"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 75"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "75"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "67"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "77"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "60"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "68"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "33"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "82"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/haris.tabakovicpng.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}

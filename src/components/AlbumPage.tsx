@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { BookOpen, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, Star, ChevronLeft, ChevronRight, Award } from "lucide-react";
 import { Sticker, StickerType, UserSticker } from "../types";
 import { STICKERS } from "../data/players";
 import logoImage from "./zmajevi logo.webp";
+import albumCoverImg from "./Album.webp";
 import { Language, UI_TRANSLATIONS, PLAYER_TRANSLATIONS } from "../data/translations";
 
+import { useWallet as useSolanaWallet, useConnection } from "@solana/wallet-adapter-react";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
+import { generateSigner } from "@metaplex-foundation/umi";
+import { create } from "@metaplex-foundation/mpl-core";
 // Import all uploaded player photos in WebP format
 import dzekoImg from "./players/Pi_dzeko.webp";
 import demirovicImg from "./players/Pi_Demirovic.webp";
@@ -17,7 +23,7 @@ import alajbegovicImg from "./players/kenan-alajbegovic.webp";
 import bazdarImg from "./players/samed-bazdar.webp";
 import radeljicImg from "./players/stjepan-radeljic.webp";
 import gigovicImg from "./players/Gigovic.webp";
-import muharemovicImg from "./players/Muharemovic.webp";
+import muharemovicImg from "./players/muharemovic.webp";
 import basicImg from "./players/ivan-basic.webp";
 import mujakicImg from "./players/mujakic.webp";
 
@@ -35,10 +41,19 @@ import mahmicImg from "./players/mahmic.webp";
 import lukicImg from "./players/lukic.webp";
 
 // Special Collection imports
-import grbImg from "./special_collection/grb.png";
+import goldenCrestImg from "./special_collection/GoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
 import cohort2014Img from "./special_collection/2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
+import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
+
+const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
+const BACKUP_IPFS_CID = "bafybeifroga62o5l3jrirtwhrxgo4t6tkwixgs3mmuxdsnsxfajli565yq";
+const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
+const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link`;
+const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
+const REWARD_GOLDEN_CREST_URL = "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp";
+
 
 const playerImageMap: Record<string, string> = {
   "Pi_dzeko.webp": dzekoImg,
@@ -51,11 +66,9 @@ const playerImageMap: Record<string, string> = {
   "kenan-alajbegovic.webp": alajbegovicImg,
   "samed-bazdar.webp": bazdarImg,
   "stjepan-radeljic.webp": radeljicImg,
-  "Gigovic.webp": gigovicImg,
-  "Muharemovic.webp": muharemovicImg,
+  "gigovic.webp": gigovicImg,
+  "muharemovic.webp": muharemovicImg,
   "ivan-basic.webp": basicImg,
-
-
   "mujakic.webp": mujakicImg,
   "nikola-vasilj.webp": vasiljImg,
   "sead-kolasinac.webp": kolasinacImg,
@@ -71,17 +84,26 @@ const playerImageMap: Record<string, string> = {
   "lukic.webp": lukicImg,
 
   // Special collection
-  "grb.png": grbImg,
+  "GoldenCrest.webp": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
   "2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,
 };
 
-const getPlayerImage = (sticker: Sticker) => {
-  if (sticker.imageFile && playerImageMap[sticker.imageFile]) {
-    return playerImageMap[sticker.imageFile];
-  }
-  return null;
+// Files that live in special_collection/ on IPFS — all others are in players/
+const SPECIAL_COLLECTION_FILES = new Set([
+  "GoldenCrest.webp", "stadionzenica.webp", "2014.webp", "bhfanaticos.webp",
+]);
+
+const getPlayerImage = (sticker: Sticker): { ipfs: string; local: string | null } => {
+  if (!sticker.imageFile) return { ipfs: "", local: null };
+  if (sticker.imageFile === "Pi_dedic.webp") return { ipfs: DEDIC_IPFS_URL, local: dedicImg };
+  const folder = SPECIAL_COLLECTION_FILES.has(sticker.imageFile) ? "special_collection" : "players";
+  let fileName = sticker.imageFile;
+  if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
+  const ipfs = `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
+  const local = playerImageMap[sticker.imageFile] ?? null;
+  return { ipfs, local };
 };
 
 interface AlbumPageProps {
@@ -89,9 +111,13 @@ interface AlbumPageProps {
   onViewSticker: (sticker: Sticker) => void;
   pastedCount: number;
   lang: Language;
+  walletConnected?: boolean;
+  hasClaimedReward?: boolean;
+  onClaimReward?: () => void;
+  sandboxMode: boolean;
 }
 
-export default function AlbumPage({ collection, onViewSticker, pastedCount, lang }: AlbumPageProps) {
+export default function AlbumPage({ collection, onViewSticker, pastedCount, lang, walletConnected, hasClaimedReward, onClaimReward, sandboxMode }: AlbumPageProps) {
   // - Page 0: Album Cover
   // - Page 1: Starters Part I (Slots 1-6)
   // - Page 2: Starters Part II (Slots 7-11)
@@ -100,8 +126,54 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
   // - Page 5: Player 24, Separator, Special Collection (Slots 25-28)
 
   const [currentPage, setCurrentPage] = useState(0);
+  const [isMinting, setIsMinting] = useState(false);
 
   const t = UI_TRANSLATIONS[lang];
+
+  const solanaWallet = useSolanaWallet();
+  const { connection } = useConnection();
+  const umi = React.useMemo(() => {
+    const u = createUmi(connection.rpcEndpoint);
+    if (solanaWallet.wallet) {
+      try {
+        u.use(walletAdapterIdentity(solanaWallet));
+      } catch (e) {
+        console.warn("Wallet adapter not initialized:", e);
+      }
+    }
+    return u;
+  }, [connection, solanaWallet]);
+
+  const handleMintReward = async () => {
+    if (!walletConnected || !solanaWallet.publicKey) {
+      alert(lang === "BS" ? "Povežite novčanik!" : "Please connect your wallet!");
+      return;
+    }
+    setIsMinting(true);
+    try {
+      if (sandboxMode) {
+        // Simulate Sandbox minting for the Reward
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        alert(lang === "BS" ? "Uspješno! (Sandbox simulacija nagrade)" : "Success! (Sandbox reward simulation)");
+        onClaimReward?.();
+      } else {
+        const assetSigner = generateSigner(umi);
+        await create(umi, {
+          asset: assetSigner,
+          name: "Bosnia WC2026 — Golden Crest",
+          uri: REWARD_GOLDEN_CREST_URL,
+        }).sendAndConfirm(umi);
+
+        alert(lang === "BS" ? "Uspješno! Provjerite Solflare kolekcionarstvo." : "Success! Check your Solflare collectibles.");
+        onClaimReward?.();
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert((lang === "BS" ? "Greška prilikom mintanja: " : "Mint failed: ") + (e.message || e.toString()));
+    } finally {
+      setIsMinting(false);
+    }
+  };
 
   const getPageStickers = (pageNum: number): Sticker[] => {
     switch (pageNum) {
@@ -114,40 +186,22 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
     }
   };
 
-  const playPageSound = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.18);
-      gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
-      osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.2);
-    } catch (_) { }
-  };
-
   const handleNextPage = () => {
     if (currentPage < 5) {
       setCurrentPage(currentPage + 1);
-      playPageSound();
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
       setCurrentPage(currentPage - 1);
-      playPageSound();
     }
   };
 
   const totalPossible = STICKERS.length;
   const progressPercent = Math.round((pastedCount / totalPossible) * 100);
 
+  // Removing setIsAlbumOpen that throws an error
   return (
     <div className="w-full flex flex-col items-center space-y-6">
 
@@ -183,87 +237,36 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
       {/* Book Outer Binder */}
       <div className="relative w-full max-w-4xl min-h-[580px] rounded-lg bg-[#fffef8] border-l-8 md:border-l-[12px] border-[#002F6C] shadow-2xl border-t border-b border-r border-[#d1cfc5] overflow-hidden p-4 md:p-8 text-gray-800 flex flex-col justify-between">
 
-        {/* Subtle & Gorgeous Soccer Field Background Overlay with green touches */}
-        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center p-4 md:p-8 bg-gradient-to-b from-[#edf8eb] via-[#edf7ec] to-[#f0faf0]">
-          <svg className="w-full h-full text-[#2e7d32]/25" viewBox="0 0 100 64" fill="none" stroke="currentColor" strokeWidth="0.7">
-            {/* Outer Pitch Border (soft green field background) */}
-            <rect x="2" y="2" width="96" height="60" fill="#ccf0c8" fillOpacity="0.32" stroke="currentColor" strokeWidth="0.7" />
-
-            {/* Center Circle */}
-            <circle cx="50" cy="32" r="10" />
-            <circle cx="50" cy="32" r="0.8" fill="currentColor" />
-
-            {/* Left Penalty Area */}
-            <rect x="2" y="16" width="16" height="32" />
-            {/* Left Goal Area */}
-            <rect x="2" y="24" width="6" height="16" />
-            {/* Left Penalty Spot */}
-            <circle cx="14" cy="32" r="0.6" fill="currentColor" />
-            {/* Left Box D-Arc */}
-            <path d="M 18,26.5 A 10,10 0 0,1 18,37.5" />
-
-            {/* Right Penalty Area */}
-            <rect x="82" y="16" width="16" height="32" />
-            {/* Right Goal Area */}
-            <rect x="92" y="24" width="6" height="16" />
-            {/* Right Penalty Spot */}
-            <circle cx="86" cy="32" r="0.6" fill="currentColor" />
-            {/* Right Box D-Arc */}
-            <path d="M 82,26.5 A 10,10 0 0,0 82,37.5" />
-
-            {/* Corner Arcs */}
-            <path d="M 2,5 A 3,3 0 0,0 5,2" />
-            <path d="M 2,59 A 3,3 0 0,1 5,62" />
-            <path d="M 98,5 A 3,3 0 0,1 95,2" />
-            <path d="M 98,59 A 3,3 0 0,0 95,62" />
-          </svg>
-        </div>
-
         {/* ================= COVER PAGE ================= */}
         {currentPage === 0 && (
-          <div className="flex flex-col items-center justify-center py-10 text-center space-y-6 max-w-xl mx-auto z-10">
-            <span className="text-[10px] font-sans tracking-[0.3em] font-bold text-[#002F6C] uppercase bg-[#002F6C]/10 py-1.5 px-4 rounded-full border border-[#002F6C]/20">
-              {t.coverBadge}
-            </span>
+          <div className="relative w-full flex justify-center items-center overflow-hidden bg-[#fffef8] aspect-[3/4.2]">
+            {/* Background image */}
+            <img
+              src={albumCoverImg}
+              alt="Bosnia WC2026 Football Album Cover"
+              className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl"
+            />
 
-            <div className="space-y-2">
-              <h1 className="text-2xl md:text-3xl font-sans font-black tracking-tight text-[#002F6C] uppercase leading-none">
-                {t.coverMainTitle}
-              </h1>
-              <p className="text-sm font-serif italic text-gray-500">
-                {t.coverSubtitle}
-              </p>
-            </div>
-
-            <div className="relative w-72 h-48 rounded-2xl bg-gradient-to-br from-[#002F6C] via-[#0b1f3c] to-[#01142e] border-4 border-[#00f0ff] shadow-[0_0_25px_rgba(0,240,255,0.7)] flex flex-col items-center justify-center p-4">
-              <div className="text-center flex flex-col items-center space-y-2">
-                <img src={logoImage} alt="Zmajevi BIH Crest" className="w-18 h-18 object-contain drop-shadow-[0_0_8px_rgba(255,205,0,0.55)]" />
-                <div>
-                  <span className="font-sans font-black text-xs text-[#FFCD00] block tracking-[0.3em] uppercase leading-none">
-                    {t.coverHeroes}
-                  </span>
-                  <span className="text-[9px] mt-1 block text-gray-300">
-                    {t.coverCollectibleSlots}
-                  </span>
-                </div>
+            {/* Slide animation container */}
+            <div
+              className={`absolute inset-0 transition-transform duration-700 ease-in-out translate-y-0`}
+            >
+              {/* Button at bottom */}
+              <div className="absolute bottom-10 left-0 right-0 flex justify-center">
+                <button
+                  id="album-flip-open-btn"
+                  onClick={() => {
+                    handleNextPage();
+                  }}
+                  className="py-3 px-8 rounded-lg bg-[#002F6C] hover:bg-[#0c3f82] text-white font-sans font-bold uppercase text-xs tracking-wider transition shadow-sm flex items-center space-x-2 cursor-pointer"
+                >
+                  <span>{t.flipOpenButton}</span>
+                  <ChevronRight className="h-4 w-4 text-white" />
+                </button>
               </div>
             </div>
-
-            <p className="text-xs text-gray-600 leading-relaxed max-w-sm italic">
-              {t.coverText}
-            </p>
-
-            <button
-              id="album-flip-open-btn"
-              onClick={handleNextPage}
-              className="py-3 px-8 rounded-lg bg-[#002F6C] hover:bg-[#0c3f82] text-white font-sans font-bold uppercase text-xs tracking-wider transition shadow-sm flex items-center space-x-2 cursor-pointer"
-            >
-              <span>{t.flipOpenButton}</span>
-              <ChevronRight className="h-4 w-4 text-white" />
-            </button>
           </div>
         )}
-
         {/* ================= INDIVIDUAL STANDARD PAGES ================= */}
         {currentPage > 0 && (
           <div className="w-full flex-1 flex flex-col justify-between z-20">
@@ -297,11 +300,11 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                   <div
                     key={st.id}
                     onClick={() => onViewSticker(st)}
-                    className="relative aspect-[3/4.2] rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                    className="relative rounded-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                   >
                     {!isPasted ? (
                       /* Empty Dotted slot where sticker goes */
-                      <div className="absolute inset-0 border-2 border-dashed border-gray-300 hover:border-[#002F6C] bg-white/45 flex flex-col justify-between p-3.5 text-center transition">
+                      <div className="w-full aspect-[3/4.2] border-2 border-dashed border-gray-300 hover:border-[#002F6C] bg-white/45 flex flex-col justify-between p-3.5 text-center transition rounded-xl">
                         <div className="flex justify-between items-start font-sans">
                           <span className="text-[10px] text-gray-500 font-extrabold bg-[#f4f2e9] border border-gray-300 px-1.5 py-0.5 rounded shadow-sm flex-shrink-0">
                             {st.number}
@@ -327,41 +330,44 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                       </div>
                     ) : (
                       /* Real pasted sticker card */
-                      <div
-                        style={{
-                          backgroundImage: getPlayerImage(st) ? `url(${getPlayerImage(st)})` : undefined,
-                          backgroundSize: "cover",
-                          backgroundPosition: "top",
-                        }}
-                        className={`absolute inset-0 border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col justify-end text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!getPlayerImage(st) ? "bg-gradient-to-b from-[#124285] to-[#002F6C]" : "bg-white"
-                          }`}
-                      >
-                        {/* Shimmer physical sticker overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none z-10" />
-
-                        {/* Default emblem placeholder if no player image could be loaded */}
-                        {!getPlayerImage(st) && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
-                            {st.id === 27 ? (
-                              <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
-                            ) : st.type === StickerType.SPECIAL ? (
-                              <Star className="h-8 w-8 text-[#FFCD00] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
-                            ) : (
-                              <span className="text-xl">⚽</span>
+                      (() => {
+                        const { ipfs, local } = getPlayerImage(st);
+                        return (
+                          <div
+                            className={`w-full border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!ipfs && !local ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"}`}
+                          >
+                            {(ipfs || local) && (
+                              <div className="relative w-full bg-white flex flex-col justify-end">
+                                <img
+                                  src={local || ipfs}
+                                  alt={st.name}
+                                  className="w-full h-auto object-contain block"
+                                  onError={(e) => {
+                                    if (local && (e.currentTarget as HTMLImageElement).src !== ipfs) {
+                                      (e.currentTarget as HTMLImageElement).src = ipfs;
+                                    }
+                                  }}
+                                />
+                              </div>
                             )}
+                            {!ipfs && !local && (
+                              <div className="flex-1 flex flex-col items-center justify-center p-4 text-center z-10 relative">
+                                {st.id === 27 ? (
+                                  <img src={logoImage} alt="Zmajevi Gold Crest" className="h-10 w-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)] shrink-0" referrerPolicy="no-referrer" />
+                                ) : st.type === StickerType.SPECIAL ? (
+                                  <Star className="h-8 w-8 text-[#FFCD00] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
+                                ) : (
+                                  <span className="text-xl">⚽</span>
+                                )}
+                              </div>
+                            )}
+                            <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans shrink-0">
+                              <h4 className="font-sans font-black text-[10px] sm:text-[10.5px] text-[#FFCD00] truncate leading-tight">{st.name}</h4>
+                              <p className="text-[8px] sm:text-[8.5px] text-white/95 font-bold block mt-0.5 uppercase tracking-wide truncate">{displayRole} • {st.club}</p>
+                            </div>
                           </div>
-                        )}
-
-                        {/* Clean bottom ribbon display block style */}
-                        <div className="p-2 bg-[#002F6C]/95 border-t border-[#00f0ff]/50 text-center shadow-md relative z-20 font-sans">
-                          <h4 className="font-sans font-black text-[10px] sm:text-[10.5px] text-[#FFCD00] truncate leading-tight">
-                            {st.name}
-                          </h4>
-                          <p className="text-[8px] sm:text-[8.5px] text-white/95 font-bold block mt-0.5 uppercase tracking-wide truncate">
-                            {displayRole} • {st.club}
-                          </p>
-                        </div>
-                      </div>
+                        );
+                      })()
                     )}
                   </div>
                 );
@@ -437,6 +443,121 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
         )}
 
       </div>
+
+      {/* 100% Completion Reward Modal — Epic NFT Mint */}
+      {pastedCount === totalPossible && !hasClaimedReward && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-950/95 backdrop-blur-md overflow-y-auto">
+          <div className="bg-gradient-to-br from-[#010b1f] via-[#021430] to-[#000812] border-2 border-[#FFCD00] rounded-3xl p-6 md:p-8 max-w-xl w-full text-center shadow-[0_0_60px_rgba(255,205,0,0.5),0_0_120px_rgba(0,240,255,0.2)] text-white animate-fade-in relative overflow-hidden">
+
+            {/* Ambient glow blobs */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+              <div className="absolute -top-16 -left-16 w-48 h-48 bg-[#FFCD00] opacity-10 blur-3xl rounded-full animate-pulse" />
+              <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-[#00f0ff] opacity-10 blur-3xl rounded-full animate-pulse" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-amber-500 opacity-5 blur-3xl rounded-full" />
+            </div>
+
+            {/* Header badge */}
+            <div className="relative z-10 mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFCD00] text-[#002F6C] rounded-full text-[10px] font-sans font-black uppercase tracking-widest shadow-lg">
+                <Star className="h-3 w-3" fill="currentColor" />
+                {lang === "BS" ? "KOLEKCIJA POTPUNA — EPSKA NAGRADA" : "COLLECTION COMPLETE — EPIC NFT REWARD"}
+              </span>
+            </div>
+
+            {/* Epic NFT Card Display */}
+            <div className="relative z-10 mx-auto w-full max-w-[280px] mb-5">
+              <div className="relative rounded-2xl overflow-hidden border-2 border-[#FFCD00] shadow-[0_0_30px_rgba(255,205,0,0.6),0_0_60px_rgba(255,205,0,0.2)] group">
+                {/* Holographic shimmer overlay */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#FFCD00]/10 via-transparent to-[#00f0ff]/10 group-hover:from-[#00f0ff]/15 group-hover:to-[#FFCD00]/15 transition-all duration-700 z-10 pointer-events-none rounded-2xl" />
+                <img
+                  src={rewardGoldenCrestImg}
+                  alt="Golden Crest Reward NFT"
+                  className="w-full h-auto block object-contain"
+                />
+                {/* EPIC badge overlay */}
+                <div className="absolute top-2 right-2 bg-[#FFCD00] text-[#002F6C] text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full z-20 shadow-md">
+                  ★ EPIC
+                </div>
+              </div>
+              {/* IPFS provenance line */}
+              <div className="mt-2 flex items-center justify-center gap-1.5">
+                <span className="text-[9px] text-[#00f0ff] font-mono font-bold uppercase tracking-wider opacity-80">IPFS</span>
+                <span className="text-[9px] font-mono text-gray-400 truncate max-w-[200px]">
+                  bafybeig...4tumy
+                </span>
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="relative z-10 space-y-1 mb-4">
+              <h2 className="text-2xl md:text-3xl font-sans font-black tracking-tight text-[#FFCD00] uppercase leading-none">
+                {lang === "BS" ? "Čestitamo, Kolekcionaru!" : "Congratulations, Collector!"}
+              </h2>
+              <p className="text-xs text-gray-300 font-serif leading-relaxed max-w-sm mx-auto">
+                {lang === "BS"
+                  ? "Zalijepili ste svih 29 sličica! Zaradili ste ovaj rijetki Zlatni Grb NFT koji je trajan i unosan na Solana blockchainu."
+                  : "You pasted all 29 stickers! You've earned this rare Golden Crest NFT — permanently recorded on the Solana blockchain via Metaplex."}
+              </p>
+            </div>
+
+            {/* Reward breakdown */}
+            <div className="relative z-10 bg-white/5 border border-white/10 rounded-2xl p-4 mb-5 text-left space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-300 font-sans font-semibold">{lang === "BS" ? "SOL Nagrada" : "SOL Reward"}</span>
+                <span className="text-[#14F195] font-mono font-black text-base">2.026 SOL</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-300 font-sans font-semibold">{lang === "BS" ? "NFT Certifikat" : "NFT Certificate"}</span>
+                <span className="text-[#FFCD00] font-sans font-black text-xs">★ Golden Crest (Epic)</span>
+              </div>
+              <div className="flex items-start justify-between text-sm border-t border-white/10 pt-3">
+                <span className="text-gray-400 font-sans text-xs">Metaplex CID</span>
+                <a
+                  href={REWARD_GOLDEN_CREST_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00f0ff] font-mono text-[10px] hover:underline truncate max-w-[180px] text-right"
+                >
+                  QmeLB1tybz6ya...LSo2 ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="relative z-10 space-y-3">
+              {/* Primary: Mint NFT to Solflare */}
+              <button
+                onClick={handleMintReward}
+                disabled={isMinting}
+                className={`w-full py-4 px-6 rounded-xl bg-gradient-to-r from-[#FFCD00] via-amber-400 to-[#FFCD00] hover:brightness-110 text-[#002F6C] font-black tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(255,205,0,0.5)] hover:shadow-[0_0_30px_rgba(255,205,0,0.8)] hover:-translate-y-0.5 cursor-pointer font-sans uppercase flex items-center justify-center gap-2 group ${isMinting ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Award className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                {isMinting
+                  ? (lang === "BS" ? "Mintanje..." : "Minting...")
+                  : (lang === "BS" ? "Mintaj NFT u Solflare" : "Mint NFT to Solflare Wallet")}
+              </button>
+
+              {/* Secondary: View on IPFS */}
+              <a
+                href={REWARD_GOLDEN_CREST_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-6 rounded-xl border border-[#00f0ff]/40 text-[#00f0ff] font-bold text-xs uppercase tracking-wider hover:bg-[#00f0ff]/10 transition cursor-pointer font-sans flex items-center justify-center gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                {lang === "BS" ? "Pregledaj na IPFS" : "View on IPFS"}
+              </a>
+            </div>
+
+            {!walletConnected && (
+              <p className="text-[10px] font-sans text-rose-400 font-bold uppercase relative z-10 mt-3">
+                {lang === "BS" ? "Povežite Solflare novčanik prije preuzimanja!" : "Connect your Solflare wallet before minting!"}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

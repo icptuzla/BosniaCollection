@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Sead Kolašinac",
+  "symbol": "BIHWC26",
+  "description": "Appropriately nicknamed 'The Bosnian Hulk' or 'The Tank'. Kolašinac is a powerhouse defender known for his physically intimidating presence and sheer resilience, having played for Schalke, Arsenal, Marseille, and Europa League winners Atalanta.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/sead-kolasinac.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "05"
+    },
+    {
+      "trait_type": "Role",
+      "value": "CB / LB"
+    },
+    {
+      "trait_type": "Club",
+      "value": "Atalanta"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 78"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "78"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "69"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "59"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "72"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "71"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "78"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "87"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/sead-kolasinac.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}

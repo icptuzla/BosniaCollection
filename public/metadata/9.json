@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Esmir Bajraktarević",
+  "symbol": "BIHWC26",
+  "description": "The wonderkid of American-Bosnian heritage playing in PSV. His rapid dribbling cuts, insane control logic, and explosive pace made him an immediate fan favorite for the national team's creative future wings.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/esmir-bajraktarevic.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "20"
+    },
+    {
+      "trait_type": "Role",
+      "value": "RW / RM"
+    },
+    {
+      "trait_type": "Club",
+      "value": "PSV Eindhoven"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 82"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "82"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "83"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "87"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "90"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "90"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "41"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "70"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/esmir-bajraktarevic.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}

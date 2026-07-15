@@ -2,16 +2,17 @@ import React, { useState, useEffect } from "react";
 import { BookOpen, Sparkles, Coins, ShoppingBag, ArrowLeftRight, Volume2, VolumeX, Award, HelpCircle, BadgeCheck, CheckCircle2, Star, Trophy } from "lucide-react";
 import { Sticker, UserSticker, TradeOffer, WalletState, StickerType } from "./types";
 import { STICKERS } from "./data/players";
-import logoImage from "./components/zmajevi logo.webp";
+import logoImage from "./components/favicon.png";
 import { UI_TRANSLATIONS, Language } from "./data/translations";
-
+import { SpeedInsights } from "@vercel/speed-insights/react"
 // Import custom sub-components
 import SolflareWallet from "./components/SolflareWallet";
 import AlbumPage from "./components/AlbumPage";
 import PackOpener from "./components/PackOpener";
 import TradeMarket from "./components/TradeMarket";
 import CardDetail from "./components/CardDetail";
-import MatchBets from "./components/MatchBets";
+import AIHelpDeskWidget from "./components/AIHelpDeskWidget/AIHelpDeskWidget";
+
 import HistoryPage from "./components/HistoryPage";
 
 export default function App() {
@@ -26,21 +27,37 @@ export default function App() {
     localStorage.setItem("zmajevi_lang_pref", newLang);
   };
 
-  const [activeTab, setActiveTab] = useState<"album" | "pouch" | "packs" | "trades" | "bets" | "history">("album");
+  const [activeTab, setActiveTab] = useState<"album" | "pouch" | "packs" | "trades" | "history">("album");
   const [wallet, setWallet] = useState<WalletState>({
     connected: false,
     publicKey: null,
     balance: 0,
-    isSimulated: true,
   });
 
   const [collection, setCollection] = useState<UserSticker[]>([]);
   const [tradeOffers, setTradeOffers] = useState<TradeOffer[]>([]);
   const [selectedSticker, setSelectedSticker] = useState<Sticker | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [ambientNode, setAmbientNode] = useState<BiquadFilterNode | null>(null);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [sandboxMode, setSandboxMode] = useState(false);
+  const [hasClaimedReward, setHasClaimedReward] = useState<boolean>(() => {
+    return localStorage.getItem("bosnia_wc26_reward_claimed") === "true";
+  });
+  const [mintedStickers, setMintedStickers] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem("bosnia_wc26_minted_stickers");
+      return saved ? JSON.parse(saved) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+
+  const handleRegisterMint = (id: number) => {
+    setMintedStickers(prev => {
+      const updated = prev.includes(id) ? prev : [...prev, id];
+      localStorage.setItem("bosnia_wc26_minted_stickers", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   // --- INITIAL SEEDING ---
   useEffect(() => {
@@ -117,68 +134,6 @@ export default function App() {
   };
 
   // --- AUDIO SYNTHESIZER ENGINE (Immersive Arena Sounds & Effects) ---
-  const toggleSound = () => {
-    if (soundEnabled) {
-      // Mute
-      if (ambientNode) {
-        try {
-          ambientNode.disconnect();
-        } catch (_) {}
-      }
-      setSoundEnabled(false);
-    } else {
-      // Unmute & Build Arena Crowd Sound Synthesizer!
-      try {
-        const ctx = audioContext || new (window.AudioContext || (window as any).webkitAudioContext)();
-        if (ctx.state === "suspended") {
-          ctx.resume();
-        }
-        setAudioContext(ctx);
-
-        // Brown noise simulation for heavy stadium wind/cheers
-        const bufferSize = 2 * ctx.sampleRate;
-        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        let lastOut = 0.0;
-        for (let i = 0; i < bufferSize; i++) {
-          const white = Math.random() * 2 - 1;
-          output[i] = (lastOut + (0.02 * white)) / 1.02;
-          lastOut = output[i];
-          output[i] *= 4.5; // Gain compensation
-        }
-
-        const whiteNoise = ctx.createBufferSource();
-        whiteNoise.buffer = noiseBuffer;
-        whiteNoise.loop = true;
-
-        // Bandpass sweeps to make it sound like dynamic crowd singing chants
-        const bandpass = ctx.createBiquadFilter();
-        bandpass.type = "bandpass";
-        bandpass.frequency.value = 260; // low frequency hum of deep chants
-        bandpass.Q.value = 4.0;
-
-        // Lowpass to make it muffled
-        const lowpass = ctx.createBiquadFilter();
-        lowpass.type = "lowpass";
-        lowpass.frequency.value = 350;
-
-        const volume = ctx.createGain();
-        volume.gain.value = 0.08; // subtle backgound whisper
-
-        whiteNoise.connect(bandpass);
-        bandpass.connect(lowpass);
-        lowpass.connect(volume);
-        volume.connect(ctx.destination);
-
-        whiteNoise.start();
-
-        setAmbientNode(lowpass); // Keep reference to shut down
-        setSoundEnabled(true);
-      } catch (e) {
-        console.warn("Audio Context init blocked:", e);
-      }
-    }
-  };
 
   // --- STICKER INTERACTIONS ---
   const handleAddStickers = (ids: number[]) => {
@@ -201,37 +156,10 @@ export default function App() {
       target.pasted = true;
       target.count -= 1; // deduct sticker from pouch when pasting
 
-      // Synthesize slap paper adhesive sound effect
-      try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const noise = ctx.createBufferSource();
-        
-        // Short friction rumble
-        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        noise.buffer = buf;
-
-        const lowpass = ctx.createBiquadFilter();
-        lowpass.type = "lowpass";
-        lowpass.frequency.value = 180;
-
-        const gainNode = ctx.createGain();
-        gainNode.gain.setValueAtTime(0.35, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-
-        noise.connect(lowpass);
-        lowpass.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        noise.start();
-        noise.stop(ctx.currentTime + 0.12);
-      } catch (_) {}
 
       saveCollection(updated);
       setSelectedSticker(null); // Close detail view upon mounting success
-      
+
       // Flash a little custom feedback
       alert(`Success! Mounted ${STICKERS.find(s => s.id === id)?.name} onto page slot successfully.`);
     }
@@ -298,15 +226,42 @@ export default function App() {
   const pastedCount = collection.filter(c => c.pasted).length;
   const pouchList = collection.filter(c => c.count > 0 && !c.pasted);
 
+  const handleClaimReward = () => {
+    if (!wallet.connected) {
+      alert(lang === "BS" ? "Povežite virtuelni novčanik da preuzmete nagradu!" : "Please connect your wallet to claim the reward!");
+      return;
+    }
+    setWallet(prev => ({ ...prev, balance: prev.balance + 2.026 }));
+    setHasClaimedReward(true);
+    localStorage.setItem("bosnia_wc26_reward_claimed", "true");
+
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2); // E5
+      osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.4); // G5
+      osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.6); // C6
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.5);
+    } catch (_) { }
+  };
+
   return (
     <div className="min-h-screen album-container text-[#1a1a1a] selection:bg-[#FFCD00] selection:text-[#002F6C] pb-16 font-sans">
-      
+
       {/* Immersive Stadium Top Ambient Ribbon */}
       <div className="bg-gradient-to-r from-[#002F6C] via-[#FFCD00] to-[#002F6C] h-2 w-full shadow-md shrink-0" />
 
       {/* Main Navbar */}
       <header className="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-col md:flex-row items-center justify-between border-b border-gray-300 gap-4 mb-6">
-        
+
         {/* Logo / Mascot brand */}
         <div className="flex items-center space-x-4 text-left">
           <div className="w-14 h-14 bg-[#002F6C] rounded-full border-2 border-[#00f0ff] shadow-[0_0_12px_rgba(0,240,255,0.7)] flex items-center justify-center overflow-hidden shrink-0">
@@ -324,47 +279,31 @@ export default function App() {
 
         {/* Dynamic Sound Synthesizer & Solflare stats */}
         <div className="flex flex-wrap items-center gap-3 select-none justify-end w-full md:w-auto">
-          
+
           {/* Language Switcher Pill */}
           <div className="flex bg-white/80 border border-gray-300 rounded-lg p-0.5 shadow-sm shrink-0">
             <button
               id="lang-switch-bs"
               onClick={() => handleLangChange("BS")}
-              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
-                lang === "BS"
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${lang === "BS"
                   ? "bg-[#002F6C] text-white shadow"
                   : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
-              }`}
+                }`}
             >
               🇧🇦 BS
             </button>
             <button
               id="lang-switch-en"
               onClick={() => handleLangChange("EN")}
-              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
-                lang === "EN"
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${lang === "EN"
                   ? "bg-[#002F6C] text-white shadow"
                   : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
-              }`}
+                }`}
             >
               🇬🇧 EN
             </button>
           </div>
 
-          {/* Sound Synthesizer hummer */}
-          <button
-            id="btn-arena-chants-ambient"
-            onClick={toggleSound}
-            className={`p-2 rounded-lg border text-xs font-sans font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 cursor-pointer shrink-0 ${
-              soundEnabled
-                ? "bg-[#002F6C]/10 border-[#002F6C] text-[#002F6C] shadow-sm"
-                : "bg-white/80 border-gray-300 text-gray-500 hover:text-gray-700"
-            }`}
-            title="Toggle Synthesized Stadium Crowd Humming Chants"
-          >
-            {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            <span className="hidden sm:inline">{UI_TRANSLATIONS[lang].arenaHum}</span>
-          </button>
 
           {wallet.connected ? (
             <div className="bg-white border border-gray-300 px-4 py-1 rounded-lg text-left hidden sm:block shadow-sm shrink-0">
@@ -384,11 +323,25 @@ export default function App() {
 
       {/* Main Core Layout */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
+
         {/* Left Drawer Block - Solana Wallet Connection Area */}
         <div className="lg:col-span-1 space-y-6">
-          <SolflareWallet wallet={wallet} onWalletChange={setWallet} lang={lang} />
-          
+          <SolflareWallet
+            wallet={wallet}
+            onWalletChange={setWallet}
+            lang={lang}
+            sandboxMode={sandboxMode}
+            onToggleSandbox={() => {
+              if (sandboxMode) {
+                setSandboxMode(false);
+                setWallet({ connected: false, publicKey: null, balance: 0 });
+              } else {
+                setSandboxMode(true);
+                setWallet({ connected: true, publicKey: "SANDBOX...WALLET", balance: 10.0 });
+              }
+            }}
+          />
+
           {/* Virtual pouch dashboard */}
           <div className="bg-white border border-gray-300/80 p-5 rounded-2xl text-left shadow-sm">
             <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider mb-3 flex items-center space-x-1.5 border-b border-gray-200 pb-2">
@@ -428,10 +381,45 @@ export default function App() {
                 })}
               </div>
             )}
-            
-            <p className="text-[10px] font-sans text-gray-500 leading-relaxed mt-3 pt-3 border-t border-gray-200">
-              {UI_TRANSLATIONS[lang].pouchInstructions}
-            </p>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <span className="text-[10px] font-sans font-bold text-[#002F6C] uppercase mb-1.5 flex items-center justify-between">
+                <span>{lang === "BS" ? "Zalijepljene" : "Collected"}</span>
+                <span className="bg-[#002F6C] text-white px-1.5 rounded-full">{collection.filter(c => c.pasted).length}/29</span>
+              </span>
+              <div className="text-[9px] font-sans text-gray-600 leading-relaxed max-h-[90px] overflow-y-auto pr-1 flex flex-wrap gap-1">
+                {collection.filter(c => c.pasted).length > 0 ? (
+                  collection.filter(c => c.pasted).map(c => STICKERS.find(s => s.id === c.stickerId)).filter(Boolean).map((s) => (
+                    <span key={`col-${s!.id}`} className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap shadow-sm">
+                      {s!.name.split(" ").slice(-1)[0]}
+                    </span>
+                  ))
+                ) : (
+                  <span className="italic">{lang === "BS" ? "Još nema zalijepljenih sličica." : "No pasted stickers yet."}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <span className="text-[10px] font-sans font-bold text-[#002F6C] uppercase mb-1.5 flex items-center justify-between">
+                <span>{lang === "BS" ? "Duplikati" : "Extras"}</span>
+                <span className="bg-[#002F6C] text-white px-1.5 rounded-full">{collection.filter(c => c.count > 0).reduce((acc, c) => acc + c.count, 0)}</span>
+              </span>
+              <div className="text-[9px] font-sans text-gray-600 leading-relaxed max-h-[90px] overflow-y-auto pr-1 flex flex-wrap gap-1">
+                {collection.filter(c => c.count > 0).length > 0 ? (
+                  collection.filter(c => c.count > 0).flatMap(c => {
+                    const st = STICKERS.find(s => s.id === c.stickerId);
+                    if (!st) return [];
+                    return Array(c.count).fill(st);
+                  }).map((s, idx) => (
+                    <span key={`dup-${s.id}-${idx}`} className="bg-amber-100/50 px-1.5 py-0.5 rounded border border-amber-200 whitespace-nowrap shadow-sm text-amber-800">
+                      {s.name.split(" ").slice(-1)[0]}
+                    </span>
+                  ))
+                ) : (
+                  <span className="italic">{lang === "BS" ? "Nemate duplikata." : "No extra cards."}</span>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Golden Era Trophy Box widget */}
@@ -448,15 +436,14 @@ export default function App() {
 
         {/* Center / Right Multi-View Workspace (Pages, Shop, Trade) */}
         <div className="lg:col-span-3 space-y-6">
-          
+
           {/* Dynamic Switch Tabs */}
-          <div className="flex flex-wrap md:flex-nowrap gap-1.5 bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold">
+          <div className="flex flex-nowrap overflow-x-auto scrollbar-hide snap-x gap-1.5 bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button
               id="tab-open-album-book"
               onClick={() => setActiveTab("album")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
-                activeTab === "album" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${activeTab === "album" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                }`}
             >
               <BookOpen className="h-4.5 w-4.5" />
               <span>{UI_TRANSLATIONS[lang].tabAlbum}</span>
@@ -465,9 +452,8 @@ export default function App() {
             <button
               id="tab-open-pack-opener"
               onClick={() => setActiveTab("packs")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
-                activeTab === "packs" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${activeTab === "packs" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                }`}
             >
               <ShoppingBag className="h-4.5 w-4.5" />
               <span>{UI_TRANSLATIONS[lang].tabPacks}</span>
@@ -476,31 +462,20 @@ export default function App() {
             <button
               id="tab-open-trade-market"
               onClick={() => setActiveTab("trades")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[130px] ${
-                activeTab === "trades" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[130px] ${activeTab === "trades" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                }`}
             >
               <ArrowLeftRight className="h-4.5 w-4.5" />
               <span>{UI_TRANSLATIONS[lang].tabTrades}</span>
             </button>
 
-            <button
-              id="tab-open-prediction-arena"
-              onClick={() => setActiveTab("bets")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
-                activeTab === "bets" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
-              }`}
-            >
-              <Trophy className="h-4.5 w-4.5" />
-              <span>{UI_TRANSLATIONS[lang].tabPredictions}</span>
-            </button>
+
 
             <button
               id="tab-open-history"
               onClick={() => setActiveTab("history")}
-              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-1.5 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
-                activeTab === "history" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-[#002F6C]"
-              }`}
+              className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-1.5 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${activeTab === "history" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-[#002F6C]"
+                }`}
             >
               <Trophy className="h-4.5 w-4.5 text-[#FFCD00]" />
               <span>{UI_TRANSLATIONS[lang].tabHistory}</span>
@@ -515,6 +490,10 @@ export default function App() {
                 onViewSticker={setSelectedSticker}
                 pastedCount={pastedCount}
                 lang={lang}
+                walletConnected={wallet.connected}
+                hasClaimedReward={hasClaimedReward}
+                onClaimReward={handleClaimReward}
+                sandboxMode={sandboxMode}
               />
             )}
 
@@ -525,6 +504,7 @@ export default function App() {
                 onAddStickers={handleAddStickers}
                 onViewSticker={setSelectedSticker}
                 lang={lang}
+                sandboxMode={sandboxMode}
               />
             )}
 
@@ -538,18 +518,11 @@ export default function App() {
                 tradeOffers={tradeOffers}
                 onRemoveTradeOffer={handleRemoveTradeOffer}
                 lang={lang}
+                sandboxMode={sandboxMode}
               />
             )}
 
-            {activeTab === "bets" && (
-              <MatchBets
-                wallet={wallet}
-                onWalletChange={setWallet}
-                collection={collection}
-                onCollectionChange={saveCollection}
-                lang={lang}
-              />
-            )}
+
 
             {activeTab === "history" && (
               <HistoryPage lang={lang} />
@@ -568,6 +541,9 @@ export default function App() {
           onPaste={handlePasteStickerInAlbum}
           walletConnected={wallet.connected}
           lang={lang}
+          mintedStickers={mintedStickers}
+          onMintSticker={handleRegisterMint}
+          sandboxMode={sandboxMode}
         />
       )}
 
@@ -613,8 +589,6 @@ export default function App() {
               id="btn-confirm-welcome-onboard"
               onClick={() => {
                 setShowWelcome(false);
-                // Connect simulated sandbox wallet immediately to minimize friction
-                setWallet({ connected: true, publicKey: "SolfZmaj99InitialTestAddressFmC26", balance: 5.0, isSimulated: true });
               }}
               className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 font-black tracking-wide text-sm transition shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer font-sans"
             >

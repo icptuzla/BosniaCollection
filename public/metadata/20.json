@@ -1,0 +1,69 @@
+{
+  "name": "BiH WC26 - Arjan Malić",
+  "symbol": "BIHWC26",
+  "description": "An emerging youth prospect born in Jesenice, Slovenia, playing for Sturm Graz. His rapid physical maturity, aerial abilities, and clean playing style make him a fantastic defensive option for the national team's future.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/malic.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "27"
+    },
+    {
+      "trait_type": "Role",
+      "value": "CB / LB"
+    },
+    {
+      "trait_type": "Club",
+      "value": "Sturm Graz"
+    },
+    {
+      "trait_type": "Type",
+      "value": "STANDARD"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "FC26 Rating: 74"
+    },
+    {
+      "trait_type": "Overall",
+      "value": "68"
+    },
+    {
+      "trait_type": "Pace",
+      "value": "73"
+    },
+    {
+      "trait_type": "Shooting",
+      "value": "58"
+    },
+    {
+      "trait_type": "Passing",
+      "value": "65"
+    },
+    {
+      "trait_type": "Dribbling",
+      "value": "68"
+    },
+    {
+      "trait_type": "Defending",
+      "value": "60"
+    },
+    {
+      "trait_type": "Physicality",
+      "value": "65"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/players/malic.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Player Stickers"
+  }
+}

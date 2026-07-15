@@ -1,0 +1,41 @@
+{
+  "name": "BiH WC26 - Stadion \"Bilino Polje\" Zenica",
+  "symbol": "BIHWC26",
+  "description": "The historical fortress and spiritual home of the Bosnian National Team in Zenica. Renowned for its incredibly intense atmosphere, where fans sit extremely close to the pitch, creating an intimidating wall of sound that has humbled many major world powerhouses.",
+  "image": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/special_collection/stadionzenica.webp",
+  "attributes": [
+    {
+      "trait_type": "Sticker Number",
+      "value": "S2"
+    },
+    {
+      "trait_type": "Role",
+      "value": "Special Venue"
+    },
+    {
+      "trait_type": "Club",
+      "value": "Zenica Fortress"
+    },
+    {
+      "trait_type": "Type",
+      "value": "SPECIAL"
+    },
+    {
+      "trait_type": "Rating Reference",
+      "value": "Legendary Venue Card ★★★★"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy/components/special_collection/stadionzenica.webp",
+        "type": "image/webp"
+      }
+    ]
+  },
+  "collection": {
+    "name": "Bosnia Zmajevi WC26",
+    "family": "Special Collection"
+  }
+}
