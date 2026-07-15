@@ -7,7 +7,9 @@
     "node": ">=24.9.0"
   },
   "scripts": {
-    "dev": "vite --configLoader native --port=3000 --host=0.0.0.0",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "vite --configLoader native --port=3000 --host=0.0.0.0",
+    "dev:api": "node src/server.js",
     "build": "vite build --configLoader native",
     "metadata": "tsx scripts/generate-nft-metadata.ts",
     "preview": "vite preview",

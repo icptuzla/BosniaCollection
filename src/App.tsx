@@ -13,6 +13,7 @@ import TradeMarket from "./components/TradeMarket";
 import CardDetail from "./components/CardDetail";
 
 import HistoryPage from "./components/HistoryPage";
+import AIHelpDeskWidget from "./components/AIHelpDeskWidget/AIHelpDeskWidget";
 
 export default function App() {
   // --- STATE SYSTEM ---
@@ -596,6 +597,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <AIHelpDeskWidget lang={lang} />
 
     </div>
   );
