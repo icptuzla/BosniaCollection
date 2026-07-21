@@ -12,9 +12,9 @@ import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-ad
 import { generateSigner } from "@metaplex-foundation/umi";
 import { create } from "@metaplex-foundation/mpl-core";
 // Import all uploaded player photos in WebP format
-import dzekoImg from "./players/Pi_dzeko.webp";
-import demirovicImg from "./players/Pi_Demirovic.webp";
-import dedicImg from "./players/Pi_dedic.webp";
+import dzekoImg from "./players/dzeko.webp";
+import demirovicImg from "./players/Demirovic.webp";
+import dedicImg from "./players/dedic.webp";
 import tahirovicImg from "./players/benjamin-tahirovic.webp";
 import burnicImg from "./players/denis-burnic.webp";
 import memicImg from "./players/amer-memic.webp";
@@ -43,22 +43,20 @@ import lukicImg from "./players/lukic.webp";
 // Special Collection imports
 import goldenCrestImg from "./special_collection/GoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
-import cohort2014Img from "./special_collection/2014.webp";
+import cohort2014Img from "./special_collection/Bosnia2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
 
-const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
-const BACKUP_IPFS_CID = "bafybeifroga62o5l3jrirtwhrxgo4t6tkwixgs3mmuxdsnsxfajli565yq";
-const PRIMARY_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
-const BACKUP_IPFS_BASE = `https://${BACKUP_IPFS_CID}.ipfs.dweb.link`;
-const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
-const REWARD_GOLDEN_CREST_URL = "https://bafybeihntowy3cfvf2defm5jiohxxq7lkh6wrrkdr7n5re5yifgvh3upte.ipfs.dweb.link?filename=RewardGoldenCrest.webp";
+
+// Pinata IPFS gateway — single source for all assets
+const PINATA_BASE = "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeiagaakoykbdpfi2u6qvm7uaijzirgrvat5xvuowwn63ceq5mvjmru";
+const REWARD_GOLDEN_CREST_URL = `${PINATA_BASE}/special_collection/RewardGoldenCrest.webp`;
 
 
 const playerImageMap: Record<string, string> = {
-  "Pi_dzeko.webp": dzekoImg,
-  "Pi_Demirovic.webp": demirovicImg,
-  "Pi_dedic.webp": dedicImg,
+  "dzeko.webp": dzekoImg,
+  "Demirovic.webp": demirovicImg,
+  "dedic.webp": dedicImg,
   "benjamin-tahirovic.webp": tahirovicImg,
   "denis-burnic.webp": burnicImg,
   "amer-memic.webp": memicImg,
@@ -86,22 +84,21 @@ const playerImageMap: Record<string, string> = {
   // Special collection
   "GoldenCrest.webp": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
-  "2014.webp": cohort2014Img,
+  "Bosnia2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,
 };
 
 // Files that live in special_collection/ on IPFS — all others are in players/
 const SPECIAL_COLLECTION_FILES = new Set([
-  "GoldenCrest.webp", "stadionzenica.webp", "2014.webp", "bhfanaticos.webp",
+  "GoldenCrest.webp", "stadionzenica.webp", "Bosnia2014.webp", "bhfanaticos.webp",
 ]);
 
 const getPlayerImage = (sticker: Sticker): { ipfs: string; local: string | null } => {
   if (!sticker.imageFile) return { ipfs: "", local: null };
-  if (sticker.imageFile === "Pi_dedic.webp") return { ipfs: DEDIC_IPFS_URL, local: dedicImg };
   const folder = SPECIAL_COLLECTION_FILES.has(sticker.imageFile) ? "special_collection" : "players";
   let fileName = sticker.imageFile;
   if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
-  const ipfs = `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
+  const ipfs = `${PINATA_BASE}/${folder}/${fileName}`;
   const local = playerImageMap[sticker.imageFile] ?? null;
   return { ipfs, local };
 };

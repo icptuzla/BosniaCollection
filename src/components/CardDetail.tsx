@@ -12,9 +12,9 @@ import { generateSigner } from "@metaplex-foundation/umi";
 import { create } from "@metaplex-foundation/mpl-core";
 
 // Import all uploaded player photos in WebP format
-import dzekoImg from "./players/Pi_dzeko.webp";
-import demirovicImg from "./players/Pi_Demirovic.webp";
-import dedicImg from "./players/Pi_dedic.webp";
+import dzekoImg from "./players/dzeko.webp";
+import demirovicImg from "./players/Demirovic.webp";
+import dedicImg from "./players/dedic.webp";
 import tahirovicImg from "./players/benjamin-tahirovic.webp";
 import burnicImg from "./players/denis-burnic.webp";
 import memicImg from "./players/amer-memic.webp";
@@ -43,21 +43,17 @@ import lukicImg from "./players/lukic.webp";
 // Special Collection imports
 import goldenCrestImg from "./special_collection/GoldenCrest.webp";
 import stadionImg from "./special_collection/stadionzenica.webp";
-import cohort2014Img from "./special_collection/2014.webp";
+import cohort2014Img from "./special_collection/Bosnia2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
-// IPFS config — primary Pinata gateway plus public dweb fallback.
-const PRIMARY_IPFS_CID = "bafybeigu6pd4t72n7dskbn5wpk5pphf2566xixx5fugw3xhc3cyt44tumy";
-const PRIMARY_IPFS_BASE = `https://black-known-amphibian-995.mypinata.cloud/ipfs/${PRIMARY_IPFS_CID}/components`;
-const BACKUP_IPFS_BASE = `https://${PRIMARY_IPFS_CID}.ipfs.dweb.link/components`;
-const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.ipfs.dweb.link";
-const IPFS_TIMEOUT_MS = 100_000;
+// Pinata IPFS gateway — single source for all assets
+const PINATA_BASE = "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeiagaakoykbdpfi2u6qvm7uaijzirgrvat5xvuowwn63ceq5mvjmru";
 
 // Local fallback map (Vite bundled imports)
 const LOCAL_IMAGE_MAP: Record<string, string> = {
-  "Pi_dzeko.webp": dzekoImg,
-  "Pi_Demirovic.webp": demirovicImg,
-  "Pi_dedic.webp": dedicImg,
+  "dzeko.webp": dzekoImg,
+  "Demirovic.webp": demirovicImg,
+  "dedic.webp": dedicImg,
   "benjamin-tahirovic.webp": tahirovicImg,
   "denis-burnic.webp": burnicImg,
   "amer-memic.webp": memicImg,
@@ -83,47 +79,21 @@ const LOCAL_IMAGE_MAP: Record<string, string> = {
   "lukic.webp": lukicImg,
   "GoldenCrest.webp": goldenCrestImg,
   "stadionzenica.webp": stadionImg,
-  "2014.webp": cohort2014Img,
+  "Bosnia2014.webp": cohort2014Img,
   "bhfanaticos.webp": bhfImg,
 };
 
-// Session-level IPFS reachability cache
-let _ipfsReachable: boolean | null = null;
-let _ipfsPromise: Promise<boolean> | null = null;
-function getIpfsStatus(): Promise<boolean> {
-  if (_ipfsReachable !== null) return Promise.resolve(_ipfsReachable);
-  if (_ipfsPromise) return _ipfsPromise;
-  _ipfsPromise = new Promise<boolean>((resolve) => {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => { ctrl.abort(); _ipfsReachable = false; resolve(false); }, IPFS_TIMEOUT_MS);
-    fetch(`${PRIMARY_IPFS_BASE}/special_collection/GoldenCrest.png`, { method: "HEAD", signal: ctrl.signal, cache: "no-store" })
-      .then(() => { clearTimeout(timer); _ipfsReachable = true; resolve(true); })
-      .catch(() => { clearTimeout(timer); _ipfsReachable = false; resolve(false); });
-  });
-  return _ipfsPromise;
-}
-
 // Files that actually live in the special_collection/ IPFS folder.
-// NOTE: a sticker can have StickerType.SPECIAL for display/rarity purposes
-// while its image is still in the players/ folder (e.g. Muharemović, Alajbegović).
 const SPECIAL_COLLECTION_FILES = new Set([
   "GoldenCrest.webp",
   "GoldenCrest.png",
   "stadionzenica.webp",
-  "2014.webp",
+  "Bosnia2014.webp",
   "bhfanaticos.webp",
 ]);
 
 function getIpfsFolder(imageFile: string): string {
   return SPECIAL_COLLECTION_FILES.has(imageFile) ? "special_collection" : "players";
-}
-
-function buildIpfsUrl(folder: string, fileName: string): string {
-  return `${PRIMARY_IPFS_BASE}/${folder}/${fileName}`;
-}
-
-function buildBackupIpfsUrl(folder: string, fileName: string): string {
-  return `${BACKUP_IPFS_BASE}/${folder}/${fileName}`;
 }
 
 function getStickerMetadataUrl(stickerId: number): string {
@@ -132,13 +102,12 @@ function getStickerMetadataUrl(stickerId: number): string {
   return `${base.replace(/\/$/, "")}/${stickerId}.json`;
 }
 
-function getPlayerImage(sticker: Sticker, ipfsOk: boolean): { ipfs: string; local: string | null } {
+function getPlayerImage(sticker: Sticker): { ipfs: string; local: string | null } {
   if (!sticker.imageFile) return { ipfs: "", local: null };
   const folder = getIpfsFolder(sticker.imageFile);
   let fileName = sticker.imageFile;
   if (fileName === "GoldenCrest.webp") fileName = "GoldenCrest.png";
-  
-  const ipfs = sticker.imageFile === "Pi_dedic.webp" ? DEDIC_IPFS_URL : buildIpfsUrl(folder, fileName);
+  const ipfs = `${PINATA_BASE}/${folder}/${fileName}`;
   const local = LOCAL_IMAGE_MAP[sticker.imageFile] ?? null;
   return { ipfs, local };
 }
@@ -160,16 +129,13 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
   const [scale, setScale] = useState(1);
   const [flipped, setFlipped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [ipfsOk, setIpfsOk] = useState<boolean>(true); // optimistic default
+  const [ipfsOk, setIpfsOk] = useState<boolean>(true);
 
   const [isMinting, setIsMinting] = useState(false);
   const solanaWallet = useSolanaWallet();
   const { connection } = useConnection();
 
-  // Probe IPFS on mount; fallback to local if unreachable in 100s
-  useEffect(() => {
-    getIpfsStatus().then(ok => setIpfsOk(ok));
-  }, []);
+  // ipfsOk is always true — Pinata is the sole gateway
 
   const umi = React.useMemo(() => {
     const u = createUmi(connection.rpcEndpoint);
@@ -185,15 +151,11 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   const isMinted = mintedStickers.includes(sticker.id);
 
-  // Compute IPFS URI for this card — use filename-based folder, NOT sticker type
+  // Compute IPFS URI for this card using Pinata
   const cardFileName = sticker.imageFile === "GoldenCrest.webp" ? "GoldenCrest.png" : sticker.imageFile;
-  const cardFolder = getIpfsFolder("WC2026 Album Bosnia");
-  const cardIpfsUrl = sticker.imageFile === "Pi_dedic.webp"
-    ? DEDIC_IPFS_URL
-    : (ipfsOk ? buildIpfsUrl(cardFolder, "WC2026 Album Bosnia") : buildBackupIpfsUrl(cardFolder, "WC2026 Album Bosnia"));
-  const cardIpfsLabel = sticker.imageFile === "Pi_dedic.webp"
-    ? "QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn"
-    : `${PRIMARY_IPFS_CID}/components/${cardFolder}/${cardFileName}`;
+  const cardFolder = getIpfsFolder(sticker.imageFile);
+  const cardIpfsUrl = `${PINATA_BASE}/${cardFolder}/${cardFileName}`;
+  const cardIpfsLabel = `pinata/${cardFolder}/${cardFileName}`;
   const cardMetadataUrl = getStickerMetadataUrl(sticker.id);
 
   const handleMintSticker = async () => {
@@ -311,7 +273,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
 
   const hasStickerPouch = userSticker && userSticker.count > 0;
   const isPasted = userSticker && userSticker.pasted;
-  const { local: playerLocal, ipfs: playerIpfs } = getPlayerImage(sticker, ipfsOk);
+  const { local: playerLocal, ipfs: playerIpfs } = getPlayerImage(sticker);
   const playerImgToUse = playerLocal || playerIpfs;
 
   // Localized sticker biography
