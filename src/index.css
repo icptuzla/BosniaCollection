@@ -9,13 +9,13 @@
 
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(135deg, #FFF9D4 0%, #FFCD00 50%, #E69D00 100%) !important;
+  background: linear-gradient(135deg, #091E3A 0%, #002F6C 50%, #011026 100%) !important;
   background-attachment: fixed;
-  color: #1a1a1a;
+  color: #ffffff;
 }
 
 .album-container {
-  background: linear-gradient(135deg, #e9e5ca 0%, #f0db1c 50%, #f5df19 100%) !important;
+  background: linear-gradient(135deg, #071933 0%, #002F6C 50%, #020f24 100%) !important;
   background-attachment: fixed !important;
   position: relative;
   z-index: 0;

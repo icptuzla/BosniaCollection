@@ -122,7 +122,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
   // - Page 4: Substitutions Part II (Slots 18-23)
   // - Page 5: Player 24, Separator, Special Collection (Slots 25-28)
 
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isMinting, setIsMinting] = useState(false);
 
   const t = UI_TRANSLATIONS[lang];
