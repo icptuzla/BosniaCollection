@@ -9,15 +9,15 @@ const DEDIC_IPFS_URL = "https://QmXnbHGb7EuvQ4SupEp6ncU6WHLtfnNZquDTnyhGmoDQyn.i
 
 const SPECIAL_COLLECTION_FILES = new Set([
   "GoldenCrest.webp",
-  "GoldenCrest.png",
+  "RewardGoldenCrest.webp",
   "stadionzenica.webp",
-  "2014.webp",
+  "Bosnia2014.webp",
   "bhfanaticos.webp",
 ]);
 
 function getImageFile(imageFile?: string): { uri: string; type: string } {
   if (!imageFile) return { uri: "", type: "image/png" };
-  if (imageFile === "Pi_dedic.webp") return { uri: DEDIC_IPFS_URL, type: "image/webp" };
+  if (imageFile === "dedic.webp") return { uri: DEDIC_IPFS_URL, type: "image/webp" };
 
   const fileName = imageFile === "GoldenCrest.webp" ? "GoldenCrest.png" : imageFile;
   const folder = SPECIAL_COLLECTION_FILES.has(fileName) ? "special_collection" : "players";

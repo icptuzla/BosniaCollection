@@ -11,8 +11,6 @@ import AlbumPage from "./components/AlbumPage";
 import PackOpener from "./components/PackOpener";
 import TradeMarket from "./components/TradeMarket";
 import CardDetail from "./components/CardDetail";
-import AIHelpDeskWidget from "./components/AIHelpDeskWidget/AIHelpDeskWidget";
-
 import HistoryPage from "./components/HistoryPage";
 
 export default function App() {
