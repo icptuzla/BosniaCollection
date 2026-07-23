@@ -331,7 +331,7 @@ export default function AlbumPage({ collection, onViewSticker, pastedCount, lang
                         const { ipfs, local } = getPlayerImage(st);
                         return (
                           <div
-                            className={`w-full border-4 border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!ipfs && !local ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"}`}
+                            className={`w-full border border-[#00f0ff] rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.55)] flex flex-col text-left hover:shadow-[0_0_20px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${!ipfs && !local ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"}`}
                           >
                             {(ipfs || local) && (
                               <div className="relative w-full bg-white flex flex-col justify-end">

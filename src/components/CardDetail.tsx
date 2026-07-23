@@ -324,7 +324,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 : `perspective(1000px) rotateX(${foilStyle.rotateX}deg) rotateY(${foilStyle.rotateY}deg)`,
               transition: flipped ? "transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)" : "transform 0.1s ease-out",
             }}
-            className="relative rounded-3xl shadow-[0_0_40px_rgba(0,240,255,0.7)] border-4 border-[#00f0ff]"
+            className="relative rounded-3xl shadow-[0_0_40px_rgba(0,240,255,0.7)] border border-[#00f0ff]"
           >
 
             {/* ======================================================== */}
@@ -502,11 +502,10 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                           handleMintSticker();
                         }}
                         disabled={isMinting}
-                        className={`py-2 px-4 rounded-xl font-sans font-black text-xs uppercase tracking-wider transition shrink-0 cursor-pointer ${
-                          isMinting
-                            ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                            : "bg-[#002F6C] hover:bg-[#FFCD00] text-white hover:text-[#002F6C] border border-[#00f0ff]/50 shadow-[0_0_12px_rgba(0,240,255,0.35)]"
-                        }`}
+                        className={`py-2 px-4 rounded-xl font-sans font-black text-xs uppercase tracking-wider transition shrink-0 cursor-pointer ${isMinting
+                          ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                          : "bg-[#002F6C] hover:bg-[#FFCD00] text-white hover:text-[#002F6C] border border-[#00f0ff]/50 shadow-[0_0_12px_rgba(0,240,255,0.35)]"
+                          }`}
                       >
                         {isMinting ? (lang === "BS" ? "Mintanje..." : "Minting...") : (lang === "BS" ? "Mintaj NFT" : "Mint NFT")}
                       </button>

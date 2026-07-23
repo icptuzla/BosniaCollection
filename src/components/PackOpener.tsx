@@ -481,7 +481,7 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
               <div
                 id="interactive-tear-envelope"
                 onClick={handleRipPack}
-                className="group relative w-60 h-80 rounded-2xl overflow-hidden border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.65)] cursor-pointer hover:border-[#00e5ff] hover:shadow-[0_0_35px_rgba(0,240,255,0.95)] transition-all bg-black flex items-center justify-center shrink-0"
+                className="group relative w-60 h-80 rounded-2xl overflow-hidden border border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.65)] cursor-pointer hover:border-[#00e5ff] hover:shadow-[0_0_35px_rgba(0,240,255,0.95)] transition-all bg-black flex items-center justify-center shrink-0"
               >
                 {activePack && (
                   <img
@@ -534,7 +534,7 @@ export default function PackOpener({ wallet, onWalletChange, onAddStickers, onVi
                   {/* Pack Sticker Display — matches album card style */}
                   <div
                     onClick={() => onViewSticker(revealedStickers[currentIndex])}
-                    className={`relative w-56 sm:w-64 rounded-2xl border-4 border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col text-left cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${
+                    className={`relative w-56 sm:w-64 rounded-2xl border border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.6)] flex flex-col text-left cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_28px_rgba(0,240,255,0.85)] transition-all overflow-hidden ${
                       !getPlayerImage(revealedStickers[currentIndex]).ipfs && !getPlayerImage(revealedStickers[currentIndex]).local ? "bg-gradient-to-b from-[#124285] to-[#002F6C] aspect-[3/4.2] justify-end" : "bg-white"
                     }`}
                   >
