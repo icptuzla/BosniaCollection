@@ -32,12 +32,6 @@ export default defineConfig(() => ({
             if (id.includes('@solana') || id.includes('@metaplex') || id.includes('@noble')) {
               return 'chunk-solana';
             }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-              return 'chunk-react';
-            }
-            if (id.includes('lucide')) {
-              return 'chunk-icons';
-            }
             return 'chunk-vendor';
           }
         },
