@@ -11,7 +11,7 @@ body {
   font-family: var(--font-sans);
   background: linear-gradient(135deg, #091E3A 0%, #002F6C 50%, #011026 100%) !important;
   background-attachment: fixed;
-  color: #ffffff;
+  color: #d1ce13;
 }
 
 .album-container {

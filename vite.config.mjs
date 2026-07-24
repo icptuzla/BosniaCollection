@@ -29,10 +29,13 @@ export default defineConfig(() => ({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('@solana') || id.includes('@metaplex') || id.includes('@noble')) {
-              return 'chunk-solana';
+            if (id.includes('@solana') || id.includes('@metaplex') || id.includes('@noble') || id.includes('buffer')) {
+              return 'vendor-solana';
             }
-            return 'chunk-vendor';
+            if (id.includes('react') || id.includes('lucide-react')) {
+              return 'vendor-react';
+            }
+            return 'vendor-core';
           }
         },
       },

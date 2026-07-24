@@ -2,8 +2,8 @@ export type Language = "BS" | "EN";
 
 export const UI_TRANSLATIONS = {
   BS: {
-    title: "BOSNA I HERCEGOVINA - S.P. 2026",
-    subtitle: "Zvanični digitalni Web3 album sa sličicama reprezentacije",
+    title: "BOSNA I HERCEGOVINA - S.P.-2026",
+    subtitle: "Digitalni Web3 album sa karticama reprezentacije BiH",
     arenaHum: "Atmosfera",
     connectedAddress: "POVEZANA ADRESA",
     walletOffline: "Novčanik je van mreže",

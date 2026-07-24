@@ -4,7 +4,7 @@ import { Sticker, UserSticker, TradeOffer, WalletState, StickerType } from "./ty
 import { STICKERS } from "./data/players";
 import logoImage from "./components/favicon.png";
 import { UI_TRANSLATIONS, Language } from "./data/translations";
-import { SpeedInsights } from "@vercel/speed-insights/react"
+
 // Import custom sub-components
 import SolflareWallet from "./components/SolflareWallet";
 import AlbumPage from "./components/AlbumPage";
@@ -284,8 +284,8 @@ export default function App() {
               id="lang-switch-bs"
               onClick={() => handleLangChange("BS")}
               className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${lang === "BS"
-                  ? "bg-[#002F6C] text-white shadow"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
+                ? "bg-[#002F6C] text-white shadow"
+                : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
                 }`}
             >
               🇧🇦 BS
@@ -294,8 +294,8 @@ export default function App() {
               id="lang-switch-en"
               onClick={() => handleLangChange("EN")}
               className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${lang === "EN"
-                  ? "bg-[#002F6C] text-white shadow"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
+                ? "bg-[#002F6C] text-white shadow"
+                : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
                 }`}
             >
               🇬🇧 EN
