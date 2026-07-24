@@ -18,26 +18,13 @@ export default defineConfig(() => ({
     },
   },
   build: {
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       onwarn(warning, defaultHandler) {
         if (warning.code === 'SOURCEMAP_ERROR' || warning.message?.includes('points to missing source files')) {
           return;
         }
         defaultHandler(warning);
-      },
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('@solana') || id.includes('@metaplex') || id.includes('@noble') || id.includes('buffer')) {
-              return 'vendor-solana';
-            }
-            if (id.includes('react') || id.includes('lucide-react')) {
-              return 'vendor-react';
-            }
-            return 'vendor-core';
-          }
-        },
       },
     },
   },
@@ -57,7 +44,7 @@ export default defineConfig(() => ({
     hmr: process.env.DISABLE_HMR !== 'true',
     watch: process.env.DISABLE_HMR === 'true' ? null : {},
     proxy: {
-      '/api': 'http://localhost:3001',
+      '/api': 'http://localhost:3000',
     },
   },
 }));

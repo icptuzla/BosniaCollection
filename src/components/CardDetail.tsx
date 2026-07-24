@@ -47,7 +47,7 @@ import cohort2014Img from "./special_collection/Bosnia2014.webp";
 import bhfImg from "./special_collection/bhfanaticos.webp";
 
 // Pinata IPFS gateway — single source for all assets
-const PINATA_BASE = "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeiagaakoykbdpfi2u6qvm7uaijzirgrvat5xvuowwn63ceq5mvjmru";
+const PINATA_BASE = "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeiagaakoykbdpfi2u6qvm7uaijzirgrvat5xvuowwn63ceq5mvjmru/components";
 
 // Local fallback map (Vite bundled imports)
 const LOCAL_IMAGE_MAP: Record<string, string> = {

@@ -9,16 +9,26 @@
 
 body {
   font-family: var(--font-sans);
+  background: #dbb83a !important;
+  color: #1a1a1a;
+}
+
+.dark body {
   background: linear-gradient(135deg, #091E3A 0%, #002F6C 50%, #011026 100%) !important;
   background-attachment: fixed;
-  color: #d1ce13;
+  color: #acbe09;
 }
 
 .album-container {
-  background: linear-gradient(135deg, #071933 0%, #002F6C 50%, #020f24 100%) !important;
+  background: linear-gradient(135deg, #fbf9f1 0%, #f3eee0 50%, #e8e2cf 100%) !important;
   background-attachment: fixed !important;
   position: relative;
   z-index: 0;
+}
+
+.dark .album-container {
+  background: linear-gradient(135deg, #071933 0%, #002F6C 50%, #020f24 100%) !important;
+  background-attachment: fixed !important;
 }
 
 .album-container::before {

@@ -49,7 +49,7 @@ import rewardGoldenCrestImg from "./special_collection/RewardGoldenCrest.webp";
 
 
 // Pinata IPFS gateway — single source for all assets
-const PINATA_BASE = "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeiagaakoykbdpfi2u6qvm7uaijzirgrvat5xvuowwn63ceq5mvjmru";
+const PINATA_BASE = "https://black-known-amphibian-995.mypinata.cloud/ipfs/bafybeiagaakoykbdpfi2u6qvm7uaijzirgrvat5xvuowwn63ceq5mvjmru/components";
 const REWARD_GOLDEN_CREST_URL = `${PINATA_BASE}/special_collection/RewardGoldenCrest.webp`;
 
 
