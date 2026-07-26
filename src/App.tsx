@@ -299,24 +299,24 @@ export default function App() {
   const pouchList = collection.filter(c => c.count > 0 && !c.pasted);
 
   return (
-    <div className="min-h-screen album-container text-[#1a1a1a] selection:bg-[#FFCD00] selection:text-[#002F6C] pb-16 font-sans">
+    <div className="album-container min-h-screen font-sans selection:bg-gold selection:text-base pb-16">
       
-      {/* Immersive Stadium Top Ambient Ribbon */}
-      <div className="bg-gradient-to-r from-[#002F6C] via-[#FFCD00] to-[#002F6C] h-2 w-full shadow-md shrink-0" />
+      {/* Subtle gold accent line (replaces the old gradient ribbon) */}
+      <div className="h-px w-full bg-gold/10 shrink-0" />
 
       {/* Main Navbar */}
-      <header className="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-col md:flex-row items-center justify-between border-b border-gray-300 gap-4 mb-6">
+      <header className="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-col md:flex-row items-center justify-between border-b border-border gap-4 mb-6">
         
         {/* Logo / Mascot brand */}
         <div className="flex items-center space-x-4 text-left">
-          <div className="w-14 h-14 bg-[#002F6C] rounded-full border-2 border-[#00f0ff] shadow-[0_0_12px_rgba(0,240,255,0.7)] flex items-center justify-center overflow-hidden shrink-0">
-            <img src={logoImage} alt="Zmajevi BIH Logo" className="w-12 h-12 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.8)] hover:scale-110 transition-transform duration-300" referrerPolicy="no-referrer" />
+          <div className="w-14 h-14 rounded-full border border-gold/30 flex items-center justify-center overflow-hidden shrink-0 bg-surface-2">
+            <img src={logoImage} alt="Zmajevi BIH Logo" className="w-12 h-12 object-contain hover:scale-110 transition-transform duration-300" referrerPolicy="no-referrer" />
           </div>
           <div>
-            <h1 className="font-sans font-black text-xl sm:text-2xl uppercase tracking-tighter leading-none text-[#002F6C]">
+            <h1 className="font-sans font-black text-xl sm:text-2xl uppercase tracking-tighter leading-none text-text">
               {UI_TRANSLATIONS[lang].title}
             </h1>
-            <p className="text-xs font-serif italic text-gray-500 mt-1">
+            <p className="text-xs font-sans text-text-muted mt-1">
               {UI_TRANSLATIONS[lang].subtitle}
             </p>
           </div>
@@ -326,14 +326,14 @@ export default function App() {
         <div className="flex flex-wrap items-center gap-3 select-none justify-end w-full md:w-auto">
           
           {/* Language Switcher Pill */}
-          <div className="flex bg-white/80 border border-gray-300 rounded-lg p-0.5 shadow-sm shrink-0">
+          <div className="flex bg-surface-2 border border-border rounded-lg p-0.5 shrink-0">
             <button
               id="lang-switch-bs"
               onClick={() => handleLangChange("BS")}
-              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-bold transition-all cursor-pointer ${
                 lang === "BS"
-                  ? "bg-[#002F6C] text-white shadow"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
+                  ? "bg-primary text-white"
+                  : "text-text-muted hover:text-text hover:bg-surface-3"
               }`}
             >
               🇧🇦 BS
@@ -341,10 +341,10 @@ export default function App() {
             <button
               id="lang-switch-en"
               onClick={() => handleLangChange("EN")}
-              className={`px-3 py-1.5 rounded-md text-xs font-sans font-black transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md text-xs font-sans font-bold transition-all cursor-pointer ${
                 lang === "EN"
-                  ? "bg-[#002F6C] text-white shadow"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
+                  ? "bg-primary text-white"
+                  : "text-text-muted hover:text-text hover:bg-surface-3"
               }`}
             >
               🇬🇧 EN
@@ -357,8 +357,8 @@ export default function App() {
             onClick={toggleSound}
             className={`p-2 rounded-lg border text-xs font-sans font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 cursor-pointer shrink-0 ${
               soundEnabled
-                ? "bg-[#002F6C]/10 border-[#002F6C] text-[#002F6C] shadow-sm"
-                : "bg-white/80 border-gray-300 text-gray-500 hover:text-gray-700"
+                ? "bg-surface-2 border-border text-text"
+                : "bg-surface-2 border-border text-text-muted hover:text-text hover:bg-surface-3"
             }`}
             title="Toggle Synthesized Stadium Crowd Humming Chants"
           >
@@ -367,15 +367,15 @@ export default function App() {
           </button>
 
           {wallet.connected ? (
-            <div className="bg-white border border-gray-300 px-4 py-1 rounded-lg text-left hidden sm:block shadow-sm shrink-0">
-              <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">{UI_TRANSLATIONS[lang].connectedAddress}:</span>
-              <span className="text-xs font-mono text-[#002F6C] font-black">
+            <div className="bg-surface-2 border border-border px-4 py-1 rounded-lg text-left hidden sm:block shrink-0">
+              <span className="text-[11px] font-sans font-bold text-text-muted block uppercase leading-none">{UI_TRANSLATIONS[lang].connectedAddress}:</span>
+              <span className="text-xs font-mono text-success font-bold">
                 {wallet.publicKey?.substring(0, 6)}...{wallet.publicKey?.substring(wallet.publicKey.length - 6)}
               </span>
             </div>
           ) : (
             <div className="text-right hidden sm:block shrink-0">
-              <span className="text-xs font-sans font-bold tracking-widest text-[#002F6C]/60 uppercase">{UI_TRANSLATIONS[lang].walletOffline}</span>
+              <span className="text-xs font-sans font-bold tracking-widest text-text-muted uppercase">{UI_TRANSLATIONS[lang].walletOffline}</span>
             </div>
           )}
 
@@ -390,14 +390,14 @@ export default function App() {
           <SolflareWallet wallet={wallet} onWalletChange={setWallet} lang={lang} />
           
           {/* Virtual pouch dashboard */}
-          <div className="bg-white border border-gray-300/80 p-5 rounded-2xl text-left shadow-sm">
-            <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider mb-3 flex items-center space-x-1.5 border-b border-gray-200 pb-2">
-              <ShoppingBag className="h-4 w-4 text-[#002F6C]" />
+          <div className="bg-surface border border-border p-5 rounded-2xl text-left">
+            <h3 className="font-sans font-bold text-xs text-text uppercase tracking-wider mb-3 flex items-center space-x-1.5 border-b border-border pb-2">
+              <ShoppingBag className="h-4 w-4 text-primary" />
               <span>{UI_TRANSLATIONS[lang].pouchTitle} ({pouchList.reduce((acc, current) => acc + current.count, 0)})</span>
             </h3>
 
             {pouchList.length === 0 ? (
-              <p className="text-xs font-serif text-gray-500 italic py-6 text-center">
+              <p className="text-xs font-sans text-text-muted py-6 text-center">
                 {UI_TRANSLATIONS[lang].pouchEmpty}
               </p>
             ) : (
@@ -410,16 +410,16 @@ export default function App() {
                       id={`pouch-sticker-token-${pi.stickerId}`}
                       key={pi.stickerId}
                       onClick={() => setSelectedSticker(stickerData)}
-                      className="group p-1.5 bg-[#fdfcf7] select-none border border-gray-300 hover:border-[#002F6C] hover:shadow-sm rounded-xl transition flex flex-col items-center justify-between text-center relative aspect-square cursor-pointer"
+                      className="group p-1.5 bg-surface-2 select-none border border-border hover:border-border-hover hover:bg-surface-3 rounded-xl transition flex flex-col items-center justify-between text-center relative aspect-square cursor-pointer"
                     >
-                      <span className="font-mono text-[9px] font-bold text-gray-400 block">
+                      <span className="font-mono text-[11px] font-bold text-text-muted block">
                         {stickerData.number}
                       </span>
-                      <span className="font-sans font-extrabold text-[10px] text-gray-700 group-hover:text-[#002F6C] block truncate w-full px-0.5">
+                      <span className="font-sans font-bold text-[11px] text-text group-hover:text-gold block truncate w-full px-0.5">
                         {stickerData.name.split(" ").slice(-1)[0]}
                       </span>
                       {pi.count > 1 && (
-                        <span className="absolute -top-1.5 -right-1.5 h-4.5 px-1 rounded-full bg-[#FFCD00] text-[#002F6C] text-[8px] font-mono font-black border border-white shadow">
+                        <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full bg-gold text-base text-[11px] font-mono font-black border border-base">
                           +{pi.count}
                         </span>
                       )}
@@ -429,18 +429,18 @@ export default function App() {
               </div>
             )}
             
-            <p className="text-[10px] font-sans text-gray-500 leading-relaxed mt-3 pt-3 border-t border-gray-200">
+            <p className="text-[11px] font-sans text-text-muted leading-relaxed mt-3 pt-3 border-t border-border">
               {UI_TRANSLATIONS[lang].pouchInstructions}
             </p>
           </div>
 
           {/* Golden Era Trophy Box widget */}
-          <div className="bg-[#fffef8] border border-dashed border-gray-400/80 p-5 rounded-2xl text-left hidden lg:block shadow-sm">
-            <h4 className="text-xs font-sans text-[#002F6C] font-bold uppercase tracking-wider mb-2 flex items-center space-x-1">
-              <Star className="h-4 w-4 text-[#FFCD00]" />
+          <div className="bg-surface-2 border border-gold/20 p-5 rounded-2xl text-left hidden lg:block">
+            <h4 className="text-xs font-sans text-gold font-bold uppercase tracking-wider mb-2 flex items-center space-x-1">
+              <Star className="h-4 w-4 text-gold" />
               <span>{UI_TRANSLATIONS[lang].mandateTitle}</span>
             </h4>
-            <p className="text-xs font-serif text-gray-600 leading-relaxed italic">
+            <p className="text-xs font-sans text-text-muted leading-relaxed">
               {UI_TRANSLATIONS[lang].mandateDesc}
             </p>
           </div>
@@ -450,15 +450,15 @@ export default function App() {
         <div className="lg:col-span-3 space-y-6">
           
           {/* Dynamic Switch Tabs */}
-          <div className="flex flex-wrap md:flex-nowrap gap-1.5 bg-[#e8e5d8] p-1.5 rounded-xl border border-gray-300 text-sm font-sans font-bold">
+          <div className="flex flex-wrap md:flex-nowrap gap-1 bg-surface-2/50 p-1.5 rounded-xl border border-border text-sm font-sans font-bold">
             <button
               id="tab-open-album-book"
               onClick={() => setActiveTab("album")}
               className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
-                activeTab === "album" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                activeTab === "album" ? "bg-primary text-white font-bold" : "text-text-muted hover:text-text hover:bg-surface-2 font-semibold"
               }`}
             >
-              <BookOpen className="h-4.5 w-4.5" />
+              <BookOpen className="h-4 w-4" />
               <span>{UI_TRANSLATIONS[lang].tabAlbum}</span>
             </button>
 
@@ -466,10 +466,10 @@ export default function App() {
               id="tab-open-pack-opener"
               onClick={() => setActiveTab("packs")}
               className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
-                activeTab === "packs" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                activeTab === "packs" ? "bg-primary text-white font-bold" : "text-text-muted hover:text-text hover:bg-surface-2 font-semibold"
               }`}
             >
-              <ShoppingBag className="h-4.5 w-4.5" />
+              <ShoppingBag className="h-4 w-4" />
               <span>{UI_TRANSLATIONS[lang].tabPacks}</span>
             </button>
 
@@ -477,10 +477,10 @@ export default function App() {
               id="tab-open-trade-market"
               onClick={() => setActiveTab("trades")}
               className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[130px] ${
-                activeTab === "trades" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                activeTab === "trades" ? "bg-primary text-white font-bold" : "text-text-muted hover:text-text hover:bg-surface-2 font-semibold"
               }`}
             >
-              <ArrowLeftRight className="h-4.5 w-4.5" />
+              <ArrowLeftRight className="h-4 w-4" />
               <span>{UI_TRANSLATIONS[lang].tabTrades}</span>
             </button>
 
@@ -488,10 +488,10 @@ export default function App() {
               id="tab-open-prediction-arena"
               onClick={() => setActiveTab("bets")}
               className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[125px] ${
-                activeTab === "bets" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-gray-950"
+                activeTab === "bets" ? "bg-primary text-white font-bold" : "text-text-muted hover:text-text hover:bg-surface-2 font-semibold"
               }`}
             >
-              <Trophy className="h-4.5 w-4.5" />
+              <Trophy className="h-4 w-4" />
               <span>{UI_TRANSLATIONS[lang].tabPredictions}</span>
             </button>
 
@@ -499,10 +499,10 @@ export default function App() {
               id="tab-open-history"
               onClick={() => setActiveTab("history")}
               className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center space-x-1.5 transition cursor-pointer font-sans uppercase text-xs tracking-wider min-w-[120px] ${
-                activeTab === "history" ? "bg-[#002F6C] text-white font-extrabold shadow-md" : "text-gray-600 hover:text-[#002F6C]"
+                activeTab === "history" ? "bg-primary text-white font-bold" : "text-text-muted hover:text-text hover:bg-surface-2 font-semibold"
               }`}
             >
-              <Trophy className="h-4.5 w-4.5 text-[#FFCD00]" />
+              <Trophy className="h-4 w-4 text-gold" />
               <span>{UI_TRANSLATIONS[lang].tabHistory}</span>
             </button>
           </div>
@@ -573,37 +573,37 @@ export default function App() {
 
       {/* ================= IN-APP WELCOME INSTRUCTIONS ONBOARDING ================= */}
       {showWelcome && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-sm">
-          <div className="bg-[#fffef8] border-4 border-[#00f0ff] rounded-3xl p-6 md:p-8 max-w-lg w-full text-center space-y-6 shadow-[0_0_25px_rgba(0,240,255,0.7)] text-gray-800">
-            <div className="w-20 h-20 bg-[#002F6C] border-2 border-[#00f0ff] rounded-full flex items-center justify-center overflow-hidden shrink-0 mx-auto shadow-[0_0_12px_rgba(0,240,255,0.5)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-surface-2 border border-gold/30 rounded-2xl p-6 md:p-8 max-w-lg w-full text-center space-y-6 shadow-lg shadow-black/40 text-text">
+            <div className="w-20 h-20 rounded-full border border-gold/30 flex items-center justify-center overflow-hidden shrink-0 mx-auto bg-surface">
               <img src={logoImage} alt="Zmajevi Logo" className="w-16 h-16 object-contain" referrerPolicy="no-referrer" />
             </div>
 
             <div className="space-y-2">
-              <span className="text-[10px] font-sans font-bold text-gray-400 tracking-[0.3em] uppercase block">
+              <span className="text-[11px] font-sans font-bold text-text-muted tracking-[0.3em] uppercase block">
                 {UI_TRANSLATIONS[lang].welcomeTitle}
               </span>
-              <h2 className="text-3xl font-sans font-black tracking-tight text-[#002F6C] uppercase leading-none">
+              <h2 className="text-3xl font-sans font-black tracking-tight text-text uppercase leading-none">
                 {UI_TRANSLATIONS[lang].welcomeHeader}
               </h2>
-              <div className="h-0.5 w-1/3 bg-[#FFCD00] mx-auto" />
+              <div className="h-0.5 w-1/3 bg-gold mx-auto" />
             </div>
 
-            <div className="text-gray-750 text-sm leading-relaxed space-y-3 font-serif">
+            <div className="text-text text-sm leading-relaxed space-y-3 font-sans">
               <p>
                 {UI_TRANSLATIONS[lang].welcomeText1}<strong>5.0 Simulated SOL</strong>{UI_TRANSLATIONS[lang].welcomeText2}<strong>4 starting stickers</strong>{UI_TRANSLATIONS[lang].welcomeText3}
               </p>
-              <ul className="text-left bg-white border border-gray-300 p-4 rounded-xl space-y-2 text-xs font-sans list-none">
-                <li className="flex items-center space-x-2 text-gray-800">
-                  <BadgeCheck className="h-4.5 w-4.5 text-[#002F6C] shrink-0" />
+              <ul className="text-left bg-surface border border-border p-4 rounded-xl space-y-2 text-xs font-sans list-none">
+                <li className="flex items-center space-x-2 text-text">
+                  <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
                   <span>{UI_TRANSLATIONS[lang].starterKit1}</span>
                 </li>
-                <li className="flex items-center space-x-2 text-gray-800">
-                  <BadgeCheck className="h-4.5 w-4.5 text-[#002F6C] shrink-0" />
+                <li className="flex items-center space-x-2 text-text">
+                  <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
                   <span>{UI_TRANSLATIONS[lang].starterKit2}</span>
                 </li>
-                <li className="flex items-center space-x-2 text-gray-800">
-                  <BadgeCheck className="h-4.5 w-4.5 text-[#002F6C] shrink-0" />
+                <li className="flex items-center space-x-2 text-text">
+                  <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
                   <span>{UI_TRANSLATIONS[lang].starterKit3}</span>
                 </li>
               </ul>
@@ -616,7 +616,7 @@ export default function App() {
                 // Connect simulated sandbox wallet immediately to minimize friction
                 setWallet({ connected: true, publicKey: "SolfZmaj99InitialTestAddressFmC26", balance: 5.0, isSimulated: true });
               }}
-              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 font-black tracking-wide text-sm transition shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer font-sans"
+              className="w-full py-3 px-6 rounded-xl bg-gold hover:bg-gold-hover text-base font-bold tracking-wide text-sm transition cursor-pointer font-sans"
             >
               {UI_TRANSLATIONS[lang].starterKitButton}
             </button>

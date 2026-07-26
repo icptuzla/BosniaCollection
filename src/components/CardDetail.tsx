@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Calendar, Zap, Activity } from "lucide-react";
-import { Sticker, UserSticker } from "../types";
+import { Sticker, StickerType, UserSticker } from "../types";
 import { Language } from "../data/translations";
 import logoImage from "./zmajevi logo.webp";
 
@@ -16,7 +16,7 @@ import alajbegovicImg from "./players/kenan-alajbegovic.webp";
 import bazdarImg from "./players/samed-bazdar.webp";
 import radeljicImg from "./players/stjepan-radeljic.webp";
 import gigovicImg from "./players/Gigovic.webp";
-import muharemovicImg from "./players/Muharemovic.webp";
+import muharemovicImg from "./players/muharemovic.webp";
 import basicImg from "./players/ivan-basic.webp";
 import amirImg from "./players/amir-hadziahmetovic.webp";
 import mujakicImg from "./players/mujakic.webp";
@@ -184,18 +184,19 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
   const hasStickerPouch = userSticker && userSticker.count > 0;
   const isPasted = userSticker && userSticker.pasted;
   const playerImg = getPlayerImage(sticker);
+  const isSpecial = sticker.type === StickerType.SPECIAL;
 
   // Localized sticker biography
   const bio = lang === "BS" && sticker.biographyBS ? sticker.biographyBS : sticker.biography;
 
   return (
-    <div id="card-detail-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm overflow-hidden select-none">
+    <div id="card-detail-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-hidden select-none">
 
       {/* Viewport Floating Close Button */}
       <button
         id="btn-close-card-modal-viewport"
         onClick={onClose}
-        className="fixed top-4 right-4 p-3.5 rounded-full bg-[#002F6C] hover:bg-[#FFCD00] text-white hover:text-[#002F6C] transition-all duration-250 cursor-pointer z-[60] border-2 border-white/80 shadow-[0_0_15px_rgba(255,205,0,0.55)] flex items-center justify-center scale-100 md:scale-110 active:scale-90"
+        className="fixed top-4 right-4 p-3.5 rounded-full bg-surface-2 hover:bg-danger text-text hover:text-white transition-all duration-250 cursor-pointer z-[60] border border-border flex items-center justify-center scale-100 md:scale-110 active:scale-90"
         title="Close Detail"
       >
         <X className="h-6 w-6 stroke-[3px]" />
@@ -208,8 +209,8 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
       >
 
         {/* Floating instructions ribbon */}
-        <p className="absolute -top-8 text-white/80 text-xs font-sans tracking-widest uppercase font-bold items-center space-x-1 flex">
-          <Zap className="h-3.5 w-3.5 text-[#FFCD00] animate-pulse" />
+        <p className="absolute -top-8 text-text-muted text-xs font-sans tracking-widest uppercase font-bold items-center space-x-1 flex">
+          <Zap className="h-3.5 w-3.5 text-gold" />
           <span>{lang === "BS" ? "Kliknite za detalje / Okrenite sličicu" : "Click card to reveal stats / Flip details"}</span>
         </p>
 
@@ -233,7 +234,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 : `perspective(1000px) rotateX(${foilStyle.rotateX}deg) rotateY(${foilStyle.rotateY}deg)`,
               transition: flipped ? "transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)" : "transform 0.1s ease-out",
             }}
-            className="relative rounded-3xl shadow-[0_0_40px_rgba(0,240,255,0.7)] border-4 border-[#00f0ff]"
+            className={`relative rounded-3xl shadow-lg shadow-black/40 border-2 ${isSpecial ? "border-gold/40" : "border-border"}`}
           >
 
             {/* ======================================================== */}
@@ -247,43 +248,46 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 backfaceVisibility: "hidden",
                 transform: "rotateY(0deg)",
               }}
-              className={`absolute inset-0 flex flex-col justify-end p-6 rounded-[22px] overflow-hidden transition-all duration-300 ${!playerImg ? "bg-gradient-to-br from-[#002f6c] via-[#091e3b] to-[#011026]" : "bg-white"
+              className={`absolute inset-0 flex flex-col justify-end p-6 rounded-[22px] overflow-hidden transition-all duration-300 ${!playerImg ? "bg-gradient-to-br from-surface-3 via-surface to-base" : "bg-base"
                 } ${flipped ? "opacity-0 pointer-events-none z-0" : "opacity-100 z-10"}`}
             >
-              {/* Micro hologram fiber pattern */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
+              {/* Dark gradient overlay at bottom */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none z-10" />
 
-              {/* Holographic Refraction Overlay */}
+              {/* Micro grid pattern */}
+              <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
+
+              {/* Holographic Refraction Overlay (gold/blue tints instead of cyan) */}
               <div
                 style={{
-                  background: `radial-gradient(circle at ${foilStyle.shineX}% ${foilStyle.shineY}%, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%), linear-gradient(${foilStyle.rotateY * 4.5}deg, rgba(255,205,0,0.08) 0%, rgba(0,47,108,0.05) 50%, rgba(255,255,255,0.06) 100%)`,
+                  background: `radial-gradient(circle at ${foilStyle.shineX}% ${foilStyle.shineY}%, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%), linear-gradient(${foilStyle.rotateY * 4.5}deg, rgba(255,205,0,0.08) 0%, rgba(37,99,235,0.05) 50%, rgba(255,255,255,0.06) 100%)`,
                 }}
                 className="absolute inset-0 pointer-events-none z-10 mix-blend-overlay"
               />
 
               {!playerImg && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 text-white space-y-4">
-                  <div className="w-32 h-32 bg-slate-950/40 border border-white/20 rounded-full flex items-center justify-center shadow-lg">
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 text-text space-y-4">
+                  <div className="w-32 h-32 bg-black/40 border border-white/20 rounded-full flex items-center justify-center">
                     {sticker.id === 27 ? (
-                      <img src={logoImage} alt="Grb Saveza" className="w-24 h-24 object-contain filter drop-shadow-[0_0_8px_rgba(255,205,0,0.85)]" />
+                      <img src={logoImage} alt="Grb Saveza" className="w-24 h-24 object-contain" />
                     ) : (
-                      <span className="text-6xl">⚽</span>
+                      <Activity className="h-12 w-12 text-gold" />
                     )}
                   </div>
-                  <p className="text-xs uppercase tracking-widest text-[#FFCD00] font-black">{lang === "BS" ? "Nedostaje grafička datoteka" : "No Graphic Load File"}</p>
+                  <p className="text-xs uppercase tracking-widest text-gold font-black">{lang === "BS" ? "Nedostaje grafička datoteka" : "No Graphic Load File"}</p>
                 </div>
               )}
 
-              {/* Premium bottom slate containing Name, Club & Position in Comic Sans (bold title, regular text) */}
-              <div className="p-4 bg-[#002F6C]/95 border-2 border-[#00f0ff]/80 backdrop-blur-md rounded-2xl text-center shadow-2xl relative z-20 font-sans border-t-4 border-t-[#FFCD00]">
-                <h2 className="font-bold text-2xl text-[#FFCD00] truncate leading-none uppercase tracking-wide">
+              {/* Bottom info bar */}
+              <div className="p-4 bg-base/95 border-t border-gold/40 rounded-2xl text-center relative z-20 font-sans">
+                <h2 className="font-bold text-2xl text-gold truncate leading-none uppercase tracking-wide">
                   {sticker.name}
                 </h2>
-                <p className="text-sm text-white font-medium block mt-1.5 uppercase tracking-widest opacity-95">
+                <p className="text-sm text-text-muted font-medium block mt-1.5 uppercase tracking-widest">
                   {lang === "BS" ? sticker.roleBS : sticker.role} — {sticker.club}
                 </p>
-                <div className="h-0.5 w-16 bg-[#FFCD00] mx-auto mt-2 opacity-80" />
-                <span className="text-[10px] text-gray-300 block mt-1.5 uppercase font-bold tracking-widest">
+                <div className="h-0.5 w-16 bg-gold mx-auto mt-2 opacity-80" />
+                <span className="text-[11px] text-text-muted block mt-1.5 uppercase font-bold tracking-widest">
                   {lang === "BS" ? "Kliknite na karticu za biografiju i statistiku" : "Click Card to Inspect Stats & Biography"}
                 </span>
               </div>
@@ -298,95 +302,95 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                 transform: "rotateY(180deg) translateZ(1px)",
                 transformStyle: "preserve-3d",
               }}
-              className={`absolute inset-0 flex flex-col justify-between p-7 bg-gradient-to-br from-[#021f47] via-[#0b1b30] to-[#010914] text-white flex-shrink-0 rounded-[22px] overflow-hidden transition-all duration-300 antialiased ${flipped ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
+              className={`absolute inset-0 flex flex-col justify-between p-7 bg-gradient-to-br from-surface to-base text-text flex-shrink-0 rounded-[22px] overflow-hidden transition-all duration-300 antialiased ${flipped ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
                 }`}
             >
               {/* micro grid back pattern */}
-              <div className="absolute inset-0 bg-[#002F6C]/5 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-10" />
+              <div className="absolute inset-0 opacity-5 bg-[radial-gradient(rgba(255,255,255,0.6)_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
 
               {/* Back Header */}
-              <div className="flex justify-between items-start border-b border-[#00f0ff]/30 pb-3.5 z-20 font-sans">
+              <div className="flex justify-between items-start border-b border-border pb-3.5 z-20 font-sans">
                 <div className="flex items-center space-x-3.5 text-left">
                   <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shrink-0">
-                    <img src={logoImage} alt="BIH FA Crest" className="h-8.5 w-8.5 object-contain" />
+                    <img src={logoImage} alt="BIH FA Crest" className="h-8 w-8 object-contain" />
                   </div>
                   <div>
-                    <span className="text-[11px] tracking-[0.18em] text-[#FFCD00] font-extrabold uppercase block leading-none">{lang === "BS" ? "SPECIFIKACIJA KOLEKCIONARA" : "COLLECTOR SPEC SHEET"}</span>
-                    <h2 className="font-bold text-xl text-white mb-0.5 mt-1.5 truncate uppercase leading-tight">
+                    <span className="text-[11px] tracking-[0.18em] text-gold font-extrabold uppercase block leading-none">{lang === "BS" ? "SPECIFIKACIJA KOLEKCIONARA" : "COLLECTOR SPEC SHEET"}</span>
+                    <h2 className="font-bold text-xl text-text mb-0.5 mt-1.5 truncate uppercase leading-tight">
                       {sticker.name}
                     </h2>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-xs font-mono font-bold text-gray-300 block uppercase leading-none">MINT ID:</span>
-                  <span className="text-[#00f0ff] font-mono text-sm font-black tracking-wider block mt-1">#BIH-WC26-{sticker.id.toString().padStart(3, "0")}</span>
+                  <span className="text-xs font-mono font-bold text-text-muted block uppercase leading-none">MINT ID:</span>
+                  <span className="text-gold font-mono text-sm font-black tracking-wider block mt-1">#BIH-WC26-{sticker.id.toString().padStart(3, "0")}</span>
                 </div>
               </div>
 
               {/* Biography Section */}
-              <div className="bg-white/10 border border-white/20 p-5 rounded-2xl text-left z-20 space-y-3 shadow-inner">
-                <h4 className="text-xs uppercase text-[#FFCD00] font-black tracking-widest flex items-center space-x-2 font-sans">
-                  <Activity className="h-4.5 w-4.5 text-[#00f0ff]" />
+              <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-left z-20 space-y-3">
+                <h4 className="text-xs uppercase text-gold font-black tracking-widest flex items-center space-x-2 font-sans">
+                  <Activity className="h-4 w-4 text-gold" />
                   <span>{lang === "BS" ? "BIOGRAFIJA I ISTORIJSKE CRTICE" : "BIOGRAPHY & CAREER HISTORIC NOTES"}</span>
                 </h4>
-                <p className="text-[13.5px] text-white leading-relaxed font-sans font-medium pr-2 antialiased">
+                <p className="text-[13px] text-text leading-relaxed font-sans font-medium pr-2 antialiased">
                   "{bio ? bio : sticker.biography}"
                 </p>
 
-                <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-white/15 text-[13px] font-sans text-gray-200 font-semibold">
+                <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-white/10 text-[13px] font-sans font-semibold">
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-[#FFCD00]">{lang === "BS" ? "Datum rođenja:" : "Date of Birth:"}</span>
-                    <span className="text-white font-black">{sticker.birthDate}</span>
+                    <span className="text-gold">{lang === "BS" ? "Datum rođenja:" : "Date of Birth:"}</span>
+                    <span className="text-text font-black">{sticker.birthDate}</span>
                   </div>
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-[#FFCD00]">{lang === "BS" ? "Visina:" : "Height:"}</span>
-                    <span className="text-white font-black">{sticker.height}</span>
+                    <span className="text-gold">{lang === "BS" ? "Visina:" : "Height:"}</span>
+                    <span className="text-text font-black">{sticker.height}</span>
                   </div>
                 </div>
               </div>
 
               {/* Statistics Grid */}
-              <div className="bg-white/10 border border-white/20 rounded-2xl p-5 text-left z-20">
-                <h3 className="text-xs uppercase tracking-widest text-[#FFCD00] font-black mb-4 font-sans">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-left z-20">
+                <h3 className="text-xs uppercase tracking-widest text-gold font-black mb-4 font-sans">
                   {lang === "BS" ? "STVARNA FUDBALSKA STATISTIKA" : "REAL-WORLD GAME PERFORMANCE METRICS"}
                 </h3>
 
                 {sticker.stats ? (
                   <div className="grid grid-cols-3 gap-y-4 gap-x-6 font-sans">
                     {[
-                      { label: lang === "BS" ? "PAC (Brzina)" : "PAC (Pace)", val: sticker.stats.pace, color: "bg-[#00f0ff]" },
-                      { label: lang === "BS" ? "SHO (Udarac)" : "SHO (Shooting)", val: sticker.stats.shooting, color: "bg-[#FFCD00]" },
-                      { label: lang === "BS" ? "PAS (Pasovi)" : "PAS (Passing)", val: sticker.stats.passing, color: "bg-emerald-400" },
+                      { label: lang === "BS" ? "PAC (Brzina)" : "PAC (Pace)", val: sticker.stats.pace, color: "bg-primary" },
+                      { label: lang === "BS" ? "SHO (Udarac)" : "SHO (Shooting)", val: sticker.stats.shooting, color: "bg-gold" },
+                      { label: lang === "BS" ? "PAS (Pasovi)" : "PAS (Passing)", val: sticker.stats.passing, color: "bg-success" },
                       { label: lang === "BS" ? "DRI (Dribling)" : "DRI (Dribbling)", val: sticker.stats.dribbling, color: "bg-purple-400" },
-                      { label: lang === "BS" ? "DEF (Odbrana)" : "DEF (Defending)", val: sticker.stats.defending, color: "bg-rose-400" },
-                      { label: lang === "BS" ? "PHY (Fizika)" : "PHY (Physical)", val: sticker.stats.physicality, color: "bg-orange-400" }
+                      { label: lang === "BS" ? "DEF (Odbrana)" : "DEF (Defending)", val: sticker.stats.defending, color: "bg-danger" },
+                      { label: lang === "BS" ? "PHY (Fizika)" : "PHY (Physical)", val: sticker.stats.physicality, color: "bg-warning" }
                     ].map((s) => (
                       <div key={s.label} className="text-left">
-                        <div className="flex justify-between items-center text-[11.5px] text-gray-100 font-extrabold mb-1">
+                        <div className="flex justify-between items-center text-[11px] text-text font-extrabold mb-1">
                           <span className="truncate max-w-[85px] tracking-wide">{s.label}</span>
-                          <span className="text-white font-black">{s.val}</span>
+                          <span className="text-text font-black">{s.val}</span>
                         </div>
-                        <div className="w-full h-2 bg-slate-950/70 rounded-full overflow-hidden p-0.5 border border-white/10">
+                        <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden p-0.5">
                           <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.val}%` }} />
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="py-2.5 text-center text-[13px] font-medium text-gray-100 italic leading-relaxed">
+                  <div className="py-2.5 text-center text-[13px] font-medium text-text-muted leading-relaxed">
                     {lang === "BS"
-                      ? "★ Ovaj specijalni kolekcionarski predmet posjeduje posebnu istorijsku težinu. Njegova vrijednost u igri bazira se na unikatnosti i rijetkosti na web3 Solana tržištu sličica!"
+                      ? "★ Ovaj specijalni kolekcionarski predmet posjeduje posebnu istorijsku težinu. Njegova vrijednost u igri bazira se na unikatnosti i rijetkosti na web3 Solana tržištu sličnica!"
                       : "★ This special collectible is high-level historical memorabilia. Its valuation is fueled purely by physical rarity, scarcity index, and web3 Solana trading market volume!"}
                   </div>
                 )}
               </div>
 
               {/* Back Footer Bar / Actions */}
-              <div className="z-20 flex justify-between items-center border-t border-white/20 pt-4 text-left font-sans">
+              <div className="z-20 flex justify-between items-center border-t border-border pt-4 text-left font-sans">
                 <div>
-                  <p className="text-[8.5px] font-bold text-[#FFCD00] uppercase tracking-widest leading-none mb-1">{lang === "BS" ? "SOLANA PAMETNI UGOVOR" : "SOLANA METAPLEX CONTRACT"}</p>
-                  <p className="text-xs text-[#14F195] font-bold flex items-center leading-none">
+                  <p className="text-[11px] font-bold text-gold uppercase tracking-widest leading-none mb-1">{lang === "BS" ? "SOLANA PAMETNI UGOVOR" : "SOLANA METAPLEX CONTRACT"}</p>
+                  <p className="text-xs text-success font-bold flex items-center leading-none">
                     <span>{lang === "BS" ? "✓ Sertifikat Verifikovan" : "✓ Metaplex Certificate Verified"}</span>
                   </p>
                 </div>
@@ -396,17 +400,17 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
                     <button
                       id="btn-paste-sticker-action"
                       onClick={() => onPaste(sticker.id)}
-                      className="py-2 px-5 rounded-xl bg-gradient-to-r from-[#14F195] to-teal-500 hover:opacity-95 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-[0_0_15px_rgba(20,241,149,0.55)] shrink-0 cursor-pointer"
+                      className="py-2 px-5 rounded-xl bg-success hover:bg-success/90 text-base font-black text-xs uppercase tracking-wider transition shrink-0 cursor-pointer"
                     >
                       {lang === "BS" ? "Zalijepi u Album!" : "Paste in Album!"}
                     </button>
                   )}
                   {isPasted ? (
-                    <span className="py-2 px-4.5 rounded-xl bg-white/10 text-gray-350 border border-white/20 text-xs font-bold uppercase tracking-wider leading-none">
+                    <span className="py-2 px-4 rounded-xl bg-white/5 text-text-muted border border-white/10 text-xs font-bold uppercase tracking-wider leading-none">
                       {lang === "BS" ? "✓ Zalijepljeno" : "✓ Pasted"}
                     </span>
                   ) : !hasStickerPouch ? (
-                    <div className="text-right text-xs font-bold text-rose-400 font-sans uppercase tracking-widest leading-none">
+                    <div className="text-right text-xs font-bold text-danger font-sans uppercase tracking-widest leading-none">
                       <span>{lang === "BS" ? "Kesica prazna" : "Pouch empty"}</span>
                     </div>
                   ) : null}
@@ -419,7 +423,7 @@ export default function CardDetail({ sticker, userSticker, onClose, onPaste, wal
         </div>
 
         {/* Tip Tagline below card */}
-        <p className="mt-4 text-[10.5px] font-sans font-bold text-white/70 tracking-wider flex items-center space-x-1 justify-center bg-slate-900/40 py-1.5 px-4 rounded-full border border-white/10">
+        <p className="mt-4 text-[11px] font-sans font-bold text-text-muted tracking-wider flex items-center space-x-1 justify-center bg-surface/40 py-1.5 px-4 rounded-full border border-border">
           <span>{lang === "BS" ? "* Kliknite bilo gdje na karticu da okrenete. Prevucite kursor za nagib ili 3D efekat." : "* Click anywhere on card to Flip. Drag cursor over to tilt."}</span>
         </p>
 

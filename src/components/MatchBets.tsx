@@ -341,7 +341,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
         actualHomeGoals: simFinalResult.home,
         actualAwayGoals: simFinalResult.away
       };
-      
+        
       alert(lang === "BS" 
         ? `🎉 ČESTITAMO! Vaša prognoza je tačna! Pametni ugovor je oslobodio depozit i dodijelio Vam duplu sličicu te džekpot od 2.0 SOL!`
         : `🎉 Congratulations! Your prediction was exact! Escrow released containing your locked card plus 1 bonus duplicate card and 2.0 SOL jackpot!`);
@@ -365,38 +365,38 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8 animate-fade-in text-left">
-      
+        
       {/* Immersive Header Banner */}
-      <div className="bg-gradient-to-br from-[#002F6C] to-[#124285] p-6 rounded-3xl border border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.4)] text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_120%,rgba(255,205,0,0.15),transparent_60%)] pointer-events-none" />
+      <div className="bg-gradient-to-br from-surface-2 to-surface p-6 rounded-3xl border border-border text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_120%,rgba(255,205,0,0.08),transparent_60%)] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
         
         <div className="space-y-2 z-10 max-w-xl">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-[#FFCD00] text-[#002F6C] rounded-full text-[10px] font-sans font-black uppercase tracking-wider shadow-sm">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-gold text-base rounded-full text-[11px] font-sans font-black uppercase tracking-wider">
             <Trophy className="h-3 w-3 animate-pulse" />
             <span>{t.predictionsTitle}</span>
           </div>
-          <h2 className="text-3xl font-sans font-black tracking-tighter uppercase leading-none mt-1">
+          <h2 className="text-3xl font-sans font-black tracking-tighter uppercase leading-none mt-1 text-white">
             {lang === "BS" ? "Klađenje Sličicama" : "Metaplex NFT Card Betting"}
           </h2>
-          <p className="text-xs font-serif text-gray-200 leading-relaxed italic mt-1.5">
+          <p className="text-xs font-sans text-text-muted leading-relaxed mt-1.5">
             {t.predictionsDesc}
           </p>
         </div>
 
-        <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl flex flex-col items-center justify-center text-center w-40 z-10">
-          <span className="text-[10px] font-sans font-black uppercase text-amber-300 leading-none">{lang === "BS" ? "NAGRADNI FOND" : "JACKPOT POOL"}</span>
+        <div className="shrink-0 bg-surface-3/50 border border-gold/30 p-4 rounded-2xl flex flex-col items-center justify-center text-center w-40 z-10">
+          <span className="text-[11px] font-sans font-black uppercase text-gold leading-none">{lang === "BS" ? "NAGRADNI FOND" : "JACKPOT POOL"}</span>
           <span className="text-2xl font-mono font-black text-white mt-1">+2.0 SOL</span>
-          <span className="text-[9px] font-sans text-gray-300 font-semibold block mt-1">{lang === "BS" ? "+1 Dupla sličica" : "+1 Card Copy"}</span>
+          <span className="text-[11px] font-sans text-text-muted font-semibold block mt-1">{lang === "BS" ? "+1 Dupla sličica" : "+1 Card Copy"}</span>
         </div>
       </div>
 
       {/* Grid: Matches Selector on Left, Predict/Tactics on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+          
         {/* Left 5 cols: Game schedule picker */}
         <div className="lg:col-span-5 space-y-4">
-          <h3 className="font-sans font-black text-xs text-[#002F6C] uppercase tracking-wider flex items-center space-x-1.5 leading-none">
+          <h3 className="font-sans font-black text-xs text-text-muted uppercase tracking-wider flex items-center space-x-1.5 leading-none">
             <Calendar className="h-4 w-4" />
             <span>{lang === "BS" ? "Izaberite utakmicu zmajeva" : "Select Group Match"}</span>
           </h3>
@@ -414,32 +414,32 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                   }}
                   className={`w-full p-4 rounded-2xl text-left border transition relative flex items-center justify-between group cursor-pointer ${
                     isSelected
-                      ? "bg-white border-[#002F6C] shadow-md ring-2 ring-[#002F6C]/10"
-                      : "bg-[#fcfbf7] hover:bg-white border-gray-300 hover:border-gray-500"
+                      ? "bg-surface border-primary ring-1 ring-primary/30"
+                      : "bg-surface-2 hover:bg-surface-3 border-border hover:border-border-hover"
                   }`}
                 >
                   <div className="space-y-2 flex-1">
-                    <span className="text-[9px] font-sans font-extrabold text-gray-400 uppercase tracking-widest block leading-none">
+                    <span className="text-[11px] font-sans font-extrabold text-text-dim uppercase tracking-widest block leading-none">
                       {lang === "BS" ? match.stageBS : match.stage}
                     </span>
                     <div className="flex items-center space-x-2">
                       <span className="text-xl">🇧🇦</span>
-                      <span className="font-sans font-black text-gray-700">BIH</span>
-                      <span className="text-xs font-mono text-gray-400">vs</span>
+                      <span className="font-sans font-black text-text">BIH</span>
+                      <span className="text-xs font-mono text-text-dim">vs</span>
                       <span className="text-xl">{match.opponentFlag}</span>
-                      <span className="font-sans font-black text-gray-800">{match.opponent}</span>
+                      <span className="font-sans font-black text-text">{match.opponent}</span>
                     </div>
-                    <div className="flex items-center space-x-3 text-xs text-gray-500">
+                    <div className="flex items-center space-x-3 text-xs text-text-muted">
                       <span className="flex items-center space-x-1 leading-none">
-                        <Clock className="h-3 w-3 text-gray-400" />
+                        <Clock className="h-3 w-3 text-text-dim" />
                         <span>{match.timestamp.split(" - ")[0]}</span>
                       </span>
                     </div>
                   </div>
                   
                   {/* Select Icon */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm ${
-                    isSelected ? "bg-[#002F6C] text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                    isSelected ? "bg-primary text-white" : "bg-surface-3 text-text-dim group-hover:bg-surface-3"
                   }`}>
                     <Play className="h-3.5 w-3.5 fill-current" />
                   </div>
@@ -450,40 +450,40 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
         </div>
 
         {/* Right 7 cols: Possible starting 11 tactical projection & Bet Confirmation */}
-        <div className="lg:col-span-7 space-y-6 bg-white border border-gray-300 p-6 rounded-3xl shadow-sm">
-          
-          <div className="flex justify-between items-start border-b border-gray-200 pb-4">
+        <div className="lg:col-span-7 space-y-6 bg-surface border border-border p-6 rounded-2xl">
+            
+          <div className="flex justify-between items-start border-b border-border pb-4">
             <div>
-              <span className="text-[10px] font-sans font-black text-gray-400 tracking-wider block uppercase leading-none">{lang === "BS" ? "PROGNOZIRANI SASTAV" : "TACTICAL MATRIX"}</span>
-              <h3 className="text-xl font-sans font-black text-[#002F6C] leading-none mb-1 mt-1.5">
+              <span className="text-[11px] font-sans font-black text-text-dim tracking-wider block uppercase leading-none">{lang === "BS" ? "PROGNOZIRANI SASTAV" : "TACTICAL MATRIX"}</span>
+              <h3 className="text-xl font-sans font-black text-text leading-none mb-1 mt-1.5">
                 {lang === "BS" ? `Moguća ekipa protiv selekcije: ${selectedMatch.opponent}` : `Possible Squad vs ${selectedMatch.opponent}`}
               </h3>
-              <p className="text-xs font-sans text-gray-500 flex items-center space-x-1.5 mt-1">
-                <MapPin className="h-3 w-3 text-gray-400" />
+              <p className="text-xs font-sans text-text-muted flex items-center space-x-1.5 mt-1">
+                <MapPin className="h-3 w-3 text-text-dim" />
                 <span>{selectedMatch.stadium} ({selectedMatch.city})</span>
               </p>
             </div>
             
-            <span className="text-xs font-mono bg-amber-500/15 border border-amber-500/40 text-amber-800 px-2.5 py-1 rounded font-bold self-start">
+            <span className="text-xs font-mono bg-gold/15 border border-gold/30 text-gold px-2.5 py-1 rounded font-bold self-start">
               Odds: {selectedMatch.defaultOdds.split(" | ")[2]}
             </span>
           </div>
 
           {/* Roster projection */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-sans font-bold text-gray-400 tracking-wider uppercase block">{lang === "BS" ? "PROJEKTOVANIH PRVIH XI" : "PROJECTED STARTING ELEVEN"}</h4>
+            <h4 className="text-[11px] font-sans font-bold text-text-dim tracking-wider uppercase block">{lang === "BS" ? "PROJEKTOVANIH PRVIH XI" : "PROJECTED STARTING ELEVEN"}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {selectedMatch.squadIds.map((pid) => {
                 const p = STICKERS.find(s => s.id === pid);
                 if (!p) return null;
                 return (
-                  <div key={p.id} className="p-2 bg-[#f9f8f4] border border-gray-200 rounded-xl flex items-center space-x-2">
-                    <span className="font-sans text-[10px] font-black w-6 h-6 bg-[#002F6C] text-white rounded-md flex items-center justify-center shadow-inner shrink-0 leading-none">
+                  <div key={p.id} className="p-2 bg-surface-2 border border-border rounded-xl flex items-center space-x-2">
+                    <span className="font-sans text-[11px] font-black w-6 h-6 bg-primary text-white rounded-md flex items-center justify-center shrink-0 leading-none">
                       {p.number}
                     </span>
                     <div className="text-left min-w-0 flex-1">
-                      <p className="text-xs font-sans font-black text-gray-800 truncate leading-none mb-0.5">{p.name.split(" ").slice(-1)[0]}</p>
-                      <p className="text-[9px] font-sans font-bold text-gray-500 uppercase tracking-tight truncate leading-none">{p.role} • {p.club}</p>
+                      <p className="text-xs font-sans font-black text-text truncate leading-none mb-0.5">{p.name.split(" ").slice(-1)[0]}</p>
+                      <p className="text-[11px] font-sans font-bold text-text-muted uppercase tracking-tight truncate leading-none">{p.role} • {p.club}</p>
                     </div>
                   </div>
                 );
@@ -491,54 +491,54 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
             </div>
           </div>
 
-          <form onSubmit={handlePlaceBet} className="pt-4 border-t border-gray-200 space-y-4">
-            <h4 className="text-[10px] font-sans font-black text-gray-450 tracking-wider uppercase block leading-none">{lang === "BS" ? "UNOS PROGNOZE & ODABIR DEPOZITA" : "PREDICTION SCORE & ESCROW COLLATERAL"}</h4>
+          <form onSubmit={handlePlaceBet} className="pt-4 border-t border-border space-y-4">
+            <h4 className="text-[11px] font-sans font-black text-text-dim tracking-wider uppercase block leading-none">{lang === "BS" ? "UNOS PROGNOZE & ODABIR DEPOZITA" : "PREDICTION SCORE & ESCROW COLLATERAL"}</h4>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
               {/* Score predict dials */}
-              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
-                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">{lang === "BS" ? "PROGNOZA GOLOVA" : "PREDICT MATCH SCORE"}</span>
+              <div className="bg-surface-2 border border-border rounded-2xl p-4 space-y-3">
+                <span className="text-[11px] font-sans font-bold text-text-dim block uppercase leading-none">{lang === "BS" ? "PROGNOZA GOLOVA" : "PREDICT MATCH SCORE"}</span>
                 
                 <div className="flex items-center justify-between">
                   <div className="text-center">
-                    <span className="text-xs font-sans font-black text-gray-600 block mb-1">BIH Goals</span>
+                    <span className="text-xs font-sans font-black text-text-muted block mb-1">BIH Goals</span>
                     <div className="flex items-center space-x-1.5">
                       <button
                         type="button"
                         onClick={() => setPredHome(prev => Math.max(0, prev - 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
+                        className="w-8 h-8 rounded-lg bg-surface-3 border border-border hover:bg-surface-3 flex items-center justify-center font-bold text-text cursor-pointer text-sm"
                       >
                         -
                       </button>
-                      <span className="w-10 text-xl font-mono font-black text-[#002F6C]">{predHome}</span>
+                      <span className="w-10 text-xl font-mono font-black text-gold">{predHome}</span>
                       <button
                         type="button"
                         onClick={() => setPredHome(prev => Math.min(10, prev + 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
+                        className="w-8 h-8 rounded-lg bg-surface-3 border border-border hover:bg-surface-3 flex items-center justify-center font-bold text-text cursor-pointer text-sm"
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  <div className="h-8 w-px bg-gray-300" />
+                  <div className="h-8 w-px bg-border" />
 
                   <div className="text-center">
-                    <span className="text-xs font-sans font-black text-gray-600 block mb-1">{selectedMatch.opponent} Goals</span>
+                    <span className="text-xs font-sans font-black text-text-muted block mb-1">{selectedMatch.opponent} Goals</span>
                     <div className="flex items-center space-x-1.5">
                       <button
                         type="button"
                         onClick={() => setPredAway(prev => Math.max(0, prev - 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
+                        className="w-8 h-8 rounded-lg bg-surface-3 border border-border hover:bg-surface-3 flex items-center justify-center font-bold text-text cursor-pointer text-sm"
                       >
                         -
                       </button>
-                      <span className="w-10 text-xl font-mono font-black text-gray-800">{predAway}</span>
+                      <span className="w-10 text-xl font-mono font-black text-gold">{predAway}</span>
                       <button
                         type="button"
                         onClick={() => setPredAway(prev => Math.min(10, prev + 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-700 cursor-pointer text-sm"
+                        className="w-8 h-8 rounded-lg bg-surface-3 border border-border hover:bg-surface-3 flex items-center justify-center font-bold text-text cursor-pointer text-sm"
                       >
                         +
                       </button>
@@ -548,13 +548,13 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
               </div>
 
               {/* Collateral Selection dropdown */}
-              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3 text-left">
-                <span className="text-[9px] font-sans font-bold text-gray-400 block uppercase leading-none">{lang === "BS" ? "UPLATA DEPOZITA (ZALOG)" : "ESCROW COVER (COLLATERAL)"}</span>
+              <div className="bg-surface-2 border border-border rounded-2xl p-4 space-y-3 text-left">
+                <span className="text-[11px] font-sans font-bold text-text-dim block uppercase leading-none">{lang === "BS" ? "UPLATA DEPOZITA (ZALOG)" : "ESCROW COVER (COLLATERAL)"}</span>
                 
                 <div>
-                  <label className="text-[10px] font-sans font-bold text-gray-500 uppercase block mb-1 leading-none">{lang === "BS" ? "SLIČICE IZ KESICE" : "UNPASTED BAG SELECTOR"}</label>
+                  <label className="text-[11px] font-sans font-bold text-text-muted uppercase block mb-1 leading-none">{lang === "BS" ? "SLIČICE IZ KESICE" : "UNPASTED BAG SELECTOR"}</label>
                   {bettableStickers.length === 0 ? (
-                    <div className="p-2.5 bg-[#fff8f8] border border-red-200 rounded-xl text-[10px] sm:text-xs font-sans text-rose-600 font-semibold leading-relaxed mt-1">
+                    <div className="p-2.5 bg-danger/10 border border-danger/30 rounded-xl text-[11px] sm:text-xs font-sans text-danger font-semibold leading-relaxed mt-1">
                       {lang === "BS" 
                         ? "Nemate slobodnih sličica u kesici! Kupite paketiće u prodavnici kako biste obezbijedili depozit."
                         : "No unpasted duplicates available! Acquire booster packs to load card escrow collateral."}
@@ -563,7 +563,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                     <select
                       value={betStickerId}
                       onChange={(e) => setBetStickerId(Number(e.target.value))}
-                      className="w-full text-xs font-sans bg-white border border-gray-300 hover:border-gray-400 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#002F6C] font-semibold text-gray-800 cursor-pointer mt-1"
+                      className="w-full text-xs font-sans bg-surface-2 border border-border hover:border-border-hover rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-text cursor-pointer mt-1"
                     >
                       <option value={-1}>{lang === "BS" ? "-- Izaberite deponovanu sličicu --" : "-- Select Duplication Card --"}</option>
                       {bettableStickers.map((item) => (
@@ -580,15 +580,15 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
             {/* Error or Success alerts */}
             {errorMsg && (
-              <div className="p-3 bg-rose-50 border border-rose-205 rounded-xl flex items-center space-x-2 text-xs text-rose-700 font-semibold leading-snug">
-                <AlertTriangle className="h-4.5 w-4.5 text-rose-500 shrink-0" />
+              <div className="p-3 bg-danger/10 border border-danger/30 rounded-xl flex items-center space-x-2 text-xs text-danger font-semibold leading-snug">
+                <AlertTriangle className="h-4 w-4 text-danger shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {successMsg && (
-              <div className="p-3 bg-emerald-50 border border-emerald-250 rounded-xl flex items-center space-x-2 text-xs text-emerald-800 font-semibold leading-snug">
-                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0" />
+              <div className="p-3 bg-success/10 border border-success/30 rounded-xl flex items-center space-x-2 text-xs text-success font-semibold leading-snug">
+                <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -599,8 +599,8 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
               disabled={bettableStickers.length === 0}
               className={`w-full py-3.5 px-6 rounded-2xl font-sans font-black uppercase text-xs tracking-wider transition-all duration-150 relative overflow-hidden flex items-center justify-center space-x-2 cursor-pointer ${
                 bettableStickers.length === 0
-                  ? "bg-gray-200 text-gray-400 border border-gray-300 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#002F6C] to-[#124285] hover:opacity-95 text-white shadow"
+                  ? "bg-surface-3 text-text-dim border border-border cursor-not-allowed"
+                  : "bg-gradient-to-r from-primary to-primary-dim hover:opacity-95 text-white"
               }`}
             >
               <Lock className="h-4 w-4" />
@@ -612,16 +612,16 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
       </div>
 
       {/* active escrowed bets logs */}
-      <div className="bg-white border border-gray-300 rounded-3xl p-6 shadow-sm">
-        <h3 className="font-sans font-black text-sm text-[#002F6C] uppercase tracking-wider mb-4 flex items-center space-x-2 border-b border-gray-100 pb-3 leading-none">
-          <Award className="h-5 w-5 text-amber-500" />
+      <div className="bg-surface border border-border rounded-2xl p-6">
+        <h3 className="font-sans font-black text-sm text-text uppercase tracking-wider mb-4 flex items-center space-x-2 border-b border-border pb-3 leading-none">
+          <Award className="h-5 w-5 text-gold" />
           <span>{lang === "BS" ? `Aktivne prognoze na čekanju (${bets.length})` : `Active Escrow Live Predictions Arena (${bets.length})`}</span>
         </h3>
 
         {bets.length === 0 ? (
-          <div className="py-12 text-center text-[#1a1a1a]">
-            <Trophy className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm font-serif italic text-gray-500 text-center leading-relaxed">
+          <div className="py-12 text-center text-text-muted">
+            <Trophy className="h-10 w-10 text-text-dim mx-auto mb-3" />
+            <p className="text-sm font-sans text-text-muted text-center leading-relaxed">
               {lang === "BS"
                 ? "Trenutno nema aktivnih prognoza u Metaplex ledger zapisu. Odaberite utakmicu i postavite prognozu iznad!"
                 : "No active predictions found in Metaplex Solflare Ledger. Select a match and place a bet!"}
@@ -637,45 +637,45 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
               const isSimulating = simulatingBetId === bet.id;
 
               return (
-                <div key={bet.id} className="border border-gray-250 rounded-2xl p-5 bg-[#fdfdfc] flex flex-col md:flex-row md:items-center justify-between gap-6 font-sans">
+                <div key={bet.id} className="border border-border rounded-2xl p-5 bg-surface-2 flex flex-col md:flex-row md:items-center justify-between gap-6 font-sans">
                   
                   {/* Left: Predict Info */}
                   <div className="space-y-2 flex-grow text-left">
                     <div className="flex items-center space-x-2.5">
-                      <span className={`text-[9px] font-sans px-2.5 py-0.5 rounded-full font-black uppercase border tracking-wider leading-none ${
+                      <span className={`text-[11px] font-sans px-2.5 py-0.5 rounded-full font-black uppercase border tracking-wider leading-none ${
                         bet.status === "ACTIVE"
-                          ? "bg-amber-100 border-amber-300 text-amber-800"
+                          ? "bg-warning/15 text-warning border-warning/30"
                           : bet.status === "WON"
-                          ? "bg-emerald-100 border-emerald-300 text-emerald-800"
-                          : "bg-red-50 border-red-200 text-red-700"
+                          ? "bg-success/15 text-success border-success/30"
+                          : "bg-danger/15 text-danger border-danger/30"
                       }`}>
                         {bet.status} ESCROW
                       </span>
-                      <span className="text-[10px] font-mono text-gray-400">TXREF-ID: {bet.id.toUpperCase()}</span>
+                      <span className="text-[11px] font-mono text-text-dim">TXREF-ID: {bet.id.toUpperCase()}</span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="font-sans font-black text-base text-gray-800 leading-none">
+                      <span className="font-sans font-black text-base text-text leading-none">
                         BIH vs {match.opponent} {match.opponentFlag}
                       </span>
-                      <span className="text-gray-300 mr-1">•</span>
-                      <span className="text-sm font-sans font-black text-[#002F6C] leading-none">
+                      <span className="text-text-dim mr-1">•</span>
+                      <span className="text-sm font-sans font-black text-gold leading-none">
                         {lang === "BS" ? "Prognoza:" : "Predicted Score:"} {bet.predHomeGoals} - {bet.predAwayGoals}
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-4 text-xs text-gray-500">
+                    <div className="flex items-center space-x-4 text-xs text-text-muted">
                       <span className="flex items-center space-x-1 leading-none">
-                        <span className="font-sans font-bold text-gray-600">{lang === "BS" ? "Deponovana sličica:" : "Locked Asset:"}</span>
-                        <span className="font-sans font-black text-[#002F6C]">#{card.number} {card.name}</span>
+                        <span className="font-sans font-bold text-text-muted">{lang === "BS" ? "Deponovana sličica:" : "Locked Asset:"}</span>
+                        <span className="font-sans font-black text-gold">#{card.number} {card.name}</span>
                       </span>
                     </div>
                   </div>
 
                   {/* Middle: Simulation stream overlay */}
                   {isSimulating && (
-                    <div className="flex-grow max-w-lg bg-gray-950 border border-zinc-800 p-4 rounded-xl text-left text-xs font-mono text-emerald-400 space-y-2 transition-all">
-                      <div className="flex justify-between items-center text-[10px] text-zinc-400 font-bold tracking-widest uppercase border-b border-zinc-800 pb-1.5 animate-pulse">
+                    <div className="flex-grow max-w-lg bg-black border border-border p-4 rounded-xl text-left text-xs font-mono text-success space-y-2 transition-all">
+                      <div className="flex justify-between items-center text-[11px] text-text-dim font-bold tracking-widest uppercase border-b border-border pb-1.5 animate-pulse">
                         <span>{lang === "BS" ? "LIVE komentator utakmice" : "LIVE commentary matchday"}</span>
                         <span>{Math.round((simProgress / 7) * 100)}% PLAYED</span>
                       </div>
@@ -684,8 +684,8 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                           <p key={i} className="leading-relaxed animate-fade-in">{log}</p>
                         ))}
                       </div>
-                      <div className="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
-                        <div className="bg-emerald-400 h-full transition-all duration-300" style={{ width: `${(simProgress / 7) * 100}%` }} />
+                      <div className="w-full bg-surface-3 h-1 rounded-full overflow-hidden">
+                        <div className="bg-success h-full transition-all duration-300" style={{ width: `${(simProgress / 7) * 100}%` }} />
                       </div>
                     </div>
                   )}
@@ -696,10 +696,10 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                       <button
                         onClick={() => startSimulation(bet)}
                         disabled={simulatingBetId !== null}
-                        className={`py-2 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition shadow-sm flex items-center space-x-1.5 cursor-pointer ${
+                        className={`py-2 px-5 rounded-xl font-black text-xs uppercase tracking-wider transition flex items-center space-x-1.5 cursor-pointer ${
                           simulatingBetId !== null
-                            ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                            : "bg-[#002F6C]/10 border border-[#002F6C]/20 text-[#002F6C] hover:bg-[#002F6C] hover:text-white"
+                            ? "bg-surface-3 text-text-dim border border-border cursor-not-allowed"
+                            : "bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-white"
                         }`}
                       >
                         <Play className="h-3.5 w-3.5 fill-current" />
@@ -710,7 +710,7 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
                     {isSimulating && simProgress === 7 && (
                       <button
                         onClick={() => claimBetReward(bet, idx)}
-                        className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-md flex items-center space-x-1 animate-bounce cursor-pointer"
+                        className="py-2.5 px-5 rounded-xl bg-success hover:bg-success/90 text-base font-black text-xs uppercase tracking-wider transition flex items-center space-x-1 animate-bounce cursor-pointer"
                       >
                         <Sparkles className="h-4 w-4" />
                         <span>{lang === "BS" ? "Preuzmi ishod zaloga" : "Claim Escrow Outcome"}</span>
@@ -719,11 +719,11 @@ export default function MatchBets({ wallet, onWalletChange, collection, onCollec
 
                     {bet.status !== "ACTIVE" && (
                       <div className="text-right">
-                        <span className="text-[9px] font-bold text-gray-400 block uppercase leading-none">{lang === "BS" ? "KONAČAN ISHOD" : "ACTUAL RESULT"}</span>
-                        <span className="text-sm sm:text-base font-mono font-black text-gray-700 block mt-1">
+                        <span className="text-[11px] font-bold text-text-dim block uppercase leading-none">{lang === "BS" ? "KONAČAN ISHOD" : "ACTUAL RESULT"}</span>
+                        <span className="text-sm sm:text-base font-mono font-black text-text block mt-1">
                           BIH {bet.actualHomeGoals} - {bet.actualAwayGoals} {match.opponent}
                         </span>
-                        <p className={`text-xs font-bold mt-1 ${bet.status === "WON" ? "text-emerald-600" : "text-rose-500"}`}>
+                        <p className={`text-xs font-bold mt-1 ${bet.status === "WON" ? "text-success" : "text-danger"}`}>
                           {bet.status === "WON" 
                             ? (lang === "BS" ? "🎉 Tačna prognoza! +2.0 SOL" : "🎉 Exact Match Won! +2.0 SOL") 
                             : (lang === "BS" ? "Likvidiran zalog" : "Liquidated Escrow")}

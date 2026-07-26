@@ -1,46 +1,140 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
+/* ============================================================
+   DARK MODE DESIGN SYSTEM — BosniaCollection WC2026
+   Deep navy base, gold accents, no neon, no glow.
+   ============================================================ */
+
 @theme {
+  /* Typography */
   --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-serif: "Lora", serif;
   --font-mono: "JetBrains Mono", monospace;
+
+  /* Background layers — rich navy, not pure black */
+  --color-base: #0A1128;
+  --color-surface: #112340;
+  --color-surface-2: #173055;
+  --color-surface-3: #1E3D6B;
+
+  /* Primary blue — vibrant enough to read on dark */
+  --color-primary: #2563EB;
+  --color-primary-hover: #3B82F6;
+  --color-primary-dim: #1D4ED8;
+
+  /* Gold — the Bosnian accent, used sparingly */
+  --color-gold: #FFCD00;
+  --color-gold-hover: #FFD933;
+  --color-gold-dim: #C9A600;
+
+  /* Text */
+  --color-text: #F1F5F9;
+  --color-text-muted: #94A3B8;
+  --color-text-dim: #64748B;
+
+  /* Semantic */
+  --color-success: #14F195;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+
+  /* Borders — subtle, low-opacity */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.16);
+  --color-border-gold: rgba(255, 205, 0, 0.25);
 }
+
+/* ============================================================
+   GLOBAL
+   ============================================================ */
 
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(135deg, #FFF9D4 0%, #FFCD00 50%, #E69D00 100%) !important;
-  background-attachment: fixed;
-  color: #1a1a1a;
+  background: var(--color-base);
+  color: var(--color-text);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  font-feature-settings: "cv01", "cv02", "cv03", "cv04";
 }
 
+/* Subtle ambient gradient — not a wallpaper, just depth */
 .album-container {
-  background: linear-gradient(135deg, #FFF9D4 0%, #FFCD00 50%, #E69D00 100%) !important;
-  background-attachment: fixed !important;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 235, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255, 205, 0, 0.04), transparent),
+    var(--color-base);
   position: relative;
 }
 
-.album-container::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(0, 47, 108, 0.08) 1.5px, transparent 1.5px);
-  background-size: 24px 24px;
-  pointer-events: none;
-  opacity: 0.85;
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================================
+   CARD SURFACES
+   ============================================================ */
+
+.surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.surface-2 {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}
+
+/* ============================================================
+   STICKER SLOTS (Album grid)
+   ============================================================ */
+
 .card-slot {
-  border: 2px dashed rgba(0, 0, 0, 0.15);
+  border: 1.5px dashed rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.5);
-  transition: all 0.25s ease-in-out;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
 }
 
 .card-slot:hover {
-  border-color: #002F6C;
-  background: rgba(255, 250, 240, 0.8);
+  border-color: rgba(37, 99, 235, 0.5);
+  background: rgba(37, 99, 235, 0.05);
 }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 
 @keyframes spin-slow {
   0% { transform: rotate(0deg); }
@@ -49,16 +143,46 @@ body {
 
 @keyframes bounce-slow {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .animate-spin-slow {
-  animation: spin-slow 15s linear infinite;
+  animation: spin-slow 20s linear infinite;
 }
 
 .animate-bounce-slow {
-  animation: bounce-slow 4s ease-in-out infinite;
+  animation: bounce-slow 3s ease-in-out infinite;
 }
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+/* Gold shimmer for special/foil items */
+.shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 205, 0, 0) 0%,
+    rgba(255, 205, 0, 0.15) 50%,
+    rgba(255, 205, 0, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ============================================================
+   SOLANA BADGE
+   ============================================================ */
 
 .solana-badge {
   font-family: var(--font-sans);
@@ -69,3 +193,32 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+/* ============================================================
+   WALLET ADAPTER OVERRIDE — dark theme
+   ============================================================ */
+
+.wallet-adapter-button {
+  background: var(--color-primary) !important;
+  border-radius: 10px !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  transition: background 0.2s !important;
+}
+
+.wallet-adapter-button:hover {
+  background: var(--color-primary-hover) !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+/* ============================================================
+   SELECTION
+   ============================================================ */
+
+::selection {
+  background: rgba(255, 205, 0, 0.25);
+  color: var(--color-gold);
+}

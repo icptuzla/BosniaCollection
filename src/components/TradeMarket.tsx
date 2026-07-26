@@ -241,10 +241,10 @@ export default function TradeMarket({
       
       {/* Visual Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-sans font-black text-[#002F6C] uppercase tracking-tighter leading-none">
+        <h2 className="text-2xl font-sans font-black text-text uppercase tracking-tighter leading-none">
           Decentralized P2P Sticker Swap Center
         </h2>
-        <p className="text-xs font-serif italic text-gray-500 mt-1">
+        <p className="text-xs font-sans text-text-muted mt-1">
           Barter duplicate cards with physical collectors or buy them using Devnet SOL!
         </p>
       </div>
@@ -252,19 +252,19 @@ export default function TradeMarket({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* ================= POST A NEW TRADE (Left Column) ================= */}
-        <div className="lg:col-span-1 bg-white border border-gray-300 p-5 rounded-2xl shadow-sm text-left text-gray-800">
-          <h3 className="text-md font-sans font-extrabold text-[#002F6C] mb-4 flex items-center space-x-2">
-            <Plus className="h-4.5 w-4.5 text-[#002F6C]" />
+        <div className="lg:col-span-1 bg-surface border border-border p-5 rounded-2xl text-left text-text">
+          <h3 className="text-md font-sans font-extrabold text-text mb-4 flex items-center space-x-2">
+            <Plus className="h-4.5 w-4.5 text-primary" />
             <span>Create Swap Offer</span>
           </h3>
 
           <form onSubmit={handlePostTrade} className="space-y-4">
             <div>
-              <label className="text-[10px] font-sans font-bold text-gray-400 block mb-1">
+              <label className="text-[11px] font-sans font-bold uppercase tracking-wider text-text-muted block mb-1">
                 SELECT STICKER TO OFFER (Must have duplicate):
               </label>
               {userDuplicates.length === 0 ? (
-                <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-serif text-gray-500 italic text-center">
+                <div className="p-3.5 bg-surface-2 border border-border rounded-xl text-xs font-sans text-text-muted text-center">
                   No duplicates available in pouch yet. Open booster packs first!
                 </div>
               ) : (
@@ -272,7 +272,7 @@ export default function TradeMarket({
                   id="select-offer-sticker"
                   value={selectedOfferStickerId}
                   onChange={(e) => setSelectedOfferStickerId(Number(e.target.value))}
-                  className="w-full bg-white border border-gray-300 text-gray-800 p-2.5 rounded-lg text-xs font-sans font-semibold focus:border-[#002F6C] outline-none"
+                  className="w-full bg-surface-2 border border-border text-text p-2.5 rounded-xl text-xs font-sans font-semibold focus:border-primary focus:outline-none transition"
                 >
                   <option value={-1}>-- Choose duplicate card --</option>
                   {userDuplicates.map((dup) => {
@@ -289,12 +289,12 @@ export default function TradeMarket({
 
             {/* Pivot trade type */}
             {selectedOfferStickerId !== -1 && (
-              <div className="flex bg-gray-105 p-1 rounded-lg border border-gray-200 text-xs font-sans font-bold">
+              <div className="flex bg-surface-2/50 p-1.5 rounded-xl border border-border text-xs font-sans font-bold">
                 <button
                   type="button"
                   onClick={() => setSellingForSol(false)}
-                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${
-                    !sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
+                  className={`flex-1 py-1.5 rounded-lg text-center transition cursor-pointer ${
+                    !sellingForSol ? "bg-surface-3 text-primary font-extrabold" : "text-text-muted hover:text-text"
                   }`}
                 >
                   Swap for Card
@@ -302,8 +302,8 @@ export default function TradeMarket({
                 <button
                   type="button"
                   onClick={() => setSellingForSol(true)}
-                  className={`flex-1 py-1.5 rounded-md text-center transition cursor-pointer ${
-                    sellingForSol ? "bg-white border border-gray-300 text-[#002F6C] font-extrabold shadow-sm" : "text-gray-450"
+                  className={`flex-1 py-1.5 rounded-lg text-center transition cursor-pointer ${
+                    sellingForSol ? "bg-surface-3 text-primary font-extrabold" : "text-text-muted hover:text-text"
                   }`}
                 >
                   Sell for SOL
@@ -313,14 +313,14 @@ export default function TradeMarket({
 
             {!sellingForSol ? (
               <div>
-                <label className="text-[10px] font-sans font-bold text-gray-400 block mb-1">
+                <label className="text-[11px] font-sans font-bold uppercase tracking-wider text-text-muted block mb-1">
                   CHOOSE CARD YOU WANT IN RETURN:
                 </label>
                 <select
                   id="select-want-sticker"
                   value={selectedWantStickerId}
                   onChange={(e) => setSelectedWantStickerId(Number(e.target.value))}
-                  className="w-full bg-white border border-gray-300 text-gray-800 p-2.5 rounded-lg text-xs font-sans font-semibold focus:border-[#002F6C] outline-none"
+                  className="w-full bg-surface-2 border border-border text-text p-2.5 rounded-xl text-xs font-sans font-semibold focus:border-primary focus:outline-none transition"
                 >
                   <option value={-1}>-- Choose requested player --</option>
                   {STICKERS.map((st) => (
@@ -332,7 +332,7 @@ export default function TradeMarket({
               </div>
             ) : (
               <div>
-                <label className="text-[10px] font-sans font-bold text-gray-400 block mb-1">
+                <label className="text-[11px] font-sans font-bold uppercase tracking-wider text-text-muted block mb-1">
                   PRICE IN CRYPTO (SOL):
                 </label>
                 <div className="relative">
@@ -342,9 +342,9 @@ export default function TradeMarket({
                     min="0.05"
                     value={solValue}
                     onChange={(e) => setSolValue(parseFloat(e.target.value))}
-                    className="w-full bg-white border border-gray-300 text-gray-800 p-2.5 rounded-lg text-xs font-mono pl-8 focus:border-[#002F6C] outline-none"
+                    className="w-full bg-surface-2 border border-border text-text p-2.5 rounded-xl text-xs font-mono pl-8 focus:border-primary focus:outline-none transition"
                   />
-                  <Coins className="h-4 w-4 text-[#FFCD00] absolute left-2.5 top-3" />
+                  <Coins className="h-4 w-4 text-gold absolute left-2.5 top-3" />
                 </div>
               </div>
             )}
@@ -353,7 +353,7 @@ export default function TradeMarket({
               id="btn-list-swap-offer"
               type="submit"
               disabled={!wallet.connected || selectedOfferStickerId === -1 || isProcessing}
-              className="w-full py-2.5 px-4 rounded-lg bg-[#002F6C] hover:opacity-95 text-white font-sans font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-hover text-white font-sans font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center cursor-pointer"
             >
               {isProcessing && document.activeElement?.id === "btn-list-swap-offer" ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -362,21 +362,21 @@ export default function TradeMarket({
             </button>
             
             {!wallet.connected && (
-              <p className="text-[10px] font-sans font-bold text-rose-500 text-center">
+              <p className="text-[11px] font-sans font-bold text-danger text-center">
                 * Please connect a Solana / Solflare wallet to broadcast.
               </p>
             )}
           </form>
 
           {errorText && (
-            <div className="mt-4 p-3 bg-rose-50 border border-rose-200 text-xs text-rose-600 font-sans font-medium flex items-start space-x-1.5 rounded-lg">
+            <div className="mt-4 bg-danger/10 border border-danger/30 text-danger text-xs font-sans font-medium flex items-start space-x-1.5 rounded-xl px-4 py-3">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{errorText}</span>
             </div>
           )}
 
           {successText && (
-            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-250 text-xs text-emerald-700 font-sans font-semibold flex items-start space-x-1.5 rounded-lg">
+            <div className="mt-4 bg-success/10 border border-success/30 text-success text-xs font-sans font-semibold flex items-start space-x-1.5 rounded-xl px-4 py-3">
               <Check className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{successText}</span>
             </div>
@@ -384,17 +384,17 @@ export default function TradeMarket({
         </div>
 
         {/* ================= ACTIVE TRADE OFFERS (Right 2 Columns) ================= */}
-        <div className="lg:col-span-2 bg-[#fffef9] border border-gray-300 p-5 rounded-2xl shadow-sm text-left flex flex-col justify-between text-gray-800">
+        <div className="lg:col-span-2 bg-surface border border-border p-5 rounded-2xl text-left flex flex-col justify-between text-text">
           <div>
-            <h3 className="text-md font-sans font-bold text-[#002F6C] mb-4 flex items-center space-x-2">
-              <ArrowLeftRight className="h-4.5 w-4.5 text-[#002F6C]" />
+            <h3 className="text-md font-sans font-bold text-text mb-4 flex items-center space-x-2">
+              <ArrowLeftRight className="h-4.5 w-4.5 text-primary" />
               <span>Active P2P Listings ({tradeOffers.length})</span>
             </h3>
 
             {tradeOffers.length === 0 ? (
-              <div className="p-12 text-center text-gray-500 font-serif italic text-sm border border-dashed border-gray-300 rounded-xl space-y-1">
+              <div className="p-12 text-center text-text-muted font-sans text-sm border border-dashed border-border rounded-xl space-y-1">
                 <p>No trade proposals are currently broadcast on the ledger.</p>
-                <p className="text-xs text-gray-400 font-sans font-normal mt-1">Create your own offer above or check back shortly!</p>
+                <p className="text-xs text-text-dim font-sans font-normal mt-1">Create your own offer above or check back shortly!</p>
               </div>
             ) : (
               <div className="space-y-3.5 max-h-[380px] overflow-y-auto pr-1">
@@ -408,35 +408,35 @@ export default function TradeMarket({
                       key={offer.id}
                       className={`p-3.5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 transition duration-200 ${
                         isMine
-                          ? "bg-[#002F6C]/5 border-[#002F6C]/30"
-                          : "bg-white border-gray-300 hover:border-gray-400 shadow-sm"
+                          ? "bg-surface-2 border-gold/30"
+                          : "bg-surface-2 border-border hover:border-border-hover"
                       }`}
                     >
                       {/* Left: Swapping details */}
                       <div className="flex items-center space-x-4">
-                        <div className="shrink-0 flex items-center space-x-2 bg-gray-100 py-1.5 px-2.5 rounded-lg border border-gray-200">
-                          <span className="text-[10px] font-sans text-gray-500 font-extrabold uppercase">Tx</span>
+                        <div className="shrink-0 flex items-center space-x-2 bg-surface-3 py-1.5 px-2.5 rounded-lg border border-border">
+                          <span className="text-[11px] font-sans text-text-muted font-extrabold uppercase">Tx</span>
                         </div>
 
                         <div className="text-xs font-sans text-left">
-                          <div className="flex flex-wrap items-center gap-1.5 mb-1.5 text-gray-800">
-                            <span className="font-extrabold text-[#002F6C]">[{offerSticker?.number}] {offerSticker?.name}</span>
-                            <span className="text-gray-400 font-serif italic text-[11px]">for</span>
+                          <div className="flex flex-wrap items-center gap-1.5 mb-1.5 text-text">
+                            <span className="font-extrabold text-text">[{offerSticker?.number}] {offerSticker?.name}</span>
+                            <span className="text-text-dim font-sans text-[11px]">for</span>
                             
                             {wantSticker ? (
-                              <span className="font-extrabold text-[#002F6C]/90">[{wantSticker.number}] {wantSticker.name}</span>
+                              <span className="font-extrabold text-text">[{wantSticker.number}] {wantSticker.name}</span>
                             ) : (
-                              <span className="font-black text-[#002F6C] flex items-center">
-                                <Coins className="h-3.5 w-3.5 mr-0.5 text-[#FFCD00]" /> {offer.solPrice} SOL
+                              <span className="font-black text-gold flex items-center">
+                                <Coins className="h-3.5 w-3.5 mr-0.5 text-gold" /> {offer.solPrice} SOL
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-gray-500 flex items-center space-x-2 font-medium">
+                          <div className="text-[11px] text-text-muted flex items-center space-x-2 font-medium">
                             <span className="flex items-center">
                               <User className="h-3 w-3 mr-0.5" /> {offer.ownerName}
                             </span>
                             <span>•</span>
-                            <span>MINT: Metaplex Verified</span>
+                            <span className="text-success text-[11px]">MINT: Metaplex Verified</span>
                           </div>
                         </div>
                       </div>
@@ -447,7 +447,7 @@ export default function TradeMarket({
                           <button
                             id={`btn-cancel-trade-${offer.id}`}
                             onClick={() => onRemoveTradeOffer(offer.id)}
-                            className="p-2 px-3 rounded bg-rose-50 hover:bg-rose-100 text-rose-605 border border-rose-200 transition cursor-pointer flex items-center space-x-1 text-xs font-sans font-bold"
+                            className="p-2 px-3 rounded-xl bg-danger/10 hover:bg-danger/20 border border-danger/30 text-danger transition cursor-pointer flex items-center space-x-1 text-xs font-sans font-bold"
                             title="Revoke Listing"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -458,7 +458,7 @@ export default function TradeMarket({
                             id={`btn-accept-trade-${offer.id}`}
                             disabled={isProcessing}
                             onClick={() => handleAcceptTrade(offer)}
-                            className="py-1.5 px-3.5 rounded-lg bg-[#FFCD00] hover:opacity-90 text-[#002F6C] font-sans font-black text-xs uppercase tracking-wider transition shadow-sm cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed space-x-1"
+                            className="py-1.5 px-3.5 rounded-xl bg-gold hover:bg-gold-hover text-base font-sans font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed space-x-1"
                           >
                             {isProcessing && document.activeElement?.id === `btn-accept-trade-${offer.id}` ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -475,8 +475,8 @@ export default function TradeMarket({
             )}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200 flex items-center space-x-2 text-xs font-serif italic text-gray-500">
-            <Sparkles className="h-4 w-4 text-[#FFCD00]" />
+          <div className="mt-4 pt-4 border-t border-border flex items-center space-x-2 text-xs font-sans text-text-dim">
+            <Sparkles className="h-4 w-4 text-gold" />
             <span>All trades use simulated zero-trust blockchain signatures for safe swap resolution.</span>
           </div>
 
